@@ -1,0 +1,449 @@
+using System.Numerics;
+using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
+using Protocol.Minecraft;
+using Protocol.Utils;
+
+namespace Protocol.Minecraft.Geometry;
+
+public class Description : ICloneable
+{
+	public string Identifier { get; set; }
+
+	[JsonPropertyName("texture_height")] public int TextureHeight { get; set; }
+
+	[JsonPropertyName("texture_width")] public int TextureWidth { get; set; }
+
+	[JsonPropertyName("visible_bounds_height")]
+	public float VisibleBoundsHeight { get; set; }
+
+	[JsonPropertyName("visible_bounds_offset")]
+	public float[] VisibleBoundsOffset { get; set; }
+
+	[JsonPropertyName("visible_bounds_width")]
+	public float VisibleBoundsWidth { get; set; }
+
+	public object Clone()
+	{
+		var clone = (Description)MemberwiseClone();
+		clone.VisibleBoundsOffset = VisibleBoundsOffset?.Clone() as float[];
+		return clone;
+	}
+}
+
+public class Geometry : ICloneable
+{
+	public const float Gravity = 0.08f;
+	public const float Drag = 0.02f;
+	public const double CubeFilterFactor = 1.3;
+	public const float ZTearFactor = 0.01f;
+	[JsonIgnore] public string Name { get; set; }
+
+	public Description Description { get; set; }
+
+	[JsonIgnore] public string BaseGeometry { get; set; }
+
+	public List<Bone> Bones { get; set; }
+
+	[JsonPropertyName("META_BoneType")] public string BoneType { get; set; }
+
+	[JsonPropertyName("META_ModelVersion")]
+	public string ModelVersion { get; set; }
+
+	[JsonPropertyName("rigtype")] public string RigType { get; set; }
+
+	[JsonPropertyName("texturewidth")] public int TextureWidth { get; set; }
+
+	[JsonPropertyName("textureheight")] public int TextureHeight { get; set; }
+
+	public bool AnimationArmsDown { get; set; }
+	public bool AnimationArmsOutFront { get; set; }
+	public bool AnimationStatueOfLibertyArms { get; set; }
+	public bool AnimationSingleArmAnimation { get; set; }
+	public bool AnimationStationaryLegs { get; set; }
+	public bool AnimationSingleLegAnimation { get; set; }
+	public bool AnimationNoHeadBob { get; set; }
+	public bool AnimationDontShowArmor { get; set; }
+	public bool AnimationUpsideDown { get; set; }
+	public bool AnimationInvertedCrouch { get; set; }
+
+	public object Clone()
+	{
+		var geometry = (Geometry)MemberwiseClone();
+		geometry.Description = (Description)Description.Clone();
+
+		if (Bones != null)
+		{
+			geometry.Bones = new List<Bone>();
+			foreach (var bone in Bones) geometry.Bones.Add((Bone)bone.Clone());
+		}
+
+		return geometry;
+	}
+
+	public static Geometry Subdivide(Geometry geometry, bool packInBody = true, bool keepHead = true,
+		bool renderSkin = true, bool renderSkeleton = false)
+	{
+		var cloned = (Geometry)geometry.Clone();
+		cloned.Subdivide(packInBody, keepHead, renderSkin, renderSkeleton);
+		return cloned;
+	}
+
+	public void Subdivide(bool packInBody = true, bool keepHead = true, bool renderSkin = true,
+		bool renderSkeleton = false)
+	{
+		var newCubes = new List<Cube>();
+		var random = new Random();
+
+		foreach (var bone in Bones)
+		{
+			if (bone.NeverRender) continue;
+			if (bone.Cubes == null || bone.Cubes.Count == 0) continue;
+			var realBoneName =
+				Regex.Replace(bone.Name, "\\d+",
+					"");
+			var cubes = bone.Cubes.ToArray();
+			bone.Cubes.Clear();
+			foreach (var cube in cubes)
+			{
+				var width = (int)cube.Size[0];
+				var height = (int)cube.Size[1];
+				var depth = (int)cube.Size[2];
+
+				var u = cube.Uv[0];
+				var v = cube.Uv[1];
+
+
+				if (renderSkeleton)
+					for (var w = 0; w < width; w++)
+					for (var d = 0; d < depth; d++)
+					for (var h = 0; h < height; h++)
+						if (w > 0 && w < width - 1 && d > 0 && d < depth - 1 && h > 0 && h < height - 1)
+						{
+							var cubeOrigin = cube.Origin;
+
+							var c = new Cube
+							{
+								Face = Face.Inside,
+								Size = new[] { 1f, 1f, 1f },
+								Origin = new[] { cubeOrigin[0] + w, cubeOrigin[1] + h, cubeOrigin[2] + d },
+								Uv = new float[] { 20, 4 },
+								Velocity = Vector3.Zero
+							};
+							{
+								var isHead = realBoneName.Equals(BoneName.Head.ToString(),
+									StringComparison.InvariantCultureIgnoreCase);
+								if (packInBody)
+								{
+									if (keepHead && isHead)
+										bone.Cubes.Add(c);
+									else
+										newCubes.Add(c);
+								}
+								else
+								{
+									bone.Cubes.Add(c);
+								}
+							}
+						}
+
+				if (renderSkin)
+				{
+					for (var w = 0; w < width; w++)
+					{
+						var uvx = u + depth - 1;
+						if (bone.Mirror)
+							uvx = u + depth + width - 2;
+						for (var d = 0; d < 1; d++)
+						{
+							var uvy = v + depth + height - 2;
+							for (var h = 0; h < height; h++)
+							{
+								if (w > 0 && w < width - 1 && d > 0 && d < depth - 1 && h > 0 && h < height - 1)
+								{
+									uvy--;
+									continue;
+								}
+
+								var cubeOrigin = cube.Origin;
+
+								var c = new Cube
+								{
+									Face = Face.Front,
+									Size = new[] { 1f, 1f, 1f },
+									Origin = new[]
+										{ cubeOrigin[0] + w, cubeOrigin[1] + h, cubeOrigin[2] + d - ZTearFactor },
+									Uv = bone.Mirror ? new[] { uvx - w, uvy-- } : new[] { uvx + w, uvy-- },
+									Velocity = new Vector3(0, (float)(random.NextDouble() * -0.01), 0)
+								};
+								var isHead = realBoneName == BoneName.Head.ToString();
+								if (isHead || random.NextDouble() < CubeFilterFactor)
+								{
+									if (packInBody)
+									{
+										if (keepHead && isHead)
+										{
+											c.Velocity = Vector3.Zero;
+											bone.Cubes.Add(c);
+										}
+										else
+										{
+											newCubes.Add(c);
+										}
+									}
+									else
+									{
+										bone.Cubes.Add(c);
+									}
+								}
+							}
+						}
+					}
+
+
+					for (var w = 0; w < width; w++)
+					{
+						var uvx = u + depth + width + depth - 3;
+						if (!bone.Mirror)
+							uvx = u + depth + width + depth + width - 4;
+						for (var d = depth - 1; d < depth; d++)
+						{
+							var uvy = v + depth + height - 2;
+							for (var h = 0; h < height; h++)
+							{
+								if (w > 0 && w < width - 1 && d > 0 && d < depth - 1 && h > 0 && h < height - 1)
+								{
+									uvy--;
+									continue;
+								}
+
+								var cubeOrigin = cube.Origin;
+
+								var c = new Cube
+								{
+									Face = Face.Back,
+									Size = new[] { 1f, 1f, 1f },
+									Origin = new[]
+										{ cubeOrigin[0] + w, cubeOrigin[1] + h, cubeOrigin[2] + d + ZTearFactor },
+									Uv = !bone.Mirror ? new[] { uvx - w, uvy-- } : new[] { uvx + w, uvy-- },
+									Velocity = new Vector3(0, (float)(random.NextDouble() * -0.01), 0)
+								};
+								if (random.NextDouble() < CubeFilterFactor)
+								{
+									var isHead = realBoneName == BoneName.Head.ToString();
+									if (packInBody)
+									{
+										if (keepHead && isHead)
+											bone.Cubes.Add(c);
+										else
+											newCubes.Add(c);
+									}
+									else
+									{
+										bone.Cubes.Add(c);
+									}
+								}
+							}
+						}
+					}
+
+
+					for (var w = 0; w < width; w++)
+					{
+						var uvx = u + depth - 1;
+						if (!bone.Mirror)
+							uvx = u + depth + width - 2;
+						var uvy = v + depth - 1;
+						for (var d = 0; d < depth; d++)
+						for (var h = height - 1; h < height; h++)
+						{
+							if (w > 0 && w < width - 1 && d > 0 && d < depth - 1 && h > 0 && h < height - 1)
+							{
+								uvy--;
+								continue;
+							}
+
+							var cubeOrigin = cube.Origin;
+
+							var c = new Cube
+							{
+								Face = Face.Top,
+								Size = new[] { 1f, 1f, 1f },
+								Origin = new[]
+									{ cubeOrigin[0] + w, cubeOrigin[1] + h + ZTearFactor, cubeOrigin[2] + d },
+								Uv = !bone.Mirror ? new[] { uvx - w, uvy-- } : new[] { uvx + w, uvy-- },
+								Velocity = new Vector3(0, (float)(random.NextDouble() * -0.01), 0)
+							};
+							if (random.NextDouble() < CubeFilterFactor)
+							{
+								var isHead = realBoneName == BoneName.Head.ToString();
+								if (packInBody)
+								{
+									if (keepHead && isHead)
+										bone.Cubes.Add(c);
+									else
+										newCubes.Add(c);
+								}
+								else
+								{
+									bone.Cubes.Add(c);
+								}
+							}
+						}
+					}
+
+
+					for (var w = 0; w < width; w++)
+					{
+						var uvx = u + depth + width - 2;
+						var uvy = v + depth - 1;
+						for (var d = 0; d < depth; d++)
+						for (var h = 0; h < 1; h++)
+						{
+							if (w > 0 && w < width - 1 && d > 0 && d < depth - 1 && h > 0 && h < height - 1)
+							{
+								uvy--;
+								continue;
+							}
+
+							var cubeOrigin = cube.Origin;
+
+							var c = new Cube
+							{
+								Face = Face.Bottom,
+								Size = new[] { 1f, 1f, 1f },
+								Origin = new[]
+									{ cubeOrigin[0] + w, cubeOrigin[1] + h - ZTearFactor, cubeOrigin[2] + d },
+								Uv = new[] { uvx + w, uvy-- },
+								Velocity = new Vector3(0, (float)(random.NextDouble() * -0.01), 0)
+							};
+							if (random.NextDouble() < CubeFilterFactor)
+							{
+								var isHead = realBoneName == BoneName.Head.ToString();
+								if (packInBody)
+								{
+									if (keepHead && isHead)
+										bone.Cubes.Add(c);
+									else
+										newCubes.Add(c);
+								}
+								else
+								{
+									bone.Cubes.Add(c);
+								}
+							}
+						}
+					}
+
+
+					for (var w = 0; w < 1; w++)
+					{
+						var uvx = u;
+						if (!bone.Mirror)
+							uvx = u + depth - 1;
+						for (var d = 0; d < depth; d++)
+						{
+							var uvy = v + depth + height - 2;
+							for (var h = 0; h < height; h++)
+							{
+								if (w > 0 && w < width - 1 && d > 0 && d < depth - 1 && h > 0 && h < height - 1)
+								{
+									uvy--;
+									continue;
+								}
+
+								var cubeOrigin = cube.Origin;
+
+								var c = new Cube
+								{
+									Face = Face.Right,
+									Mirror = bone.Mirror,
+									Size = new[] { 1f, 1f, 1f },
+									Origin = new[]
+										{ cubeOrigin[0] + w - ZTearFactor, cubeOrigin[1] + h, cubeOrigin[2] + d },
+									Uv = !bone.Mirror ? new[] { uvx - d, uvy-- } : new[] { uvx + d, uvy-- },
+									Velocity = new Vector3(0, (float)(random.NextDouble() * -0.01), 0)
+								};
+								if (random.NextDouble() < CubeFilterFactor)
+								{
+									var isHead = realBoneName == BoneName.Head.ToString();
+									if (packInBody)
+									{
+										if (keepHead && isHead)
+											bone.Cubes.Add(c);
+										else
+											newCubes.Add(c);
+									}
+									else
+									{
+										bone.Cubes.Add(c);
+									}
+								}
+							}
+						}
+					}
+
+
+					for (var w = width - 1; w < width; w++)
+					{
+						var uvx = u + depth + width - 2;
+						if (bone.Mirror)
+							uvx = u + depth - 1;
+						for (var d = 0; d < depth; d++)
+						{
+							var uvy = v + depth + height - 2;
+							for (var h = 0; h < height; h++)
+							{
+								if (w > 0 && w < width - 1 && d > 0 && d < depth - 1 && h > 0 && h < height - 1)
+								{
+									uvy--;
+									continue;
+								}
+
+								var cubeOrigin = cube.Origin;
+
+								var c = new Cube
+								{
+									Face = Face.Left,
+									Mirror = bone.Mirror,
+									Size = new[] { 1f, 1f, 1f },
+									Origin = new[]
+										{ cubeOrigin[0] + w + ZTearFactor, cubeOrigin[1] + h, cubeOrigin[2] + d },
+									Uv = bone.Mirror ? new[] { uvx - d, uvy-- } : new[] { uvx + d, uvy-- },
+									Velocity = new Vector3(0, (float)(random.NextDouble() * -0.01), 0)
+								};
+								if (random.NextDouble() < CubeFilterFactor)
+								{
+									var isHead = realBoneName == BoneName.Head.ToString();
+									if (packInBody)
+									{
+										if (keepHead && isHead)
+											bone.Cubes.Add(c);
+										else
+											newCubes.Add(c);
+									}
+									else
+									{
+										bone.Cubes.Add(c);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		if (packInBody)
+		{
+			var newBone = new Bone();
+			newBone.Name = BoneName.Body.ToString();
+			newBone.Pivot = new float[3];
+			newBone.Cubes = newCubes;
+
+			var head = Bones.SingleOrDefault(b => b.Name == BoneName.Head.ToString());
+			Bones = new List<Bone> { newBone };
+			if (keepHead && head != null) Bones.Add(head);
+		}
+	}
+}
