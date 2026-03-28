@@ -1,9 +1,9 @@
 # Protocol
 
-[![GitHub stars](https://img.shields.io/github/stars/Round-Studio/Protocol)](https://github.com/Round-Studio/Protocol/stargazers)
-[![License](https://img.shields.io/github/license/Round-Studio/Protocol)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/Ark-Project-Studio/Protocol)](https://github.com/Ark-Project-Studio/Protocol/stargazers)
+[![License](https://img.shields.io/github/license/Ark-Project-Studio/Protocol)](LICENSE)
 
-> 仓库地址：https://github.com/Round-Studio/Protocol
+> 仓库地址：https://github.com/Ark-Project-Studio/Protocol
 
 ## 简介
 
@@ -21,7 +21,7 @@ Protocol 是一个用于 Minecraft Bedrock Edition 的协议库，用于处理�
 ## 快速开始
 
 ```
-git clone https://github.com/Round-Studio/Protocol.git
+git clone https://github.com/Ark-Project-Studio/Protocol.git
 ```
 
 ## 兼容性与依赖
