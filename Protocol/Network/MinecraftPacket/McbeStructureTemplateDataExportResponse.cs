@@ -1,9 +1,9 @@
 ﻿using Protocol.Minecraft;
 
 namespace Protocol.Network.MinecraftPacket;
-public class McbeStructureTemplateDataResponse : Packet
+public class McbeStructureTemplateDataExportResponse : Packet
 {
-    public McbeStructureTemplateDataResponse()
+    public McbeStructureTemplateDataExportResponse()
     {
         Id = 0x133;
         IsMcbe = true;

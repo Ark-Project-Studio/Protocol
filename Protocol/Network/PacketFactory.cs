@@ -40,6 +40,8 @@ namespace Protocol.Network
 						return new McbeRemoveEntity().Decode(buffer);
 					case 15:
 						return new McbeAddItemEntity().Decode(buffer);
+					case 16:
+						return new McbeServerPlayerPostMovePosition().Decode(buffer);
 
 					case 17:
 						return new McbeTakeItemEntity().Decode(buffer);
@@ -501,8 +503,12 @@ namespace Protocol.Network
 						return new McbeDebugDrawer().Decode(buffer);
 					case 329:
 						return new McbeServerBoundPackSettingChange().Decode(buffer);
+					case 330:
+						return new McbeClientboundDataStore().Decode(buffer);
 					case 331:
 						return new McbeGraphicsOverrideParameter().Decode(buffer);
+					case 332:
+						return new McbeServerboundDataStore().Decode(buffer);
 					case 333:
 						return new McbeClientBoundDataDrivenUIShowScreen().Decode(buffer);
 					case 334:
@@ -529,6 +535,10 @@ namespace Protocol.Network
 						return new McbeSyncWorldClocks().Decode(buffer);
 					case 345:
 						return new McbeClientBoundAttributeLayerSync().Decode(buffer);
+					case 346:
+						return new McbeServerStoreInfo().Decode(buffer);
+					case 347:
+						return new McbeServerPresenceInfo().Decode(buffer);
 					default:
 						return new UnknownPacket((byte)id, buffer);
 				}
