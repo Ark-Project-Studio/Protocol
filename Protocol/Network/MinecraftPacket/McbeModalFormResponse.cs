@@ -17,7 +17,7 @@ public class McbeModalFormResponse : Packet
         Write(data != null);
         if (data != null)
             Write(data);
-        Write(true);
+        Write(cancelReason != 0);
         Write(cancelReason);
     }
 

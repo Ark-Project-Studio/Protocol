@@ -1,31 +1,34 @@
-﻿using Protocol.Minecraft;
-
-namespace Protocol.Network.MinecraftPacket;
-public class McbeStructureTemplateDataExportResponse : Packet
+﻿namespace Protocol.Network.MinecraftPacket;
+public class McbeSetInventoryOptions : Packet
 {
-    public McbeStructureTemplateDataExportResponse()
+    public int craftingLayout;
+    public bool filtering;
+    public int inventoryLayout;
+    public int leftTab;
+    public int rightTab;
+    public McbeSetInventoryOptions()
     {
-        Id = 0x85;
+        Id = 0x133;
         IsMcbe = true;
     }
-
-    public string StructureName { get; set; } = string.Empty;
-    public Nbt StructureNbt { get; set; } = new();
-    public byte ResponseType { get; set; }
 
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        Write(StructureName);
-        Write(StructureNbt);
-        Write(ResponseType);
+        WriteSignedVarInt(leftTab);
+        WriteSignedVarInt(rightTab);
+        Write(filtering);
+        WriteSignedVarInt(inventoryLayout);
+        WriteSignedVarInt(craftingLayout);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        StructureName = ReadString();
-        StructureNbt = ReadNbt();
-        ResponseType = ReadByte();
+        leftTab = ReadSignedVarInt();
+        rightTab = ReadSignedVarInt();
+        filtering = ReadBool();
+        inventoryLayout = ReadSignedVarInt();
+        craftingLayout = ReadSignedVarInt();
     }
 }
