@@ -319,7 +319,7 @@ namespace Protocol.Network
 						return new McbeAnimateEntity().Decode(buffer);
 
 					case 159:
-						return new McbeCamera().Decode(buffer);
+						return new McbeCameraShake().Decode(buffer);
 
 					case 160:
 						return new McbePlayerFog().Decode(buffer);
@@ -436,7 +436,7 @@ namespace Protocol.Network
 					case 303:
 						return new McbeOpenSign().Decode(buffer);
 					case 304:
-						return new McbeAlexEntityAnimation().Decode(buffer);
+						return new McbeAgentAnimation().Decode(buffer);
 					case 305:
 						return new McbeRefreshEntitlements().Decode(buffer);
 
