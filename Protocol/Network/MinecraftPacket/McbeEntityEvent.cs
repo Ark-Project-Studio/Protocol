@@ -1,8 +1,11 @@
-﻿namespace Protocol.Network.MinecraftPacket;
+﻿using System.Numerics;
+
+namespace Protocol.Network.MinecraftPacket;
 public class McbeEntityEvent : Packet
 {
     public int data;
     public byte eventId;
+    public Optional<Vector3> FireAtPosition;
     public ulong runtimeEntityId;
     public McbeEntityEvent()
     {
@@ -16,6 +19,11 @@ public class McbeEntityEvent : Packet
         WriteUnsignedVarLong(runtimeEntityId);
         Write(eventId);
         WriteSignedVarInt(data);
+        Write(FireAtPosition.HasValue);
+        if (FireAtPosition.HasValue)
+        {
+            Write(FireAtPosition.Value);
+        }
     }
 
     protected override void DecodePacket()
@@ -24,5 +32,9 @@ public class McbeEntityEvent : Packet
         runtimeEntityId = ReadUnsignedVarLong();
         eventId = ReadByte();
         data = ReadSignedVarInt();
+        if (ReadBool())
+        {
+            FireAtPosition = new Optional<Vector3>(ReadVector3());
+        }
     }
 }
