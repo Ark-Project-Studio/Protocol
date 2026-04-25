@@ -5,7 +5,7 @@ public class McbeStructureTemplateDataExportResponse : Packet
 {
     public McbeStructureTemplateDataExportResponse()
     {
-        Id = 0x133;
+        Id = 0x85;
         IsMcbe = true;
     }
 

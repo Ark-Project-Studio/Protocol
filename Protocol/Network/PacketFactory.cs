@@ -296,7 +296,7 @@ namespace Protocol.Network
 					case 148:
 						return new McbeItemStackResponse().Decode(buffer);
 					case 149:
-						return new McbeHurtArmor().Decode(buffer);
+						return new McbePlayerArmourDamage().Decode(buffer);
 					case 150:
 						return new McbeCodeBuilder().Decode(buffer);
 					case 151:
@@ -390,6 +390,7 @@ namespace Protocol.Network
 					case 185:
 						return new McbePermissionRequest().Decode(buffer);
 					case 186:
+						return new McbeToastRequest().Decode(buffer);
 
 					case 187:
 						return new McbeUpdateAbilities().Decode(buffer);
