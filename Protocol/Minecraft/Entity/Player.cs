@@ -2,6 +2,7 @@ using System.Net;
 using Protocol.Minecraft;
 using Protocol.Minecraft.Skins;
 using Protocol.Network.MinecraftPacket;
+using Protocol.Network.RaknetPacket;
 using Protocol.Utils.Crypto;
 using Protocol.Utils;
 

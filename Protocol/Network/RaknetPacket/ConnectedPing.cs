@@ -1,11 +1,10 @@
-﻿namespace Protocol.Network.MinecraftPacket;
-public class ConnectedPong : Packet
+﻿namespace Protocol.Network.RaknetPacket;
+public class ConnectedPing : Packet
 {
     public long sendpingtime;
-    public long sendpongtime;
-    public ConnectedPong()
+    public ConnectedPing()
     {
-        Id = 0x03;
+        Id = 0x00;
         IsMcbe = false;
     }
 
@@ -13,13 +12,11 @@ public class ConnectedPong : Packet
     {
         base.EncodePacket();
         Write(sendpingtime);
-        Write(sendpongtime);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
         sendpingtime = ReadLong();
-        sendpongtime = ReadLong();
     }
 }

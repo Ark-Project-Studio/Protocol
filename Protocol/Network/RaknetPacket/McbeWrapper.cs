@@ -1,4 +1,4 @@
-﻿namespace Protocol.Network.MinecraftPacket;
+﻿namespace Protocol.Network.RaknetPacket;
 public class McbeWrapper : Packet
 {
     public ReadOnlyMemory<byte> payload;

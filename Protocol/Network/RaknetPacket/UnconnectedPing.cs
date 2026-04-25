@@ -1,7 +1,5 @@
-﻿using Protocol.Utils.UDP;
-
-namespace Protocol.Network.MinecraftPacket;
-public class OpenConnectionRequest1 : Packet
+﻿namespace Protocol.Network.RaknetPacket;
+public class UnconnectedPing : Packet
 {
     public readonly byte[] offlineMessageDataId = new byte[]
     {
@@ -22,28 +20,27 @@ public class OpenConnectionRequest1 : Packet
         0x56,
         0x78
     };
-    public short mtuSize;
-    public byte raknetProtocolVersion;
-    public OpenConnectionRequest1()
+    public long guid;
+    public long pingId;
+    public UnconnectedPing()
     {
-        Id = 0x05;
+        Id = 0x01;
         IsMcbe = false;
     }
 
     protected override void EncodePacket()
     {
         base.EncodePacket();
+        Write(pingId);
         Write(offlineMessageDataId);
-        Write(raknetProtocolVersion);
-        Write(new byte[mtuSize - _buffer.Position - UdpConfig.udpHeaderSize]);
+        Write(guid);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
+        pingId = ReadLong();
         ReadBytes(offlineMessageDataId.Length);
-        raknetProtocolVersion = ReadByte();
-        mtuSize = (short)(_reader.Length + UdpConfig.udpHeaderSize);
-        ReadBytes((int)(_reader.Length - _reader.Position));
+        guid = ReadLong();
     }
 }

@@ -1,7 +1,5 @@
-﻿using System.Net;
-
-namespace Protocol.Network.MinecraftPacket;
-public class OpenConnectionRequest2 : Packet
+﻿namespace Protocol.Network.RaknetPacket;
+public class NoFreeIncomingConnections : Packet
 {
     public readonly byte[] offlineMessageDataId = new byte[]
     {
@@ -22,12 +20,10 @@ public class OpenConnectionRequest2 : Packet
         0x56,
         0x78
     };
-    public long clientGuid;
-    public short mtuSize;
-    public IPEndPoint remoteBindingAddress;
-    public OpenConnectionRequest2()
+    public long serverGuid;
+    public NoFreeIncomingConnections()
     {
-        Id = 0x07;
+        Id = 0x14;
         IsMcbe = false;
     }
 
@@ -35,17 +31,13 @@ public class OpenConnectionRequest2 : Packet
     {
         base.EncodePacket();
         Write(offlineMessageDataId);
-        Write(remoteBindingAddress);
-        WriteBe(mtuSize);
-        Write(clientGuid);
+        Write(serverGuid);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
         ReadBytes(offlineMessageDataId.Length);
-        remoteBindingAddress = ReadIPEndPoint();
-        mtuSize = ReadShortBe();
-        clientGuid = ReadLong();
+        serverGuid = ReadLong();
     }
 }

@@ -1,5 +1,5 @@
-﻿namespace Protocol.Network.MinecraftPacket;
-public class OpenConnectionReply1 : Packet
+﻿namespace Protocol.Network.RaknetPacket;
+public class ConnectionBanned : Packet
 {
     public readonly byte[] offlineMessageDataId = new byte[]
     {
@@ -20,12 +20,10 @@ public class OpenConnectionReply1 : Packet
         0x56,
         0x78
     };
-    public ushort mtuSize;
     public long serverGuid;
-    public byte serverHasSecurity;
-    public OpenConnectionReply1()
+    public ConnectionBanned()
     {
-        Id = 0x06;
+        Id = 0x17;
         IsMcbe = false;
     }
 
@@ -34,8 +32,6 @@ public class OpenConnectionReply1 : Packet
         base.EncodePacket();
         Write(offlineMessageDataId);
         Write(serverGuid);
-        Write(serverHasSecurity);
-        WriteBe(mtuSize);
     }
 
     protected override void DecodePacket()
@@ -43,7 +39,5 @@ public class OpenConnectionReply1 : Packet
         base.DecodePacket();
         ReadBytes(offlineMessageDataId.Length);
         serverGuid = ReadLong();
-        serverHasSecurity = ReadByte();
-        mtuSize = ReadUshort(true);
     }
 }

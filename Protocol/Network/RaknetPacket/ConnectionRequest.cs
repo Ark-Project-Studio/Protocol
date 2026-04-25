@@ -1,4 +1,4 @@
-﻿namespace Protocol.Network.MinecraftPacket;
+﻿namespace Protocol.Network.RaknetPacket;
 public class ConnectionRequest : Packet
 {
     public long clientGuid;

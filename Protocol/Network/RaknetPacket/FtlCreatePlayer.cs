@@ -1,7 +1,7 @@
 ﻿using Protocol.Minecraft.Skins;
 using Protocol.Utils;
 
-namespace Protocol.Network.MinecraftPacket;
+namespace Protocol.Network.RaknetPacket;
 public class FtlCreatePlayer : Packet
 {
     public long clientId;

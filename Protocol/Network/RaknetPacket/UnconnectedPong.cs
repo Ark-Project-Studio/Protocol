@@ -1,7 +1,5 @@
-﻿using System.Net;
-
-namespace Protocol.Network.MinecraftPacket;
-public class OpenConnectionReply2 : Packet
+﻿namespace Protocol.Network.RaknetPacket;
+public class UnconnectedPong : Packet
 {
     public readonly byte[] offlineMessageDataId = new byte[]
     {
@@ -22,33 +20,30 @@ public class OpenConnectionReply2 : Packet
         0x56,
         0x78
     };
-    public IPEndPoint clientEndpoint;
-    public byte[] doSecurityAndHandshake;
-    public short mtuSize;
-    public long serverGuid;
-    public OpenConnectionReply2()
+    public long pingId;
+    public long serverId;
+    public string serverName;
+    public UnconnectedPong()
     {
-        Id = 0x08;
+        Id = 0x1c;
         IsMcbe = false;
     }
 
     protected override void EncodePacket()
     {
         base.EncodePacket();
+        Write(pingId);
+        Write(serverId);
         Write(offlineMessageDataId);
-        Write(serverGuid);
-        Write(clientEndpoint);
-        WriteBe(mtuSize);
-        Write(doSecurityAndHandshake);
+        WriteFixedString(serverName);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
+        pingId = ReadLong();
+        serverId = ReadLong();
         ReadBytes(offlineMessageDataId.Length);
-        serverGuid = ReadLong();
-        clientEndpoint = ReadIPEndPoint();
-        mtuSize = ReadShortBe();
-        doSecurityAndHandshake = ReadBytes(0, true);
+        serverName = ReadFixedString();
     }
 }

@@ -1,24 +1,22 @@
 ﻿using System.Net;
 
-namespace Protocol.Network.MinecraftPacket;
-public class ConnectionRequestAccepted : Packet
+namespace Protocol.Network.RaknetPacket;
+public class NewIncomingConnection : Packet
 {
+    public IPEndPoint clientendpoint;
     public long incomingTimestamp;
     public long serverTimestamp;
-    public IPEndPoint systemAddress;
     public IPEndPoint[] systemAddresses;
-    public short systemIndex;
-    public ConnectionRequestAccepted()
+    public NewIncomingConnection()
     {
-        Id = 0x10;
+        Id = 0x13;
         IsMcbe = false;
     }
 
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        Write(systemAddress);
-        WriteBe(systemIndex);
+        Write(clientendpoint);
         Write(systemAddresses);
         Write(incomingTimestamp);
         Write(serverTimestamp);
@@ -27,8 +25,7 @@ public class ConnectionRequestAccepted : Packet
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        systemAddress = ReadIPEndPoint();
-        systemIndex = ReadShortBe();
+        clientendpoint = ReadIPEndPoint();
         systemAddresses = ReadIPEndPoints(20);
         incomingTimestamp = ReadLong();
         serverTimestamp = ReadLong();

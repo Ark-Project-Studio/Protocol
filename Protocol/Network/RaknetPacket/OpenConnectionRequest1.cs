@@ -1,5 +1,7 @@
-﻿namespace Protocol.Network.MinecraftPacket;
-public class IpRecentlyConnected : Packet
+﻿using Protocol.Utils.UDP;
+
+namespace Protocol.Network.RaknetPacket;
+public class OpenConnectionRequest1 : Packet
 {
     public readonly byte[] offlineMessageDataId = new byte[]
     {
@@ -20,9 +22,11 @@ public class IpRecentlyConnected : Packet
         0x56,
         0x78
     };
-    public IpRecentlyConnected()
+    public short mtuSize;
+    public byte raknetProtocolVersion;
+    public OpenConnectionRequest1()
     {
-        Id = 0x1a;
+        Id = 0x05;
         IsMcbe = false;
     }
 
@@ -30,11 +34,16 @@ public class IpRecentlyConnected : Packet
     {
         base.EncodePacket();
         Write(offlineMessageDataId);
+        Write(raknetProtocolVersion);
+        Write(new byte[mtuSize - _buffer.Position - UdpConfig.udpHeaderSize]);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
         ReadBytes(offlineMessageDataId.Length);
+        raknetProtocolVersion = ReadByte();
+        mtuSize = (short)(_reader.Length + UdpConfig.udpHeaderSize);
+        ReadBytes((int)(_reader.Length - _reader.Position));
     }
 }

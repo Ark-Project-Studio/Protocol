@@ -1,5 +1,5 @@
-﻿namespace Protocol.Network.MinecraftPacket;
-public class UnconnectedPong : Packet
+﻿namespace Protocol.Network.RaknetPacket;
+public class IpRecentlyConnected : Packet
 {
     public readonly byte[] offlineMessageDataId = new byte[]
     {
@@ -20,30 +20,21 @@ public class UnconnectedPong : Packet
         0x56,
         0x78
     };
-    public long pingId;
-    public long serverId;
-    public string serverName;
-    public UnconnectedPong()
+    public IpRecentlyConnected()
     {
-        Id = 0x1c;
+        Id = 0x1a;
         IsMcbe = false;
     }
 
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        Write(pingId);
-        Write(serverId);
         Write(offlineMessageDataId);
-        WriteFixedString(serverName);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        pingId = ReadLong();
-        serverId = ReadLong();
         ReadBytes(offlineMessageDataId.Length);
-        serverName = ReadFixedString();
     }
 }

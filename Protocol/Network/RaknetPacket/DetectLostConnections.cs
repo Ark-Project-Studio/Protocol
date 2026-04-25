@@ -1,9 +1,9 @@
-﻿namespace Protocol.Network.MinecraftPacket;
-public class DisconnectionNotification : Packet
+﻿namespace Protocol.Network.RaknetPacket;
+public class DetectLostConnections : Packet
 {
-    public DisconnectionNotification()
+    public DetectLostConnections()
     {
-        Id = 0x15;
+        Id = 0x04;
         IsMcbe = false;
     }
 
