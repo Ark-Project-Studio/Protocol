@@ -2,9 +2,10 @@
 public class McbeNpcRequest : Packet
 {
     public ulong runtimeEntityId;
-    public byte unknown0;
-    public string unknown1;
-    public byte unknown2;
+    public byte requestType;
+    public string actions;
+    public byte actionIndex;
+    public string sceneName;
     public McbeNpcRequest()
     {
         Id = 0x62;
@@ -15,17 +16,19 @@ public class McbeNpcRequest : Packet
     {
         base.EncodePacket();
         WriteUnsignedVarLong(runtimeEntityId);
-        Write(unknown0);
-        Write(unknown1);
-        Write(unknown2);
+        Write(requestType);
+        Write(actions);
+        Write(actionIndex);
+        Write(sceneName);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
         runtimeEntityId = ReadUnsignedVarLong();
-        unknown0 = ReadByte();
-        unknown1 = ReadString();
-        unknown2 = ReadByte();
+        requestType = ReadByte();
+        actions = ReadString();
+        actionIndex = ReadByte();
+        sceneName = ReadString();
     }
 }

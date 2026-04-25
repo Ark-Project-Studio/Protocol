@@ -6,6 +6,8 @@ namespace Protocol.Network.MinecraftPacket
 {
 	public class McbeClientBoundDataDrivenUICloseAllScreens : Packet
 	{
+		public Optional<uint> formId;
+
 		public McbeClientBoundDataDrivenUICloseAllScreens()
 		{
 			IsMcbe = true;
@@ -15,11 +17,22 @@ namespace Protocol.Network.MinecraftPacket
 		protected override void EncodePacket()
 		{
 			base.EncodePacket();
+			Write(formId.HasValue);
+			if (formId.HasValue)
+			{
+				Write(formId.Value);
+			}
+			
 		}
 
 		protected override void DecodePacket()
 		{
 			base.DecodePacket();
+			bool hasFormId = ReadBool();
+			if (hasFormId)
+			{
+				formId = new Optional<uint>(ReadUint());
+			}
 		}
 	}
 }

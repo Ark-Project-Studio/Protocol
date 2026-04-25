@@ -16,17 +16,17 @@ public class McbeClientBoundControlSchemeSet : Packet
         IsMcbe = true;
     }
 
-    public byte ControlScheme { get; set; }
+    public ControlSchemeType ControlScheme { get; set; }
 
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        Write(ControlScheme);
+        Write((byte)ControlScheme);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        ControlScheme = ReadByte();
+        ControlScheme = (ControlSchemeType)ReadByte();
     }
 }

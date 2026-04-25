@@ -5,7 +5,7 @@ public class McbeUpdateEquipment : Packet
 {
     public long entityId;
     public Nbt namedtag;
-    public byte unknown;
+    public int size;
     public byte windowId;
     public byte windowType;
     public McbeUpdateEquipment()
@@ -19,7 +19,7 @@ public class McbeUpdateEquipment : Packet
         base.EncodePacket();
         Write(windowId);
         Write(windowType);
-        Write(unknown);
+        WriteSignedVarInt(size);
         WriteSignedVarLong(entityId);
         Write(namedtag);
     }
@@ -29,7 +29,7 @@ public class McbeUpdateEquipment : Packet
         base.DecodePacket();
         windowId = ReadByte();
         windowType = ReadByte();
-        unknown = ReadByte();
+        size = ReadSignedVarInt();
         entityId = ReadSignedVarLong();
         namedtag = ReadNbt();
     }

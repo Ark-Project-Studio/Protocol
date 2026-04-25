@@ -3,7 +3,11 @@ public class McbePhotoTransfer : Packet
 {
     public string fileName;
     public string imageData;
-    public string unknown2;
+    public string bookId;
+    public byte type;
+    public byte sourceType;
+    public long ownerId;
+    public string newPhotoName;
     public McbePhotoTransfer()
     {
         Id = 0x63;
@@ -15,7 +19,11 @@ public class McbePhotoTransfer : Packet
         base.EncodePacket();
         Write(fileName);
         Write(imageData);
-        Write(unknown2);
+        Write(bookId);
+        Write(type);
+        Write(sourceType);
+        Write(ownerId);
+        Write(newPhotoName);
     }
 
     protected override void DecodePacket()
@@ -23,6 +31,10 @@ public class McbePhotoTransfer : Packet
         base.DecodePacket();
         fileName = ReadString();
         imageData = ReadString();
-        unknown2 = ReadString();
+        bookId = ReadString();
+        type = ReadByte();
+        sourceType = ReadByte();
+        ownerId = ReadLong();
+        newPhotoName = ReadString();
     }
 }

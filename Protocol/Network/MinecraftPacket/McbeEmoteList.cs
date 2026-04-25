@@ -7,7 +7,7 @@ public class McbeEmoteList : Packet
     public ulong runtimeEntityId;
     public McbeEmoteList()
     {
-        Id = 0x8a;
+        Id = 0x98;
         IsMcbe = true;
     }
 

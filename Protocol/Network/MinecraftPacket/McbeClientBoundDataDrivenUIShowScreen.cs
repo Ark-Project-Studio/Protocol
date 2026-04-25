@@ -7,6 +7,8 @@ namespace Protocol.Network.MinecraftPacket
 	public class McbeClientBoundDataDrivenUIShowScreen : Packet
 	{
 		public string ScreenId;
+		public uint FormId;
+		public Optional<uint> DataInstanceId;
 		public McbeClientBoundDataDrivenUIShowScreen()
 		{
 			IsMcbe = true;
@@ -17,12 +19,23 @@ namespace Protocol.Network.MinecraftPacket
 		{
 			base.EncodePacket();
 			Write(ScreenId);
+			Write(FormId);
+			Write(DataInstanceId.HasValue);
+			if (DataInstanceId.HasValue)
+			{
+				Write(DataInstanceId.Value);
+			}
 		}
 
 		protected override void DecodePacket()
 		{
 			base.DecodePacket();
 			ScreenId = ReadString();
+			FormId = ReadUint();
+			if (ReadBool())
+			{
+				DataInstanceId = new Optional<uint>(ReadUint());
+			}
 		}
 	}
 }

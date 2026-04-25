@@ -2,7 +2,7 @@
 public class McbeNetworkStackLatency : Packet
 {
     public ulong timestamp;
-    public byte unknownFlag;
+    public bool fromServer;
     public McbeNetworkStackLatency()
     {
         Id = 0x73;
@@ -13,13 +13,13 @@ public class McbeNetworkStackLatency : Packet
     {
         base.EncodePacket();
         Write(timestamp);
-        Write(unknownFlag);
+        Write(fromServer);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
         timestamp = ReadUlong();
-        unknownFlag = ReadByte();
+        fromServer = ReadBool();
     }
 }

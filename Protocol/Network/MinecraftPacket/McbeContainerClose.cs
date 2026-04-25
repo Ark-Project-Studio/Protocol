@@ -2,7 +2,9 @@
 public class McbeContainerClose : Packet
 {
     public bool server;
+    public byte containerType;
     public byte windowId;
+
     public McbeContainerClose()
     {
         Id = 0x2f;
@@ -13,7 +15,7 @@ public class McbeContainerClose : Packet
     {
         base.EncodePacket();
         Write(windowId);
-        Write((byte)0);
+        Write(containerType);
         Write(server);
     }
 
@@ -21,7 +23,7 @@ public class McbeContainerClose : Packet
     {
         base.DecodePacket();
         windowId = ReadByte();
-        ReadByte();
+        containerType = ReadByte();
         server = ReadBool();
     }
 }

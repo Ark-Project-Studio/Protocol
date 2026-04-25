@@ -26,7 +26,7 @@ public class McbePlayerArmourDamage : Packet
     public List<PlayerArmourDamageEntry> playerArmourDamageEntries;
     public McbePlayerArmourDamage()
     {
-        Id = 148;
+        Id = 149;
         IsMcbe = true;
     }
 

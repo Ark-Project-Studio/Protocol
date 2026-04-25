@@ -40,6 +40,7 @@ namespace SicStream
 	{
 		private SicStreamCipher parent;
 		private int blockSize;
+		private readonly object syncRoot = new object();
 
 		public StreamingSicBlockCipher(SicBlockCipher parent)
 		{
@@ -57,17 +58,36 @@ namespace SicStream
 
 		public override int DoFinal(Span<byte> output)
 		{
-			throw new NotImplementedException();
+			Reset();
+			return 0;
 		}
 
 		public override int ProcessByte(byte input, Span<byte> output)
 		{
-			throw new NotImplementedException();
+			if (output.IsEmpty)
+			{
+				throw new DataLengthException("Output buffer too short.");
+			}
+
+			lock (syncRoot)
+			{
+				output[0] = parent.ReturnByte(input);
+				return 1;
+			}
 		}
 
 		public override int ProcessBytes(ReadOnlySpan<byte> input, Span<byte> output)
 		{
-			throw new NotImplementedException();
+			if (output.Length < input.Length)
+			{
+				throw new DataLengthException("Output buffer too short.");
+			}
+
+			lock (syncRoot)
+			{
+				parent.ProcessBytes(input, output);
+				return input.Length;
+			}
 		}
 
 		public override byte[] DoFinal()
@@ -102,24 +122,36 @@ namespace SicStream
 
 		public override void Init(bool forEncryption, ICipherParameters parameters)
 		{
-			parent.Init(forEncryption, parameters);
+			lock (syncRoot)
+			{
+				parent.Init(forEncryption, parameters);
+			}
 		}
 
 		public override byte[] ProcessByte(byte input)
 		{
-			return new byte[] { parent.ReturnByte(input) };
+			lock (syncRoot)
+			{
+				return new byte[] { parent.ReturnByte(input) };
+			}
 		}
 
 		public override byte[] ProcessBytes(byte[] input, int inOff, int length)
 		{
-			byte[] result = new byte[length];
-			parent.ProcessBytes(input, inOff, length, result, 0);
-			return result;
+			lock (syncRoot)
+			{
+				byte[] result = new byte[length];
+				parent.ProcessBytes(input, inOff, length, result, 0);
+				return result;
+			}
 		}
 
 		public override void Reset()
 		{
-			parent.Reset();
+			lock (syncRoot)
+			{
+				parent.Reset();
+			}
 		}
 	}
 
@@ -184,7 +216,22 @@ namespace SicStream
 
 		public void ProcessBytes(ReadOnlySpan<byte> input, Span<byte> output)
 		{
-			throw new NotImplementedException();
+			if (output.Length < input.Length)
+			{
+				throw new DataLengthException("Output buffer too short.");
+			}
+
+			for (int i = 0; i < input.Length; i++)
+			{
+				if (processed == blockSize)
+				{
+					parent.ProcessBlock(zeroBlock, 0, blockBuffer, 0);
+					processed = 0;
+				}
+
+				output[i] = (byte)(input[i] ^ blockBuffer[processed]);
+				processed++;
+			}
 		}
 
 		public void Reset()

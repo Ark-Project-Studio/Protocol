@@ -6,7 +6,9 @@ public class McbePlaySound : Packet
     public BlockCoordinates coordinates;
     public string name;
     public float pitch;
+    public Optional<bool> serverSoundHandle;
     public float volume;
+
     public McbePlaySound()
     {
         Id = 0x56;
@@ -20,6 +22,11 @@ public class McbePlaySound : Packet
         Write(coordinates);
         Write(volume);
         Write(pitch);
+        Write(serverSoundHandle.HasValue);
+        if (serverSoundHandle.HasValue)
+        {
+            Write(serverSoundHandle.Value);
+        }
     }
 
     protected override void DecodePacket()
@@ -29,5 +36,10 @@ public class McbePlaySound : Packet
         coordinates = ReadBlockCoordinates();
         volume = ReadFloat();
         pitch = ReadFloat();
+        bool hasServerSoundHandle = ReadBool();
+        if (hasServerSoundHandle)
+        {
+            serverSoundHandle = new Optional<bool>(ReadBool());
+        }
     }
 }

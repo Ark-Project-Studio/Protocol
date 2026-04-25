@@ -6,6 +6,8 @@ public class McbeChangeDimension : Packet
     public int dimension;
     public Vector3 position;
     public bool respawn;
+    public Optional<uint> loadingScreenId;
+
     public McbeChangeDimension()
     {
         Id = 0x3d;
@@ -18,7 +20,11 @@ public class McbeChangeDimension : Packet
         WriteSignedVarInt(dimension);
         Write(position);
         Write(respawn);
-        Write(false);
+        Write(loadingScreenId.HasValue);
+        if (loadingScreenId.HasValue)
+        {
+            Write(loadingScreenId.Value);
+        }
     }
 
     protected override void DecodePacket()
@@ -27,5 +33,10 @@ public class McbeChangeDimension : Packet
         dimension = ReadSignedVarInt();
         position = ReadVector3();
         respawn = ReadBool();
+        bool hasLoadingScreenId = ReadBool();
+        if (hasLoadingScreenId)
+        {
+            loadingScreenId = new Optional<uint>(ReadUint());
+        }
     }
 }

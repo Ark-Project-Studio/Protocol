@@ -5,6 +5,7 @@ public class McbeMobEffect : Packet
     public int duration;
     public int effectId;
     public byte eventId;
+    public bool ambient;
     public bool particles;
     public ulong runtimeEntityId;
     public ulong tick;
@@ -24,6 +25,7 @@ public class McbeMobEffect : Packet
         Write(particles);
         WriteSignedVarInt(duration);
         WriteUnsignedVarLong(tick);
+        Write(ambient);
     }
 
     protected override void DecodePacket()
@@ -36,5 +38,6 @@ public class McbeMobEffect : Packet
         particles = ReadBool();
         duration = ReadSignedVarInt();
         tick = ReadUnsignedVarLong();
+        ambient = ReadBool();
     }
 }

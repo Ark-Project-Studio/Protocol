@@ -25,7 +25,7 @@ public class McbeCompletedUsingItem : Packet
 
 	public McbeCompletedUsingItem()
 	{
-		Id = 141;
+		Id = 142;
 		IsMcbe = true;
 	}
 

@@ -11,6 +11,18 @@ public class McbeClientCacheMissResponse : Packet
     protected override void EncodePacket()
     {
         base.EncodePacket();
+        if (blobs == null)
+        {
+            WriteUnsignedVarInt(0);
+            return;
+        }
+
+        WriteUnsignedVarInt((uint)blobs.Count);
+        foreach (var blob in blobs)
+        {
+            Write(blob.Key);
+            WriteByteArray(blob.Value);
+        }
     }
 
     protected override void DecodePacket()

@@ -1,8 +1,8 @@
 ﻿namespace Protocol.Network.MinecraftPacket;
 public enum PlayerVideoCaptureAction : byte
 {
-    Stop = 0,
-    Start = 1
+    Start = 0,
+    Stop = 1
 }
 
 public class McbePlayerVideoCapture : Packet
@@ -14,7 +14,7 @@ public class McbePlayerVideoCapture : Packet
     }
 
     public PlayerVideoCaptureAction Action { get; set; }
-    public int FrameRate { get; set; }
+    public uint FrameRate { get; set; } = 30;
     public string FilePrefix { get; set; } = string.Empty;
 
     protected override void EncodePacket()
@@ -32,11 +32,11 @@ public class McbePlayerVideoCapture : Packet
     {
         base.DecodePacket();
         Action = (PlayerVideoCaptureAction)ReadByte();
-        FrameRate = 0;
+        FrameRate = 30;
         FilePrefix = string.Empty;
         if (Action == PlayerVideoCaptureAction.Start)
         {
-            FrameRate = ReadInt();
+            FrameRate = ReadUint();
             FilePrefix = ReadString();
         }
     }

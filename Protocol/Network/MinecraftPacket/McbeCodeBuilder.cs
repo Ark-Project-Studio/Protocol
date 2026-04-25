@@ -4,7 +4,7 @@ public class McbeCodeBuilder : Packet
 {
 	public McbeCodeBuilder()
 	{
-		Id = 149;
+		Id = 150;
 		IsMcbe = true;
 	}
 

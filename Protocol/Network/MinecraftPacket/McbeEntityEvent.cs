@@ -3,6 +3,7 @@ public class McbeEntityEvent : Packet
 {
     public int data;
     public byte eventId;
+    public System.Numerics.Vector3 fireAtPosition;
     public ulong runtimeEntityId;
     public McbeEntityEvent()
     {
@@ -16,6 +17,7 @@ public class McbeEntityEvent : Packet
         WriteUnsignedVarLong(runtimeEntityId);
         Write(eventId);
         WriteSignedVarInt(data);
+        Write(fireAtPosition);
     }
 
     protected override void DecodePacket()
@@ -24,5 +26,7 @@ public class McbeEntityEvent : Packet
         runtimeEntityId = ReadUnsignedVarLong();
         eventId = ReadByte();
         data = ReadSignedVarInt();
+        if (CanRead())
+            fireAtPosition = ReadVector3();
     }
 }

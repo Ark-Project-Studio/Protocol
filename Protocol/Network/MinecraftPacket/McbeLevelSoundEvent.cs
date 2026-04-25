@@ -6,6 +6,7 @@ public class McbeLevelSoundEvent : Packet
     public int blockId;
     public long entityId = -1;
     public string entityType;
+    public Vector3 fireAtPosition;
     public bool isBabyMob;
     public bool isGlobal;
     public Vector3 position;
@@ -26,6 +27,7 @@ public class McbeLevelSoundEvent : Packet
         Write(isBabyMob);
         Write(isGlobal);
         Write(entityId);
+        Write(fireAtPosition);
     }
 
     protected override void DecodePacket()
@@ -38,5 +40,6 @@ public class McbeLevelSoundEvent : Packet
         isBabyMob = ReadBool();
         isGlobal = ReadBool();
         entityId = ReadLong();
+        fireAtPosition = ReadVector3();
     }
 }

@@ -18,7 +18,7 @@ public class McbeCameraShake : Packet
 
 	public McbeCameraShake()
 	{
-		Id = 158;
+		Id = 159;
 		IsMcbe = true;
 	}
 

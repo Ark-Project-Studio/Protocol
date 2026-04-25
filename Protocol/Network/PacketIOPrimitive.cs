@@ -552,5 +552,43 @@ namespace Protocol.Network
 				Bytes = ReadUlong()
 			};
 		}
+
+		public void Write(EntityDiagnosticTimingInfo value)
+		{
+			Write(value.DisplayName);
+			Write(value.Entity);
+			Write(value.TimeInNS);
+			Write(value.PercentOfTotal);
+		}
+
+		public EntityDiagnosticTimingInfo ReadEntityDiagnosticTimingInfo()
+		{
+			return new EntityDiagnosticTimingInfo
+			{
+				DisplayName = ReadString(),
+				Entity = ReadString(),
+				TimeInNS = ReadUlong(),
+				PercentOfTotal = ReadByte()
+			};
+		}
+
+		public void Write(SystemDiagnosticTimingInfo value)
+		{
+			Write(value.DisplayName);
+			Write(value.SystemIndex);
+			Write(value.TimeInNS);
+			Write(value.PercentOfTotal);
+		}
+
+		public SystemDiagnosticTimingInfo ReadSystemDiagnosticTimingInfo()
+		{
+			return new SystemDiagnosticTimingInfo
+			{
+				DisplayName = ReadString(),
+				SystemIndex = ReadUlong(),
+				TimeInNS = ReadUlong(),
+				PercentOfTotal = ReadByte()
+			};
+		}
 	}
 }

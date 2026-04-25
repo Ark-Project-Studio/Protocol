@@ -14,7 +14,11 @@ public class McbeModalFormResponse : Packet
     {
         base.EncodePacket();
         WriteUnsignedVarInt(formId);
-        Write(data);
+        Write(data != null);
+        if (data != null)
+            Write(data);
+        Write(true);
+        Write(cancelReason);
     }
 
     protected override void DecodePacket()

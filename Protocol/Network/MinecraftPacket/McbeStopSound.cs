@@ -3,6 +3,8 @@ public class McbeStopSound : Packet
 {
     public string name;
     public bool stopAll;
+    public bool stopMusic;
+
     public McbeStopSound()
     {
         Id = 0x57;
@@ -14,6 +16,7 @@ public class McbeStopSound : Packet
         base.EncodePacket();
         Write(name);
         Write(stopAll);
+        Write(stopMusic);
     }
 
     protected override void DecodePacket()
@@ -21,5 +24,6 @@ public class McbeStopSound : Packet
         base.DecodePacket();
         name = ReadString();
         stopAll = ReadBool();
+        stopMusic = ReadBool();
     }
 }

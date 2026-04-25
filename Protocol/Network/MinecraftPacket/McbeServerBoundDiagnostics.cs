@@ -9,46 +9,53 @@ public class McbeServerBoundDiagnostics : Packet
         IsMcbe = true;
     }
 
-    public float AverageFramesPerSecond { get; set; }
-    public float AverageServerSimTickTime { get; set; }
-    public float AverageClientSimTickTime { get; set; }
-    public float AverageBeginFrameTime { get; set; }
-    public float AverageInputTime { get; set; }
-    public float AverageRenderTime { get; set; }
-    public float AverageEndFrameTime { get; set; }
-    public float AverageRemainderTimePercent { get; set; }
-    public float AverageUnaccountedTimePercent { get; set; }
+    public float AvgFps { get; set; }
+    public float AvgServerSimTickTimeMS { get; set; }
+    public float AvgClientSimTickTimeMS { get; set; }
+    public float AvgBeginFrameTimeMS { get; set; }
+    public float AvgInputTimeMS { get; set; }
+    public float AvgRenderTimeMS { get; set; }
+    public float AvgEndFrameTimeMS { get; set; }
+    public float AvgRemainderTimePercent { get; set; }
+    public float AvgUnaccountedTimePercent { get; set; }
     
-    public List<MemoryCategoryCounter> MemoryCategoryValues { get; set; }
+    public List<MemoryCategoryCounter> MemoryCategoryValues { get; set; } = [];
+    public List<EntityDiagnosticTimingInfo> EntityDiagnostics { get; set; } = [];
+    public List<SystemDiagnosticTimingInfo> SystemDiagnostics { get; set; } = [];
 
-
-	protected override void EncodePacket()
+    protected override void EncodePacket()
     {
         base.EncodePacket();
-        Write(AverageFramesPerSecond);
-        Write(AverageServerSimTickTime);
-        Write(AverageClientSimTickTime);
-        Write(AverageBeginFrameTime);
-        Write(AverageInputTime);
-        Write(AverageRenderTime);
-        Write(AverageEndFrameTime);
-        Write(AverageRemainderTimePercent);
-        Write(AverageUnaccountedTimePercent);
-        WriteSlice(MemoryCategoryValues.ToArray(),Write);
+        Write(AvgFps);
+        Write(AvgServerSimTickTimeMS);
+        Write(AvgClientSimTickTimeMS);
+        Write(AvgBeginFrameTimeMS);
+        Write(AvgInputTimeMS);
+        Write(AvgRenderTimeMS);
+        Write(AvgEndFrameTimeMS);
+        Write(AvgRemainderTimePercent);
+                Write(AvgUnaccountedTimePercent);
+
+                WriteSlice(MemoryCategoryValues.ToArray(), Write);
+                WriteSlice(EntityDiagnostics.ToArray(), Write);
+        WriteSlice(SystemDiagnostics.ToArray(), Write);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        AverageFramesPerSecond = ReadFloat();
-        AverageServerSimTickTime = ReadFloat();
-        AverageClientSimTickTime = ReadFloat();
-        AverageBeginFrameTime = ReadFloat();
-        AverageInputTime = ReadFloat();
-        AverageRenderTime = ReadFloat();
-        AverageEndFrameTime = ReadFloat();
-        AverageRemainderTimePercent = ReadFloat();
-        AverageUnaccountedTimePercent = ReadFloat();
+        AvgFps = ReadFloat();
+        AvgServerSimTickTimeMS = ReadFloat();
+        AvgClientSimTickTimeMS = ReadFloat();
+        AvgBeginFrameTimeMS = ReadFloat();
+        AvgInputTimeMS = ReadFloat();
+        AvgRenderTimeMS = ReadFloat();
+        AvgEndFrameTimeMS = ReadFloat();
+        AvgRemainderTimePercent = ReadFloat();
+        AvgUnaccountedTimePercent = ReadFloat();
+
         MemoryCategoryValues = ReadSlice(ReadMemoryCategoryCounter).ToList();
+        EntityDiagnostics = ReadSlice(ReadEntityDiagnosticTimingInfo).ToList();
+        SystemDiagnostics = ReadSlice(ReadSystemDiagnosticTimingInfo).ToList();
     }
 }
