@@ -3,11 +3,32 @@
 namespace Protocol.Network.MinecraftPacket;
 public class McbeMobEquipment : Packet
 {
-    public Item item;
+    /// <summary>
+    /// Runtime ID of the mob or player whose equipment is changing.
+    /// </summary>
     public ulong runtimeEntityId;
-    public byte selectedSlot;
+
+    /// <summary>
+    /// The item stack being equipped. Empty item indicates no item.
+    /// </summary>
+    public Item item;
+
+    /// <summary>
+    /// The inventory slot index the item occupies within the container.
+    /// </summary>
     public byte slot;
-    public byte windowsId;
+
+    /// <summary>
+    /// The hotbar slot that is currently selected by the player.
+    /// Matches slot for non-player mobs.
+    /// </summary>
+    public byte selectedSlot;
+
+    /// <summary>
+    /// Identifies which container the item belongs to, e.g. inventory or offhand.
+    /// </summary>
+    public byte containerId;
+
     public McbeMobEquipment()
     {
         Id = 0x1f;
@@ -20,17 +41,17 @@ public class McbeMobEquipment : Packet
         WriteUnsignedVarLong(runtimeEntityId);
         Write(item);
         Write(slot);
-        Write(selectedSlot);
-        Write(windowsId);
+        Write(selectedSlot,false);
+        Write(containerId);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
         runtimeEntityId = ReadUnsignedVarLong();
-        item = ReadItem();
+        item = ReadItem(false);
         slot = ReadByte();
         selectedSlot = ReadByte();
-        windowsId = ReadByte();
+        containerId = ReadByte();
     }
 }

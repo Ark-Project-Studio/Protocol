@@ -52,7 +52,7 @@ namespace Protocol.Network
 			{
 				item.Item.RuntimeId = 0;
 				WriteUnsignedVarInt((uint)netId);
-				Write(item.Item, false);
+				Write(item.Item,false);
 				WriteUnsignedVarInt(item.GroupIndex);
 				netId++;
 			}
@@ -83,7 +83,7 @@ namespace Protocol.Network
 			{
 				Write(group.Category);
 				Write(group.Name);
-				Write(group.Icon, false);
+				Write(group.Icon,false);
 			}
 		}
 
@@ -114,7 +114,7 @@ namespace Protocol.Network
 			WriteUnsignedVarInt((uint)itemStacks.Count);
 			for (int i = 0; i < itemStacks.Count; i++)
 			{
-				Write(itemStacks[i]);
+				Write(itemStacks[i],true);
 			}
 		}
 
@@ -127,14 +127,27 @@ namespace Protocol.Network
 			{
 				int networkId = 0;
 				if (this is McbeCreativeContent) networkId = ReadVarInt();
-				Item item = ReadItem(this is not McbeCreativeContent);
+				Item item = ReadItem(true);
 				item.NetworkId = networkId;
 				metadata.Add(item);
 			}
 
 			return metadata;
 		}
+		public void WriteItems(ItemStacks itemStacks)
+		{
+			if (itemStacks == null)
+			{
+				WriteUnsignedVarInt(0);
+				return;
+			}
 
+			WriteUnsignedVarInt((uint)itemStacks.Count);
+			for (int i = 0; i < itemStacks.Count; i++)
+			{
+				Write(itemStacks[i], false);
+			}
+		}
 		private ItemStacks ReadItems()
 		{
 			var items = new ItemStacks();
@@ -151,67 +164,33 @@ namespace Protocol.Network
 
 		private const int ShieldId = 355;
 
-		public void Write(Item stack, bool writeUniqueId = true)
+		public void Write(Item stack,bool withnet = true)
 		{
-			stack = new ItemAir();
-			var netData = new TranslatedItem(0, 0);
-			if (stack == null || stack.Id == 0)
+			
+			WriteSignedVarInt(stack.Id);
+
+			Write((ushort)stack.Count);
+			WriteUnsignedVarInt((uint)stack.Metadata);
+			if (withnet)
 			{
-				WriteSignedVarInt(0);
-				return;
-			}
-
-			WriteSignedVarInt(netData.Id);
-			Write((short)stack.Count);
-			WriteUnsignedVarInt((uint)netData.Meta);
-
-			if (writeUniqueId)
-			{
-				Write(stack.UniqueId != 0);
-
-				if (stack.UniqueId != 0)
+				if (stack.NetworkId != -1)
 				{
-					WriteVarInt(stack.UniqueId);
+					Write(true);
+					WriteVarInt(stack.NetworkId);
+				}
+				else
+				{
+					Write(false);
 				}
 			}
+		
 
 			WriteSignedVarInt(stack.RuntimeId);
 
-			byte[] extraData = null;
-
-			using (var ms = new MemoryStream())
-			{
-				using (BinaryWriter binaryWriter = new BinaryWriter(ms, Encoding.UTF8, true))
-				{
-					if (stack.ExtraData != null)
-					{
-						binaryWriter.Write((ushort)0xffff);
-						binaryWriter.Write((byte)1);
-						var nbtData = GetNbtData(stack.ExtraData, false);
-						binaryWriter.Write(nbtData);
-					}
-					else
-					{
-						binaryWriter.Write((short)0);
-					}
-
-					binaryWriter.Write(0);
-					binaryWriter.Write(0);
-
-					if (stack.Id == 513)
-					{
-						binaryWriter.Write((long)0);
-					}
-				}
-
-				extraData = ms.ToArray();
-			}
-
-			WriteLength(extraData.Length);
-			Write(extraData);
+			Write("none");
 		}
 
-		public Item ReadItem(bool readUniqueId = true)
+		public Item ReadItem(bool withnet = true)
 		{
 			int id = ReadSignedVarInt();
 			if (id == 0)
@@ -219,67 +198,25 @@ namespace Protocol.Network
 				return new ItemAir();
 			}
 
-			short count = (short)ReadShort();
+			short count = (short)ReadUshort();
 			var metadata = ReadUnsignedVarInt();
 
 
 			Item stack = new ItemAir();
-
-			if (readUniqueId)
-			{
-				if (ReadBool()) stack.UniqueId = ReadVarInt();
-			}
-
-			stack.RuntimeId = ReadSignedVarInt();
-
-			int length = ReadLength();
-			var data = ReadBytes(length);
-
-			using (MemoryStream ms = new MemoryStream(data))
-			{
-				using (BinaryReader binaryReader = new BinaryReader(ms))
+			stack.Metadata = (short)metadata;
+			stack.Id = (short)id;
+			if(withnet){
+				var readBool = ReadBool();
+				if (readBool)
 				{
-					ushort nbtLen = binaryReader.ReadUInt16();
-					if (nbtLen == 0xffff)
-					{
-						byte version = binaryReader.ReadByte();
-
-						if (version != 1)
-						{
-							throw new Exception($"Fringe nbt version when reading item extra NBT: {version}");
-						}
-
-						var beforeRead = ms.Position;
-						stack.ExtraData = ReadNbtCompound(ms, false);
-						var afterRead = ms.Position;
-						var nbtCompoundLength = afterRead - beforeRead;
-					}
-					else if (nbtLen > 0)
-					{
-						throw new Exception($"Fringe nbt length when reading item extra NBT: {nbtLen}");
-					}
-
-					int canPlace = binaryReader.ReadInt32();
-					for (int i = 0; i < canPlace; i++)
-					{
-						var l = binaryReader.ReadInt16();
-						binaryReader.ReadBytes(l);
-					}
-
-					int canBreak = binaryReader.ReadInt32();
-					for (int i = 0; i < canBreak; i++)
-					{
-						var l = binaryReader.ReadInt16();
-						binaryReader.ReadBytes(l);
-					}
-
-					if (stack.RuntimeId == ShieldId)
-					{
-						binaryReader.ReadInt64();
-					}
+					stack.NetworkId = ReadVarInt();
 				}
 			}
 
+
+			stack.RuntimeId = ReadVarInt();
+
+			var readString = ReadString();
 			return stack;
 		}
 

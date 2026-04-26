@@ -60,29 +60,6 @@ namespace Protocol.Network
 				WriteSliceVarint32Length(value.SurfaceMaterialAdjustments.Value.ToArray(), Write);
 			}
 
-			Write(value.SurfaceMaterials.HasValue);
-			if (value.SurfaceMaterials.HasValue)
-			{
-				Write(value.SurfaceMaterials.Value);
-			}
-
-			Write(value.HasDefaultOverworldSurface);
-			Write(value.HasSwampSurface);
-			Write(value.HasFrozenOceanSurface);
-			Write(value.HasEndSurface);
-
-			Write(value.MesaSurface.HasValue);
-			if (value.MesaSurface.HasValue)
-			{
-				Write(value.MesaSurface.Value);
-			}
-
-			Write(value.CappedSurface.HasValue);
-			if (value.CappedSurface.HasValue)
-			{
-				Write(value.CappedSurface.Value);
-			}
-
 			Write(value.OverworldRules.HasValue);
 			if (value.OverworldRules.HasValue)
 			{
@@ -111,6 +88,83 @@ namespace Protocol.Network
 			if (value.VillageType.HasValue)
 			{
 				Write(value.VillageType.Value);
+			}
+
+			Write(value.SurfaceBuilderData.HasValue);
+			if (value.SurfaceBuilderData.HasValue)
+			{
+				Write(value.SurfaceBuilderData.Value);
+			}
+
+			Write(value.SubsurfaceBuilderData.HasValue);
+			if (value.SubsurfaceBuilderData.HasValue)
+			{
+				Write(value.SubsurfaceBuilderData.Value);
+			}
+		}
+
+		public void Write(BiomeSurfaceBuilderData value)
+		{
+			Write(value.SurfaceMaterials.HasValue);
+			if (value.SurfaceMaterials.HasValue)
+			{
+				Write(value.SurfaceMaterials.Value);
+			}
+
+			Write(value.HasDefaultOverworldSurface);
+			Write(value.HasSwampSurface);
+			Write(value.HasFrozenOceanSurface);
+			Write(value.HasEndSurface);
+
+			Write(value.MesaSurface.HasValue);
+			if (value.MesaSurface.HasValue)
+			{
+				Write(value.MesaSurface.Value);
+			}
+
+			Write(value.CappedSurface.HasValue);
+			if (value.CappedSurface.HasValue)
+			{
+				Write(value.CappedSurface.Value);
+			}
+
+			Write(value.NoiseGradientSurface.HasValue);
+			if (value.NoiseGradientSurface.HasValue)
+			{
+				Write(value.NoiseGradientSurface.Value);
+			}
+		}
+
+		public void Write(BiomeNoiseGradientSurface value)
+		{
+			if (value.NonReplaceableBlocks != null)
+			{
+				WriteSliceVarint32Length(value.NonReplaceableBlocks.ToArray(), (block, bigendian) => Write(block),false);
+			}
+			else
+			{
+				WriteSignedVarInt(0);
+			}
+
+			if (value.GradientBlocks != null)
+			{
+				WriteSliceVarint32Length(value.GradientBlocks.ToArray(), (block, bigendian) => Write(block),false);
+			}
+			else
+			{
+				WriteSignedVarInt(0);
+			}
+
+			Write(value.NoiseSeedString);
+			Write(value.FirstOctave);
+
+			if (value.Amplitudes != null)
+			{
+				WriteSliceVarint32Length(value.Amplitudes.ToArray(), (amplitude, bigendian) => Write(amplitude),false);
+			}
+			else
+			{
+				WriteSignedVarInt(0);
 			}
 		}
 
@@ -206,7 +260,7 @@ namespace Protocol.Network
 		{
 			if (value.FloorBlocks != null)
 			{
-				WriteSliceVarint32Length(value.FloorBlocks.ToArray(), Write,false);
+				WriteSliceVarint32Length(value.FloorBlocks.ToArray(), (block, bigendian) => Write(block),false);
 			}
 			else
 			{
@@ -215,7 +269,7 @@ namespace Protocol.Network
 
 			if (value.CeilingBlocks != null)
 			{
-				WriteSliceVarint32Length(value.CeilingBlocks.ToArray(), Write,false);
+				WriteSliceVarint32Length(value.CeilingBlocks.ToArray(), (block, bigendian) => Write(block),false);
 			}
 			else
 			{
@@ -418,26 +472,6 @@ namespace Protocol.Network
 
 			if (ReadBool())
 			{
-				value.SurfaceMaterials = new Optional<BiomeSurfaceMaterial>(ReadBiomeSurfaceMaterial());
-			}
-
-			value.HasDefaultOverworldSurface = ReadBool();
-			value.HasSwampSurface = ReadBool();
-			value.HasFrozenOceanSurface = ReadBool();
-			value.HasEndSurface = ReadBool();
-
-			if (ReadBool())
-			{
-				value.MesaSurface = new Optional<BiomeMesaSurface>(ReadBiomeMesaSurface());
-			}
-
-			if (ReadBool())
-			{
-				value.CappedSurface = new Optional<BiomeCappedSurface>(ReadBiomeCappedSurface());
-			}
-
-			if (ReadBool())
-			{
 				value.OverworldRules = new Optional<BiomeOverworldRules>(ReadBiomeOverworldRules());
 			}
 
@@ -461,6 +495,48 @@ namespace Protocol.Network
 			if (ReadBool())
 			{
 				value.VillageType = new Optional<byte>(ReadByte());
+			}
+
+			if (ReadBool())
+			{
+				value.SurfaceBuilderData = new Optional<BiomeSurfaceBuilderData>(ReadBiomeSurfaceBuilderData());
+			}
+
+			if (ReadBool())
+			{
+				value.SubsurfaceBuilderData = new Optional<BiomeSurfaceBuilderData>(ReadBiomeSurfaceBuilderData());
+			}
+
+			return value;
+		}
+
+		public BiomeSurfaceBuilderData ReadBiomeSurfaceBuilderData()
+		{
+			var value = new BiomeSurfaceBuilderData();
+
+			if (ReadBool())
+			{
+				value.SurfaceMaterials = new Optional<BiomeSurfaceMaterial>(ReadBiomeSurfaceMaterial());
+			}
+
+			value.HasDefaultOverworldSurface = ReadBool();
+			value.HasSwampSurface = ReadBool();
+			value.HasFrozenOceanSurface = ReadBool();
+			value.HasEndSurface = ReadBool();
+
+			if (ReadBool())
+			{
+				value.MesaSurface = new Optional<BiomeMesaSurface>(ReadBiomeMesaSurface());
+			}
+
+			if (ReadBool())
+			{
+				value.CappedSurface = new Optional<BiomeCappedSurface>(ReadBiomeCappedSurface());
+			}
+
+			if (ReadBool())
+			{
+				value.NoiseGradientSurface = new Optional<BiomeNoiseGradientSurface>(ReadBiomeNoiseGradientSurface());
 			}
 
 			return value;
@@ -574,8 +650,8 @@ namespace Protocol.Network
 		{
 			var value = new BiomeCappedSurface
 			{
-				FloorBlocks = new System.Collections.Generic.List<int>(ReadSlice(ReadInt,false)),
-				CeilingBlocks = new System.Collections.Generic.List<int>(ReadSlice(ReadInt,false))
+				FloorBlocks = new System.Collections.Generic.List<uint>(ReadSlice<uint>(bigendian => ReadUint(),false)),
+				CeilingBlocks = new System.Collections.Generic.List<uint>(ReadSlice<uint>(bigendian => ReadUint(),false))
 			};
 
 			if (ReadBool())
@@ -594,6 +670,18 @@ namespace Protocol.Network
 			}
 
 			return value;
+		}
+
+		public BiomeNoiseGradientSurface ReadBiomeNoiseGradientSurface()
+		{
+			return new BiomeNoiseGradientSurface
+			{
+				NonReplaceableBlocks = new System.Collections.Generic.List<uint>(ReadSlice<uint>(bigendian => ReadUint(),false)),
+				GradientBlocks = new System.Collections.Generic.List<uint>(ReadSlice<uint>(bigendian => ReadUint(),false)),
+				NoiseSeedString = ReadString(),
+				FirstOctave = ReadInt(),
+				Amplitudes = new System.Collections.Generic.List<float>(ReadSlice<float>(bigendian => ReadFloat(),false))
+			};
 		}
 
 		public BiomeOverworldRules ReadBiomeOverworldRules()

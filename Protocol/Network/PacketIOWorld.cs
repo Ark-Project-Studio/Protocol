@@ -150,6 +150,7 @@ namespace Protocol.Network
 			WriteVarInt(data.MaxHeight);
 			WriteVarInt(data.MinHeight);
 			WriteVarInt(data.Generator);
+			WriteVarInt(data.Dimension);
 		}
 
 		public DimensionData ReadDimensionData()
@@ -159,7 +160,7 @@ namespace Protocol.Network
 			data.MaxHeight = ReadVarInt();
 			data.MinHeight = ReadVarInt();
 			data.Generator = ReadVarInt();
-
+			data.Dimension = ReadVarInt();
 			return data;
 		}
 
@@ -409,7 +410,7 @@ namespace Protocol.Network
 						foreach (Item item in rec.Result)
 						{
 							item.RuntimeId = 0;
-							Write(item, false);
+							Write(item,false);
 						}
 
 						Write(rec.Id);
@@ -441,7 +442,7 @@ namespace Protocol.Network
 						foreach (Item item in rec.Result)
 						{
 							item.RuntimeId = 0;
-							Write(item, false);
+							Write(item,false);
 						}
 
 						Write(rec.Id);
@@ -460,7 +461,7 @@ namespace Protocol.Network
 						{
 							WriteSignedVarInt(Furnace);
 							WriteSignedVarInt(rec.Input.Id);
-							Write(rec.Result, false);
+							Write(rec.Result,false);
 							Write(rec.Block);
 						}
 						else
@@ -468,7 +469,7 @@ namespace Protocol.Network
 							WriteSignedVarInt(FurnaceData);
 							WriteSignedVarInt(rec.Input.Id);
 							WriteSignedVarInt(rec.Input.Metadata);
-							Write(rec.Result, false);
+							Write(rec.Result,false);
 							Write(rec.Block);
 						}
 

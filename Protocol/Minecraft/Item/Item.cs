@@ -6,8 +6,8 @@ namespace Protocol.Minecraft
 	public class Item : ICloneable
 	{
 		public int UniqueId { get; set; } = Environment.TickCount;
-		public string Name { get; protected set; } = string.Empty;
-		public short Id { get; protected set; }
+		public string Name { get;  set; } = string.Empty;
+		public short Id { get;  set; }
 		public int NetworkId { get; set; } = -1;
 		public int RuntimeId { get; set; }
 		public short Metadata { get; set; }

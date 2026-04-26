@@ -162,6 +162,17 @@ namespace Protocol.Minecraft
 		public Optional<System.Collections.Generic.List<BiomeConsolidatedFeature>> ConsolidatedFeatures { get; set; }
 		public Optional<BiomeMountainParameters> MountainParameters { get; set; }
 		public Optional<System.Collections.Generic.List<BiomeElementData>> SurfaceMaterialAdjustments { get; set; }
+		public Optional<BiomeOverworldRules> OverworldRules { get; set; }
+		public Optional<BiomeMultiNoiseRules> MultiNoiseRules { get; set; }
+		public Optional<System.Collections.Generic.List<BiomeConditionalTransformation>> LegacyRules { get; set; }
+		public Optional<System.Collections.Generic.List<BiomeReplacementData>> ReplacementsData { get; set; }
+		public Optional<byte> VillageType { get; set; }
+		public Optional<BiomeSurfaceBuilderData> SurfaceBuilderData { get; set; }
+		public Optional<BiomeSurfaceBuilderData> SubsurfaceBuilderData { get; set; }
+	}
+
+	public struct BiomeSurfaceBuilderData
+	{
 		public Optional<BiomeSurfaceMaterial> SurfaceMaterials { get; set; }
 		public bool HasDefaultOverworldSurface { get; set; }
 		public bool HasSwampSurface { get; set; }
@@ -169,11 +180,7 @@ namespace Protocol.Minecraft
 		public bool HasEndSurface { get; set; }
 		public Optional<BiomeMesaSurface> MesaSurface { get; set; }
 		public Optional<BiomeCappedSurface> CappedSurface { get; set; }
-		public Optional<BiomeOverworldRules> OverworldRules { get; set; }
-		public Optional<BiomeMultiNoiseRules> MultiNoiseRules { get; set; }
-		public Optional<System.Collections.Generic.List<BiomeConditionalTransformation>> LegacyRules { get; set; }
-		public Optional<System.Collections.Generic.List<BiomeReplacementData>> ReplacementsData { get; set; }
-		public Optional<byte> VillageType { get; set; }
+		public Optional<BiomeNoiseGradientSurface> NoiseGradientSurface { get; set; }
 	}
 
 	public struct BiomeClimate
@@ -258,11 +265,20 @@ namespace Protocol.Minecraft
 
 	public struct BiomeCappedSurface
 	{
-		public System.Collections.Generic.List<int> FloorBlocks { get; set; }
-		public System.Collections.Generic.List<int> CeilingBlocks { get; set; }
+		public System.Collections.Generic.List<uint> FloorBlocks { get; set; }
+		public System.Collections.Generic.List<uint> CeilingBlocks { get; set; }
 		public Optional<uint> SeaBlock { get; set; }
 		public Optional<uint> FoundationBlock { get; set; }
 		public Optional<uint> BeachBlock { get; set; }
+	}
+
+	public struct BiomeNoiseGradientSurface
+	{
+		public System.Collections.Generic.List<uint> NonReplaceableBlocks { get; set; }
+		public System.Collections.Generic.List<uint> GradientBlocks { get; set; }
+		public string NoiseSeedString { get; set; }
+		public int FirstOctave { get; set; }
+		public System.Collections.Generic.List<float> Amplitudes { get; set; }
 	}
 
 	public struct BiomeOverworldRules

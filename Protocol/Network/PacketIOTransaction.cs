@@ -448,7 +448,7 @@ namespace Protocol.Network
 						case CraftResultDeprecatedAction ta:
 						{
 							Write((byte)McbeItemStackRequest.ActionType.CraftResultsDeprecated);
-							Write(ta.ResultItems);
+							WriteItems(ta.ResultItems);
 							Write(ta.TimesCrafted);
 							break;
 						}

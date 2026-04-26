@@ -511,9 +511,9 @@ namespace Protocol.Network
 		public string ReadString()
 		{
 			if (_reader.Position == _reader.Length) return string.Empty;
-			int len = ReadLength();
+			uint len = ReadUnsignedVarInt();
 			if (len <= 0) return string.Empty;
-			return Encoding.UTF8.GetString(ReadBytes(len));
+			return Encoding.UTF8.GetString(ReadBytes((int)len));
 		}
 
 		public void WriteFixedString(string value)

@@ -6,6 +6,7 @@ namespace Protocol.Minecraft
 		public int MaxHeight { get; set; }
 		public int MinHeight { get; set; }
 		public int Generator { get; set; }
+		public int Dimension { get; set; }
 	}
 
 	public class DimensionDefinitions : Dictionary<string, DimensionData>
