@@ -179,33 +179,5 @@ namespace Protocol.Network
 
 			return new EducationUriResource(name, uri);
 		}
-
-		public void Write(Rules rules)
-		{
-			_writer.Write(rules.Count);
-			foreach (var rule in rules)
-			{
-				Write(rule.Name);
-				Write(rule.Unknown1);
-				Write(rule.Unknown2);
-			}
-		}
-
-		public Rules ReadRules()
-		{
-			int count = _reader.ReadInt32();
-
-			var rules = new Rules();
-			for (int i = 0; i < count; i++)
-			{
-				RuleData rule = new RuleData();
-				rule.Name = ReadString();
-				rule.Unknown1 = ReadBool();
-				rule.Unknown2 = ReadBool();
-				rules.Add(rule);
-			}
-
-			return rules;
-		}
 	}
 }

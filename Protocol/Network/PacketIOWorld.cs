@@ -170,7 +170,6 @@ namespace Protocol.Network
 
 			foreach (var def in definitions)
 			{
-				Write(def.Key);
 				Write(def.Value);
 			}
 		}
@@ -182,10 +181,9 @@ namespace Protocol.Network
 			var count = ReadUnsignedVarInt();
 			for (int i = 0; i < count; i++)
 			{
-				var stringId = ReadString();
 				var data = ReadDimensionData();
 
-				definitions.TryAdd(stringId, data);
+				definitions.TryAdd(data.Identifier, data);
 			}
 
 			return definitions;

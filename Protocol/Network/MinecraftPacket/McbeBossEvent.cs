@@ -17,11 +17,12 @@ public class McbeBossEvent : Packet
     public long bossEntityId;
     public uint color = 0xff00ff00;
     public uint eventType;
+    public string filteredTitle;
     public float healthPercent;
     public uint overlay = 0xff00ff00;
     public long playerId;
     public string title;
-    public ushort unknown6;
+    public ushort darkenScreen;
     public McbeBossEvent()
     {
         Id = 0x4a;
@@ -47,11 +48,17 @@ public class McbeBossEvent : Packet
                 break;
             case Type.AddBoss:
                 Write(title);
+                Write(filteredTitle);
                 Write(healthPercent);
-                goto case Type.UpdateOptions;
+                Write(darkenScreen);
+                WriteUnsignedVarInt(color);
+                WriteUnsignedVarInt(overlay);
+                break;
             case Type.UpdateOptions:
-                Write(unknown6);
-                goto case Type.UpdateStyle;
+                Write(darkenScreen);
+                WriteUnsignedVarInt(color);
+                WriteUnsignedVarInt(overlay);
+                break;
             case Type.UpdateStyle:
                 WriteUnsignedVarInt(color);
                 WriteUnsignedVarInt(overlay);
@@ -81,11 +88,17 @@ public class McbeBossEvent : Packet
                 break;
             case Type.AddBoss:
                 title = ReadString();
+                filteredTitle = ReadString();
                 healthPercent = ReadFloat();
-                goto case Type.UpdateOptions;
+                darkenScreen = ReadUshort();
+                color = ReadUnsignedVarInt();
+                overlay = ReadUnsignedVarInt();
+                break;
             case Type.UpdateOptions:
-                unknown6 = ReadUshort();
-                goto case Type.UpdateStyle;
+                darkenScreen = ReadUshort();
+                color = ReadUnsignedVarInt();
+                overlay = ReadUnsignedVarInt();
+                break;
             case Type.UpdateStyle:
                 color = ReadUnsignedVarInt();
                 overlay = ReadUnsignedVarInt();

@@ -120,6 +120,8 @@ namespace Protocol.Network
 						return new McbeAdventureSettings().Decode(buffer);
 					case 56:
 						return new McbeBlockEntityData().Decode(buffer);
+					case 57:
+						return new McbePlayerInput().Decode(buffer);
 
 					case 58:
 						return new McbeLevelChunk().Decode(buffer);

@@ -5,7 +5,7 @@ public class McbeSpawnParticleEffect : Packet
 {
     public byte dimensionId;
     public long entityId;
-    public string molangVariablesJson;
+    public Optional<string> molangVariablesJson = new();
     public string particleName;
     public Vector3 position;
     public McbeSpawnParticleEffect()
@@ -21,7 +21,9 @@ public class McbeSpawnParticleEffect : Packet
         WriteSignedVarLong(entityId);
         Write(position);
         Write(particleName);
-        Write(molangVariablesJson);
+        Write(molangVariablesJson.HasValue);
+        if (molangVariablesJson.HasValue)
+            Write(molangVariablesJson.Value);
     }
 
     protected override void DecodePacket()
@@ -31,6 +33,7 @@ public class McbeSpawnParticleEffect : Packet
         entityId = ReadSignedVarLong();
         position = ReadVector3();
         particleName = ReadString();
-        molangVariablesJson = ReadString();
+        if (ReadBool())
+            molangVariablesJson = new Optional<string>(ReadString());
     }
 }

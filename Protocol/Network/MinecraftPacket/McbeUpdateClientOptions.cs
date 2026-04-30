@@ -15,20 +15,26 @@ public class McbeUpdateClientOptions : Packet
         IsMcbe = true;
     }
 
-    public GraphicsModeType GraphicsMode { get; set; }
-    public bool FilterProfanity { get; set; }
+    public Optional<GraphicsModeType> GraphicsModeChange { get; set; } = new();
+    public Optional<bool> FilterProfanity { get; set; } = new();
 
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        Write((byte)GraphicsMode);
-        Write(FilterProfanity);
+        Write(GraphicsModeChange.HasValue);
+        if (GraphicsModeChange.HasValue)
+            Write((byte)GraphicsModeChange.Value);
+        Write(FilterProfanity.HasValue);
+        if (FilterProfanity.HasValue)
+            Write(FilterProfanity.Value);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        GraphicsMode = (GraphicsModeType)ReadByte();
-        FilterProfanity = ReadBool();
+        if (ReadBool())
+            GraphicsModeChange = new Optional<GraphicsModeType>((GraphicsModeType)ReadByte());
+        if (ReadBool())
+            FilterProfanity = new Optional<bool>(ReadBool());
     }
 }

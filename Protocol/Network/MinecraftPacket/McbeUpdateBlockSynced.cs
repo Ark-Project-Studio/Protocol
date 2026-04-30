@@ -7,8 +7,8 @@ public class McbeUpdateBlockSynced : Packet
     public uint blockRuntimeId;
     public BlockCoordinates coordinates;
     public uint dataLayerId;
-    public ulong unknown0;
-    public ulong unknown1;
+    public ulong uniqueActorId;
+    public ulong actorSyncMessage;
     public McbeUpdateBlockSynced()
     {
         Id = 0x6e;
@@ -22,8 +22,8 @@ public class McbeUpdateBlockSynced : Packet
         WriteUnsignedVarInt(blockRuntimeId);
         WriteUnsignedVarInt(blockPriority);
         WriteUnsignedVarInt(dataLayerId);
-        WriteUnsignedVarLong(unknown0);
-        WriteUnsignedVarLong(unknown1);
+        WriteUnsignedVarLong(uniqueActorId);
+        WriteUnsignedVarLong(actorSyncMessage);
     }
 
     protected override void DecodePacket()
@@ -33,7 +33,7 @@ public class McbeUpdateBlockSynced : Packet
         blockRuntimeId = ReadUnsignedVarInt();
         blockPriority = ReadUnsignedVarInt();
         dataLayerId = ReadUnsignedVarInt();
-        unknown0 = ReadUnsignedVarLong();
-        unknown1 = ReadUnsignedVarLong();
+        uniqueActorId = ReadUnsignedVarLong();
+        actorSyncMessage = ReadUnsignedVarLong();
     }
 }

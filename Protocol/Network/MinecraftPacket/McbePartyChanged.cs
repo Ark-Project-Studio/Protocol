@@ -1,12 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Protocol.Network.MinecraftPacket
+﻿namespace Protocol.Network.MinecraftPacket
 {
+	public class PartyPlayerInfo
+	{
+		public string PartyID { get; set; } = string.Empty;
+		public bool IsPartyLeader { get; set; }
+	}
+
 	public class McbePartyChanged : Packet
 	{
-		public string PartyID;
+		public Optional<PartyPlayerInfo> PlayerPartyInfo { get; set; } = new();
+
 		public McbePartyChanged()
 		{
 			Id = 342;
@@ -16,13 +19,25 @@ namespace Protocol.Network.MinecraftPacket
 		protected override void EncodePacket()
 		{
 			base.EncodePacket();
-			Write(PartyID);
+			Write(PlayerPartyInfo.HasValue);
+			if (PlayerPartyInfo.HasValue)
+			{
+				Write(PlayerPartyInfo.Value.PartyID);
+				Write(PlayerPartyInfo.Value.IsPartyLeader);
+			}
 		}
 
 		protected override void DecodePacket()
 		{
 			base.DecodePacket();
-			PartyID = ReadString();
+			if (ReadBool())
+			{
+				PlayerPartyInfo = new Optional<PartyPlayerInfo>(new PartyPlayerInfo
+				{
+					PartyID = ReadString(),
+					IsPartyLeader = ReadBool()
+				});
+			}
 		}
 	}
 }

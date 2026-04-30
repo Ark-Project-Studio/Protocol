@@ -6,7 +6,7 @@ public class McbeSetSpawnPosition : Packet
     public BlockCoordinates coordinates;
     public int dimension;
     public int spawnType;
-    public BlockCoordinates unknownCoordinates;
+    public BlockCoordinates spawnBlockPosition;
     public McbeSetSpawnPosition()
     {
         Id = 0x2b;
@@ -19,7 +19,7 @@ public class McbeSetSpawnPosition : Packet
         WriteSignedVarInt(spawnType);
         Write(coordinates);
         WriteSignedVarInt(dimension);
-        Write(unknownCoordinates);
+        Write(spawnBlockPosition);
     }
 
     protected override void DecodePacket()
@@ -28,6 +28,6 @@ public class McbeSetSpawnPosition : Packet
         spawnType = ReadSignedVarInt();
         coordinates = ReadBlockCoordinates();
         dimension = ReadSignedVarInt();
-        unknownCoordinates = ReadBlockCoordinates();
+        spawnBlockPosition = ReadBlockCoordinates();
     }
 }

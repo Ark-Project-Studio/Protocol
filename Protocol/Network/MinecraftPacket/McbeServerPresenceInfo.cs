@@ -8,20 +8,26 @@ public class McbeServerPresenceInfo : Packet
         IsMcbe = true;
     }
 
-    public string ExperienceName { get; set; } = string.Empty;
-    public string WorldName { get; set; } = string.Empty;
+    public Optional<string> ExperienceId { get; set; } = new();
+    public Optional<string> WorldName { get; set; } = new();
 
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        Write(ExperienceName);
-        Write(WorldName);
+        Write(ExperienceId.HasValue);
+        if (ExperienceId.HasValue)
+            Write(ExperienceId.Value);
+        Write(WorldName.HasValue);
+        if (WorldName.HasValue)
+            Write(WorldName.Value);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        ExperienceName = ReadString();
-        WorldName = ReadString();
+        if (ReadBool())
+            ExperienceId = new Optional<string>(ReadString());
+        if (ReadBool())
+            WorldName = new Optional<string>(ReadString());
     }
 }

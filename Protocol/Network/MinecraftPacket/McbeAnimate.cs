@@ -1,10 +1,10 @@
 ﻿namespace Protocol.Network.MinecraftPacket;
 public class McbeAnimate : Packet
 {
-    public int actionId;
+    public byte actionId;
     public ulong runtimeEntityId;
     public float Data;
-    public float unknownFloat;
+    public Optional<string> swingSource = new();
     public McbeAnimate()
     {
         Id = 0x2c;
@@ -14,20 +14,21 @@ public class McbeAnimate : Packet
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        WriteSignedVarInt(actionId);
+        Write(actionId);
         WriteUnsignedVarLong(runtimeEntityId);
         Write(Data);
-        if (actionId == 0x80 || actionId == 0x81)
-            Write(unknownFloat);
+        Write(swingSource.HasValue);
+        if (swingSource.HasValue)
+            Write(swingSource.Value);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        actionId = ReadSignedVarInt();
+        actionId = ReadByte();
         runtimeEntityId = ReadUnsignedVarLong();
         Data = ReadFloat();
-        if (actionId == 0x80 || actionId == 0x81)
-            unknownFloat = ReadFloat();
+        if (ReadBool())
+            swingSource = new Optional<string>(ReadString());
     }
 }

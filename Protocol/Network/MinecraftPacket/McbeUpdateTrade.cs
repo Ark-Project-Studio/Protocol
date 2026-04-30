@@ -1,17 +1,16 @@
 ﻿using Protocol.Minecraft;
-using Protocol.Minecraft;
 
 namespace Protocol.Network.MinecraftPacket;
 public class McbeUpdateTrade : Packet
 {
     public string displayName;
-    public bool isWilling;
+    public bool useNewTradeScreen;
+    public bool useEconomyTrade;
     public Nbt namedtag;
     public long playerEntityId;
     public long traderEntityId;
-    public int unknown0;
-    public int unknown1;
-    public int unknown2;
+    public int size;
+    public int tier;
     public byte windowId;
     public byte windowType;
     public McbeUpdateTrade()
@@ -25,13 +24,13 @@ public class McbeUpdateTrade : Packet
         base.EncodePacket();
         Write(windowId);
         Write(windowType);
-        WriteVarInt(unknown0);
-        WriteVarInt(unknown1);
-        WriteVarInt(unknown2);
-        Write(isWilling);
+        WriteVarInt(size);
+        WriteVarInt(tier);
         WriteSignedVarLong(traderEntityId);
         WriteSignedVarLong(playerEntityId);
         Write(displayName);
+        Write(useNewTradeScreen);
+        Write(useEconomyTrade);
         Write(namedtag);
     }
 
@@ -40,13 +39,13 @@ public class McbeUpdateTrade : Packet
         base.DecodePacket();
         windowId = ReadByte();
         windowType = ReadByte();
-        unknown0 = ReadVarInt();
-        unknown1 = ReadVarInt();
-        unknown2 = ReadVarInt();
-        isWilling = ReadBool();
+        size = ReadVarInt();
+        tier = ReadVarInt();
         traderEntityId = ReadSignedVarLong();
         playerEntityId = ReadSignedVarLong();
         displayName = ReadString();
+        useNewTradeScreen = ReadBool();
+        useEconomyTrade = ReadBool();
         namedtag = ReadNbt();
     }
 }

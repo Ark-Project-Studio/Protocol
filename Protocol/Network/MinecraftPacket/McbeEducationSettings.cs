@@ -8,6 +8,11 @@ public class EducationExternalLinkSettings
 	public string DisplayName { get; set; } = "";
 }
 
+public class EducationAgentCapabilities
+{
+	public Optional<bool> CanModifyBlocks { get; set; } = new();
+}
+
 public class McbeEducationSettings : Packet
 {
 	public McbeEducationSettings()
@@ -35,13 +40,13 @@ public class McbeEducationSettings : Packet
 	public string ScreenshotBorderPath { get; set; } = "";
 
 
-	public Optional<bool> CanModifyBlocks { get; set; } = new();
+	public Optional<EducationAgentCapabilities> AgentCapabilities { get; set; } = new();
 
 
 	public Optional<string> OverrideURI { get; set; } = new();
 
 
-	public bool HasQuiz { get; set; }
+	public bool AlwaysFalse { get; set; }
 
 
 	public Optional<EducationExternalLinkSettings> ExternalLinkSettings { get; set; } = new();
@@ -57,14 +62,18 @@ public class McbeEducationSettings : Packet
 		Write(ScreenshotBorderPath);
 
 
-		Write(CanModifyBlocks.HasValue);
-		if (CanModifyBlocks.HasValue) Write(CanModifyBlocks.Value);
+		Write(AgentCapabilities.HasValue);
+		if (AgentCapabilities.HasValue)
+		{
+			Write(AgentCapabilities.Value.CanModifyBlocks.HasValue);
+			if (AgentCapabilities.Value.CanModifyBlocks.HasValue) Write(AgentCapabilities.Value.CanModifyBlocks.Value);
+		}
 
 
 		Write(OverrideURI.HasValue);
 		if (OverrideURI.HasValue) Write(OverrideURI.Value);
 
-		Write(HasQuiz);
+		Write(AlwaysFalse);
 
 
 		Write(ExternalLinkSettings.HasValue);
@@ -86,14 +95,20 @@ public class McbeEducationSettings : Packet
 		ScreenshotBorderPath = ReadString();
 
 
-		CanModifyBlocks.HasValue = ReadBool();
-		if (CanModifyBlocks.HasValue) CanModifyBlocks.Value = ReadBool();
+		AgentCapabilities.HasValue = ReadBool();
+		if (AgentCapabilities.HasValue)
+		{
+			var capabilities = new EducationAgentCapabilities();
+			capabilities.CanModifyBlocks.HasValue = ReadBool();
+			if (capabilities.CanModifyBlocks.HasValue) capabilities.CanModifyBlocks.Value = ReadBool();
+			AgentCapabilities.Value = capabilities;
+		}
 
 
 		OverrideURI.HasValue = ReadBool();
 		if (OverrideURI.HasValue) OverrideURI.Value = ReadString();
 
-		HasQuiz = ReadBool();
+		AlwaysFalse = ReadBool();
 
 
 		ExternalLinkSettings.HasValue = ReadBool();

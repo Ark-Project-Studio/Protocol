@@ -1,8 +1,8 @@
 ﻿namespace Protocol.Network.MinecraftPacket;
 public class McbeModalFormResponse : Packet
 {
-    public byte cancelReason;
-    public string data = "";
+    public Optional<byte> cancelReason = new();
+    public Optional<string> data = new();
     public uint formId;
     public McbeModalFormResponse()
     {
@@ -14,11 +14,12 @@ public class McbeModalFormResponse : Packet
     {
         base.EncodePacket();
         WriteUnsignedVarInt(formId);
-        Write(data != null);
-        if (data != null)
-            Write(data);
-        Write(cancelReason != 0);
-        Write(cancelReason);
+        Write(data.HasValue);
+        if (data.HasValue)
+            Write(data.Value);
+        Write(cancelReason.HasValue);
+        if (cancelReason.HasValue)
+            Write(cancelReason.Value);
     }
 
     protected override void DecodePacket()
@@ -26,8 +27,8 @@ public class McbeModalFormResponse : Packet
         base.DecodePacket();
         formId = ReadUnsignedVarInt();
         if (ReadBool())
-            data = ReadString();
+            data = new Optional<string>(ReadString());
         if (ReadBool())
-            cancelReason = ReadByte();
+            cancelReason = new Optional<byte>(ReadByte());
     }
 }

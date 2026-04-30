@@ -9,9 +9,10 @@ public class McbeSetEntityLink : Packet
     }
 
     public byte linkType;
+    public bool passengerInitiated;
     public long riddenId;
     public long riderId;
-    public byte unknown;
+    public bool immediate;
     public float vehicleAngularVelocity;
     public McbeSetEntityLink()
     {
@@ -25,8 +26,8 @@ public class McbeSetEntityLink : Packet
         WriteSignedVarLong(riddenId);
         WriteSignedVarLong(riderId);
         Write(linkType);
-        Write(unknown);
-        Write(false);
+        Write(immediate);
+        Write(passengerInitiated);
         Write(vehicleAngularVelocity);
     }
 
@@ -36,7 +37,8 @@ public class McbeSetEntityLink : Packet
         riddenId = ReadSignedVarLong();
         riderId = ReadSignedVarLong();
         linkType = ReadByte();
-        unknown = ReadByte();
+        immediate = ReadBool();
+        passengerInitiated = ReadBool();
         vehicleAngularVelocity = ReadFloat();
     }
 }

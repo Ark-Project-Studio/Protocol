@@ -1,7 +1,7 @@
 ﻿namespace Protocol.Network.MinecraftPacket;
 public class McbeSetLastHurtBy : Packet
 {
-    public int unknown;
+    public int lastHurtBy;
     public McbeSetLastHurtBy()
     {
         Id = 0x60;
@@ -11,12 +11,12 @@ public class McbeSetLastHurtBy : Packet
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        WriteVarInt(unknown);
+        WriteVarInt(lastHurtBy);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        unknown = ReadVarInt();
+        lastHurtBy = ReadVarInt();
     }
 }
