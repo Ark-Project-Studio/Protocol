@@ -15,7 +15,13 @@ public class McbeMapInfoRequest : Packet
     {
         base.EncodePacket();
         WriteSignedVarLong(mapId);
-        WriteUnsignedVarInt(0);
+        var pixels = pixellist?.mapData ?? new List<pixelsData>();
+        Write((uint)pixels.Count);
+        foreach (var pixel in pixels)
+        {
+            Write(pixel.pixel);
+            Write((ushort)pixel.index);
+        }
     }
 
     protected override void DecodePacket()

@@ -64,7 +64,7 @@ public class McbeBossEvent : Packet
                 WriteUnsignedVarInt(overlay);
                 break;
             case Type.Query:
-                WriteEntityId(playerId);
+                WriteSignedVarLong(playerId);
                 break;
         }
     }

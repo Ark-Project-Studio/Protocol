@@ -15,20 +15,17 @@ public class McbeUpdateClientInputLocks : Packet
         IsMcbe = true;
     }
 
-    public uint Locks { get; set; }
-    public Vector3 Position { get; set; }
+    public uint InputLockComponentData { get; set; }
 
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        WriteUnsignedVarInt(Locks);
-        Write(Position);
+        WriteUnsignedVarInt(InputLockComponentData);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        Locks = ReadUnsignedVarInt();
-        Position = ReadVector3();
+        InputLockComponentData = ReadUnsignedVarInt();
     }
 }

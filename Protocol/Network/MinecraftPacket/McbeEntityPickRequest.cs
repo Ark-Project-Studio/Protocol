@@ -1,9 +1,9 @@
 ﻿namespace Protocol.Network.MinecraftPacket;
 public class McbeEntityPickRequest : Packet
 {
-    public bool addUserData;
-    public ulong runtimeEntityId;
-    public byte selectedSlot;
+    public bool withData;
+    public long actorId;
+    public byte maxSlots;
     public McbeEntityPickRequest()
     {
         Id = 0x23;
@@ -13,16 +13,16 @@ public class McbeEntityPickRequest : Packet
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        Write(runtimeEntityId);
-        Write(selectedSlot);
-        Write(addUserData);
+        Write(actorId);
+        Write(maxSlots);
+        Write(withData);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        runtimeEntityId = ReadUlong();
-        selectedSlot = ReadByte();
-        addUserData = ReadBool();
+        actorId = ReadLong();
+        maxSlots = ReadByte();
+        withData = ReadBool();
     }
 }

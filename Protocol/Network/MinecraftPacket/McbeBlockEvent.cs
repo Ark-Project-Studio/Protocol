@@ -3,8 +3,8 @@
 namespace Protocol.Network.MinecraftPacket;
 public class McbeBlockEvent : Packet
 {
-    public int case1;
-    public int case2;
+    public int eventType;
+    public int eventValue;
     public BlockCoordinates coordinates;
     public McbeBlockEvent()
     {
@@ -16,15 +16,15 @@ public class McbeBlockEvent : Packet
     {
         base.EncodePacket();
         Write(coordinates);
-        WriteSignedVarInt(case1);
-        WriteSignedVarInt(case2);
+        WriteSignedVarInt(eventType);
+        WriteSignedVarInt(eventValue);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
         coordinates = ReadBlockCoordinates();
-        case1 = ReadSignedVarInt();
-        case2 = ReadSignedVarInt();
+        eventType = ReadSignedVarInt();
+        eventValue = ReadSignedVarInt();
     }
 }

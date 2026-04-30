@@ -12,7 +12,10 @@ public class McbeCommandBlockUpdate : Packet
     public string lastOutput;
     public ulong minecartEntityId;
     public string name;
+    public string filteredName;
     public bool shouldTrackOutput;
+    public uint tickDelay;
+    public bool executeOnFirstTick;
     public McbeCommandBlockUpdate()
     {
         Id = 0x4e;
@@ -38,7 +41,10 @@ public class McbeCommandBlockUpdate : Packet
         Write(command);
         Write(lastOutput);
         Write(name);
+        Write(filteredName);
         Write(shouldTrackOutput);
+        Write(tickDelay);
+        Write(executeOnFirstTick);
     }
 
     protected override void DecodePacket()
@@ -60,6 +66,9 @@ public class McbeCommandBlockUpdate : Packet
         command = ReadString();
         lastOutput = ReadString();
         name = ReadString();
+        filteredName = ReadString();
         shouldTrackOutput = ReadBool();
+        tickDelay = ReadUint();
+        executeOnFirstTick = ReadBool();
     }
 }

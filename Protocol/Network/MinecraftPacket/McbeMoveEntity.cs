@@ -1,10 +1,15 @@
 ﻿using Protocol.Minecraft;
+using System.Numerics;
 
 namespace Protocol.Network.MinecraftPacket;
 public class McbeMoveEntity : Packet
 {
     public byte flags;
-    public PlayerLocation position;
+    public Vector3 position;
+    public byte rotationX;
+    public byte rotationY;
+    public byte rotationYHead;
+    public bool forceCompletion;
     public ulong runtimeEntityId;
     public McbeMoveEntity()
     {
@@ -18,6 +23,10 @@ public class McbeMoveEntity : Packet
         WriteUnsignedVarLong(runtimeEntityId);
         Write(flags);
         Write(position);
+        Write(rotationX);
+        Write(rotationY);
+        Write(rotationYHead);
+        Write(forceCompletion);
     }
 
     protected override void DecodePacket()
@@ -25,6 +34,10 @@ public class McbeMoveEntity : Packet
         base.DecodePacket();
         runtimeEntityId = ReadUnsignedVarLong();
         flags = ReadByte();
-        position = ReadPlayerLocation();
+        position = ReadVector3();
+        rotationX = ReadByte();
+        rotationY = ReadByte();
+        rotationYHead = ReadByte();
+        forceCompletion = ReadBool();
     }
 }

@@ -16,10 +16,10 @@ public class McbeUpdateBlock : Packet
 {
    
 
-    public uint blockPriority;
+    public uint flag;
     public uint blockRuntimeId;
     public BlockCoordinates coordinates;
-    public uint storage;
+    public uint layer;
     public McbeUpdateBlock()
     {
         Id = 0x15;
@@ -31,8 +31,8 @@ public class McbeUpdateBlock : Packet
         base.EncodePacket();
         Write(coordinates);
         WriteUnsignedVarInt(blockRuntimeId);
-        WriteUnsignedVarInt(blockPriority);
-        WriteUnsignedVarInt(storage);
+        WriteUnsignedVarInt(flag);
+        WriteUnsignedVarInt(layer);
     }
 
     protected override void DecodePacket()
@@ -40,7 +40,7 @@ public class McbeUpdateBlock : Packet
         base.DecodePacket();
         coordinates = ReadBlockCoordinates();
         blockRuntimeId = ReadUnsignedVarInt();
-        blockPriority = ReadUnsignedVarInt();
-        storage = ReadUnsignedVarInt();
+        flag = ReadUnsignedVarInt();
+        layer = ReadUnsignedVarInt();
     }
 }

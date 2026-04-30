@@ -23,13 +23,24 @@ public class McbeResourcePackClientResponse : Packet
     {
         base.EncodePacket();
         Write(responseStatus);
-        Write(resourcepackids);
+        Write((ushort)(resourcepackids?.Count ?? 0));
+        if (resourcepackids == null) return;
+
+        foreach (var id in resourcepackids)
+        {
+            Write(id);
+        }
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
         responseStatus = ReadByte();
-        resourcepackids = ReadResourcePackIds();
+        var count = ReadUshort();
+        resourcepackids = new ResourcePackIds();
+        for (int i = 0; i < count; i++)
+        {
+            resourcepackids.Add(ReadString());
+        }
     }
 }

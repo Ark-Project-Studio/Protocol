@@ -10,19 +10,22 @@ public class McbeEditorNetwork : Packet
     }
 
     public bool RouteToManager { get; set; }
-    public Nbt Payload { get; set; }
+    public string RawVariantName { get; set; } = string.Empty;
+    public string RawVariantData { get; set; } = string.Empty;
 
     protected override void EncodePacket()
     {
         base.EncodePacket();
         Write(RouteToManager);
-        Write(Payload);
+        Write(RawVariantName);
+        Write(RawVariantData);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
         RouteToManager = ReadBool();
-        Payload = ReadNbt();
+        RawVariantName = ReadString();
+        RawVariantData = ReadString();
     }
 }

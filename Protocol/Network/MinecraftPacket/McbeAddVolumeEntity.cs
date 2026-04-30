@@ -9,8 +9,8 @@ public class McbeAddVolumeEntity : Packet
         IsMcbe = true;
     }
 
-    public ulong EntityRuntimeID { get; set; }
-    public Nbt EntityMetadata { get; set; }
+    public uint EntityRuntimeID { get; set; }
+    public Nbt EntityMetadata { get; set; } = new Nbt();
     public string EncodingIdentifier { get; set; } = string.Empty;
     public string InstanceIdentifier { get; set; } = string.Empty;
     public BlockCoordinates[] Bounds { get; set; } = new BlockCoordinates[2];
@@ -20,7 +20,7 @@ public class McbeAddVolumeEntity : Packet
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        Write(EntityRuntimeID);
+        WriteUnsignedVarInt(EntityRuntimeID);
         Write(EntityMetadata);
         Write(EncodingIdentifier);
         Write(InstanceIdentifier);
@@ -33,7 +33,7 @@ public class McbeAddVolumeEntity : Packet
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        EntityRuntimeID = ReadUlong();
+        EntityRuntimeID = ReadUnsignedVarInt();
         EntityMetadata = ReadNbt();
         EncodingIdentifier = ReadString();
         InstanceIdentifier = ReadString();

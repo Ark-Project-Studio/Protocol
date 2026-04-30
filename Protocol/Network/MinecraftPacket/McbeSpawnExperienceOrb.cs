@@ -3,7 +3,7 @@
 namespace Protocol.Network.MinecraftPacket;
 public partial class McbeSpawnExperienceOrb : Packet
 {
-    public int count;
+    public int xpValue;
     public Vector3 position;
     public McbeSpawnExperienceOrb()
     {
@@ -16,7 +16,7 @@ public partial class McbeSpawnExperienceOrb : Packet
         base.EncodePacket();
         BeforeEncode();
         Write(position);
-        WriteSignedVarInt(count);
+        WriteSignedVarInt(xpValue);
         AfterEncode();
     }
 
@@ -27,7 +27,7 @@ public partial class McbeSpawnExperienceOrb : Packet
         base.DecodePacket();
         BeforeDecode();
         position = ReadVector3();
-        count = ReadSignedVarInt();
+        xpValue = ReadSignedVarInt();
         AfterDecode();
     }
 

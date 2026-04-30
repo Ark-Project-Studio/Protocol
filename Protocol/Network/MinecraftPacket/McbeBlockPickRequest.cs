@@ -1,8 +1,8 @@
 ﻿namespace Protocol.Network.MinecraftPacket;
 public class McbeBlockPickRequest : Packet
 {
-    public bool addUserData;
-    public byte selectedSlot;
+    public bool withData;
+    public byte maxSlots;
     public int x;
     public int y;
     public int z;
@@ -18,8 +18,8 @@ public class McbeBlockPickRequest : Packet
         WriteSignedVarInt(x);
         WriteSignedVarInt(y);
         WriteSignedVarInt(z);
-        Write(addUserData);
-        Write(selectedSlot);
+        Write(withData);
+        Write(maxSlots);
     }
 
     protected override void DecodePacket()
@@ -28,7 +28,7 @@ public class McbeBlockPickRequest : Packet
         x = ReadSignedVarInt();
         y = ReadSignedVarInt();
         z = ReadSignedVarInt();
-        addUserData = ReadBool();
-        selectedSlot = ReadByte();
+        withData = ReadBool();
+        maxSlots = ReadByte();
     }
 }
