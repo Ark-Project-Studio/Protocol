@@ -1,12 +1,12 @@
 namespace Protocol.Network.MinecraftPacket;
 public class McbeMovePlayer : Packet
 {
-    public enum Mode
+    public enum PositionMode : byte
     {
         Normal = 0,
-        Reset = 1,
+        Respawn = 1,
         Teleport = 2,
-        Rotation = 3
+        OnlyHeadRot = 3
     }
 
     public enum Teleportcause
@@ -20,7 +20,7 @@ public class McbeMovePlayer : Packet
     }
 
     public float headYaw;
-    public byte mode;
+    public PositionMode mode;
     public bool onGround;
     public ulong otherRuntimeEntityId;
     public float pitch;
@@ -46,10 +46,10 @@ public class McbeMovePlayer : Packet
         Write(pitch);
         Write(yaw);
         Write(headYaw);
-        Write(mode);
+        Write((byte)mode);
         Write(onGround);
         WriteUnsignedVarLong(otherRuntimeEntityId);
-        if (mode == 2)
+        if (mode == PositionMode.Teleport)
         {
             Write(0);
             Write(0);
@@ -68,10 +68,10 @@ public class McbeMovePlayer : Packet
         pitch = ReadFloat();
         yaw = ReadFloat();
         headYaw = ReadFloat();
-        mode = ReadByte();
+        mode = (PositionMode)ReadByte();
         onGround = ReadBool();
         otherRuntimeEntityId = ReadUnsignedVarLong();
-        if (mode == 2)
+        if (mode == PositionMode.Teleport)
         {
             ReadInt();
             ReadInt();

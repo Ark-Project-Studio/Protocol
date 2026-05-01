@@ -1,5 +1,5 @@
 ﻿namespace Protocol.Network.MinecraftPacket;
-public enum LessonAction : byte
+public enum LessonAction : int
 {
     Start = 0,
     Complete = 1,
@@ -21,7 +21,7 @@ public class McbeLessonProgress : Packet
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        Write((byte)Action);
+        WriteSignedVarInt((int)Action);
         WriteSignedVarInt(Score);
         Write(Identifier);
     }
@@ -29,7 +29,7 @@ public class McbeLessonProgress : Packet
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        Action = (LessonAction)ReadByte();
+        Action = (LessonAction)ReadSignedVarInt();
         Score = ReadSignedVarInt();
         Identifier = ReadString();
     }

@@ -25,7 +25,7 @@ public enum BookActionType : uint
     /// <summary>
     /// Sign the book with title and author
     /// </summary>
-    Sign = 4
+    Finalize = 4
 }
 
 public class McbeBookEdit : Packet
@@ -103,7 +103,7 @@ public class McbeBookEdit : Packet
                 WriteVarInt(PageNumber);
                 WriteVarInt(SecondaryPageNumber);
                 break;
-            case BookActionType.Sign:
+            case BookActionType.Finalize:
                 Write(Title);
                 Write(Author);
                 Write(XUID);
@@ -133,7 +133,7 @@ public class McbeBookEdit : Packet
                 PageNumber = ReadVarInt(); // 瀵瑰簲 io.Varint32(&pk.PageNumber)
                 SecondaryPageNumber = ReadVarInt(); // 瀵瑰簲 io.Varint32(&pk.SecondaryPageNumber)
                 break;
-            case BookActionType.Sign:
+            case BookActionType.Finalize:
                 Title = ReadString(); // 瀵瑰簲 io.String(&pk.Title)
                 Author = ReadString(); // 瀵瑰簲 io.String(&pk.Author)
                 XUID = ReadString(); // 瀵瑰簲 io.String(&pk.XUID)

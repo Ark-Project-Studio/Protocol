@@ -1,15 +1,15 @@
 ﻿namespace Protocol.Network.MinecraftPacket;
 public class McbeRespawn : Packet
 {
-    public enum RespawnState
+    public enum PlayerRespawnState : byte
     {
-        Search = 0,
-        Ready = 1,
-        ClientReady = 2
+        SearchingForSpawn = 0,
+        ReadyToSpawn = 1,
+        ClientReadyToSpawn = 2
     }
 
     public ulong runtimeEntityId;
-    public byte state;
+    public PlayerRespawnState state;
     public float x;
     public float y;
     public float z;
@@ -25,7 +25,7 @@ public class McbeRespawn : Packet
         Write(x);
         Write(y);
         Write(z);
-        Write(state);
+        Write((byte)state);
         WriteUnsignedVarLong(runtimeEntityId);
     }
 
@@ -35,7 +35,7 @@ public class McbeRespawn : Packet
         x = ReadFloat();
         y = ReadFloat();
         z = ReadFloat();
-        state = ReadByte();
+        state = (PlayerRespawnState)ReadByte();
         runtimeEntityId = ReadUnsignedVarLong();
     }
 }

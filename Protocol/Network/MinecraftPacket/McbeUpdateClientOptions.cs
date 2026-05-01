@@ -1,5 +1,5 @@
 ﻿namespace Protocol.Network.MinecraftPacket;
-public enum GraphicsModeType : byte
+public enum GraphicsMode : byte
 {
     Simple = 0,
     Fancy = 1,
@@ -15,7 +15,7 @@ public class McbeUpdateClientOptions : Packet
         IsMcbe = true;
     }
 
-    public Optional<GraphicsModeType> GraphicsModeChange { get; set; } = new();
+    public Optional<GraphicsMode> GraphicsModeChange { get; set; } = new();
     public Optional<bool> FilterProfanity { get; set; } = new();
 
     protected override void EncodePacket()
@@ -33,7 +33,7 @@ public class McbeUpdateClientOptions : Packet
     {
         base.DecodePacket();
         if (ReadBool())
-            GraphicsModeChange = new Optional<GraphicsModeType>((GraphicsModeType)ReadByte());
+            GraphicsModeChange = new Optional<GraphicsMode>((GraphicsMode)ReadByte());
         if (ReadBool())
             FilterProfanity = new Optional<bool>(ReadBool());
     }

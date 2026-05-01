@@ -1,16 +1,18 @@
-﻿using Protocol.Minecraft;
+﻿#define Needed
+using Protocol.Minecraft;
 
 namespace Protocol.Network.MinecraftPacket;
 public class McbeSetScore : Packet
 {
-    public enum ChangeTypes
+    public enum IdentityType : byte
     {
+        Invalid = 0,
         Player = 1,
         Entity = 2,
         FakePlayer = 3
     }
 
-    public enum Types
+    public enum PacketType : byte
     {
         Change = 0,
         Remove = 1

@@ -1,10 +1,11 @@
 ﻿using System.Numerics;
 
 namespace Protocol.Network.MinecraftPacket;
-public enum ClientBoundDebugRendererType : uint
+public enum ClientBoundDebugRendererType : byte
 {
-    Clear = 1,
-    AddCube = 2
+    Invalid = 0,
+    ClearDebugMarkers = 1,
+    AddDebugMarkerCube = 2
 }
 
 public class McbeClientBoundDebugRenderer : Packet
@@ -27,8 +28,8 @@ public class McbeClientBoundDebugRenderer : Packet
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        Write((uint)Type);
-        if (Type == ClientBoundDebugRendererType.AddCube)
+        Write((byte)Type);
+        if (Type == ClientBoundDebugRendererType.AddDebugMarkerCube)
         {
             Write(Text);
             Write(Position);
@@ -43,8 +44,8 @@ public class McbeClientBoundDebugRenderer : Packet
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        Type = (ClientBoundDebugRendererType)ReadUint();
-        if (Type == ClientBoundDebugRendererType.AddCube)
+        Type = (ClientBoundDebugRendererType)ReadByte();
+        if (Type == ClientBoundDebugRendererType.AddDebugMarkerCube)
         {
             Text = ReadString();
             Position = ReadVector3();

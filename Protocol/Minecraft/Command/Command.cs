@@ -19,8 +19,8 @@ namespace Protocol.Minecraft
 	public enum CommandOriginType : uint
 	{
 		Player = 0,
-		Block = 1,
-		MinecartBlock = 2,
+		CommandBlock = 1,
+		MinecartCommandBlock = 2,
 		DevConsole = 3,
 		Test = 4,
 		AutomationPlayer = 5,
@@ -32,8 +32,8 @@ namespace Protocol.Minecraft
 		EntityServer = 11,
 		Precompiled = 12,
 		GameDirectorEntityServer = 13,
-		Script = 14,
-		Executor = 15
+		Scripting = 14,
+		ExecuteContext = 15
 	}
 
 	// Command Parameter Type Constants

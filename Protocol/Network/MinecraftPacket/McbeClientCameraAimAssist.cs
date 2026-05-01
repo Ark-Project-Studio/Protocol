@@ -1,7 +1,7 @@
 ﻿namespace Protocol.Network.MinecraftPacket;
 public enum ClientCameraAimAssistAction : byte
 {
-    Set = 0,
+    SetFromCameraPreset = 0,
     Clear = 1
 }
 

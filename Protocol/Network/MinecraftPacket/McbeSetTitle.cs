@@ -1,4 +1,17 @@
 ﻿namespace Protocol.Network.MinecraftPacket;
+public enum TitleType : int
+{
+    Clear = 0,
+    Reset = 1,
+    Title = 2,
+    Subtitle = 3,
+    Actionbar = 4,
+    Times = 5,
+    TitleTextObject = 6,
+    SubtitleTextObject = 7,
+    ActionbarTextObject = 8
+}
+
 public class McbeSetTitle : Packet
 {
     public int fadeInTime;
@@ -7,7 +20,7 @@ public class McbeSetTitle : Packet
     public string platformOnlineId;
     public int stayTime;
     public string text;
-    public int type;
+    public TitleType type;
     public string xuid;
     public McbeSetTitle()
     {
@@ -18,7 +31,7 @@ public class McbeSetTitle : Packet
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        WriteSignedVarInt(type);
+        WriteSignedVarInt((int)type);
         Write(text);
         WriteSignedVarInt(fadeInTime);
         WriteSignedVarInt(stayTime);
@@ -31,7 +44,7 @@ public class McbeSetTitle : Packet
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        type = ReadSignedVarInt();
+        type = (TitleType)ReadSignedVarInt();
         text = ReadString();
         fadeInTime = ReadSignedVarInt();
         stayTime = ReadSignedVarInt();

@@ -18,7 +18,7 @@ public class McbeCameraAimAssist : Packet
     public string Preset { get; set; } = string.Empty;
     public Vector2 Angle { get; set; }
     public float Distance { get; set; }
-    public byte TargetMode { get; set; }
+    public Protocol.Minecraft.AimAssistTargetMode TargetMode { get; set; }
     public CameraAimAssistAction Action { get; set; }
     public bool ShowDebugRender { get; set; }
 
@@ -28,7 +28,7 @@ public class McbeCameraAimAssist : Packet
         Write(Preset);
         Write(Angle);
         Write(Distance);
-        Write(TargetMode);
+        Write((byte)TargetMode);
         Write((byte)Action);
         Write(ShowDebugRender);
     }
@@ -39,7 +39,7 @@ public class McbeCameraAimAssist : Packet
         Preset = ReadString();
         Angle = ReadVector2();
         Distance = ReadFloat();
-        TargetMode = ReadByte();
+        TargetMode = (Protocol.Minecraft.AimAssistTargetMode)ReadByte();
         Action = (CameraAimAssistAction)ReadByte();
         ShowDebugRender = ReadBool();
     }

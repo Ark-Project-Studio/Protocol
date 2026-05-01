@@ -4,14 +4,15 @@ namespace Protocol.Network.MinecraftPacket;
 
 public enum InteractActionType : byte
 {
-	LeaveVehicle = 3,
-	MouseOverEntity = 4,
-	NPCOpen = 5,
+	Invalid = 0,
+	StopRiding = 3,
+	InteractUpdate = 4,
+	NpcOpen = 5,
 	OpenInventory = 6
 }
 public class McbeInteract : Packet
 {
-	public byte ActionType { get; set; }
+	public InteractActionType ActionType { get; set; }
 	public ulong TargetEntityRuntimeID { get; set; }
 	public Optional<System.Numerics.Vector3> Position { get; set; }
 	public McbeInteract()
@@ -23,7 +24,7 @@ public class McbeInteract : Packet
     protected override void EncodePacket()
     {
         base.EncodePacket();
-		Write(ActionType);
+		Write((byte)ActionType);
 		WriteUnsignedVarLong(TargetEntityRuntimeID);
 
 		Write(Position.HasValue);
@@ -37,7 +38,7 @@ public class McbeInteract : Packet
     {
         base.DecodePacket();
 
-        ActionType = ReadByte();
+		ActionType = (InteractActionType)ReadByte();
         TargetEntityRuntimeID = ReadUnsignedVarLong();
 
 		if (ReadBool())

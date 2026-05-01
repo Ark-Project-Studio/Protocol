@@ -5,20 +5,19 @@ namespace Protocol.Network.MinecraftPacket;
 public enum TextType : byte
 {
 	Raw = 0,
-	Chat,
-	Translation,
-	Popup,
-	JukeboxPopup,
-	Tip,
-	System,
-	Whisper,
-	Announcement,
-	ObjectWhisper,
-	Object,
-	ObjectAnnouncement
+	Chat = 1,
+	Translate = 2,
+	Popup = 3,
+	JukeboxPopup = 4,
+	Tip = 5,
+	SystemMessage = 6,
+	Whisper = 7,
+	Announcement = 8,
+	TextObjectWhisper = 9,
+	TextObject = 10,
+	TextObjectAnnouncement = 11
 }
 
-// 鏂囨湰鍒嗙被鏋氫妇
 public enum TextCategory
 {
 	MessageOnly = 0,
@@ -53,10 +52,10 @@ public class McbeText : Packet
 		{
 			case TextType.Raw:
 			case TextType.Tip:
-			case TextType.System:
-			case TextType.ObjectWhisper:
-			case TextType.ObjectAnnouncement:
-			case TextType.Object:
+			case TextType.SystemMessage:
+			case TextType.TextObjectWhisper:
+			case TextType.TextObjectAnnouncement:
+			case TextType.TextObject:
 				categoryType = (byte)TextCategory.MessageOnly;
 				break;
 			case TextType.Chat:
@@ -82,13 +81,13 @@ public class McbeText : Packet
 				break;
 			case TextType.Raw:
 			case TextType.Tip:
-			case TextType.System:
-			case TextType.Object:
-			case TextType.ObjectWhisper:
-			case TextType.ObjectAnnouncement:
+			case TextType.SystemMessage:
+			case TextType.TextObject:
+			case TextType.TextObjectWhisper:
+			case TextType.TextObjectAnnouncement:
 				Write(Message);
 				break;
-			case TextType.Translation:
+			case TextType.Translate:
 			case TextType.Popup:
 			case TextType.JukeboxPopup:
 				Write(Message);

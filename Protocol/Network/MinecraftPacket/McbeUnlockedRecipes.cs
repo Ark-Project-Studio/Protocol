@@ -1,11 +1,11 @@
 ﻿namespace Protocol.Network.MinecraftPacket;
-public enum UnlockedRecipesType : uint
+public enum PacketType : uint
 {
     Empty = 0,
-    InitiallyUnlocked = 1,
-    NewlyUnlocked = 2,
-    RemoveUnlocked = 3,
-    RemoveAllUnlocked = 4
+    InitiallyUnlockedRecipes = 1,
+    NewlyUnlockedRecipes = 2,
+    RemoveUnlockedRecipes = 3,
+    RemoveAllUnlockedRecipes = 4
 }
 
 public class McbeUnlockedRecipes : Packet
@@ -16,7 +16,7 @@ public class McbeUnlockedRecipes : Packet
         IsMcbe = true;
     }
 
-    public UnlockedRecipesType UnlockType { get; set; }
+    public PacketType UnlockType { get; set; }
     public string[] Recipes { get; set; } = new string[0];
 
     protected override void EncodePacket()
@@ -32,7 +32,7 @@ public class McbeUnlockedRecipes : Packet
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        UnlockType = (UnlockedRecipesType)ReadUint();
+        UnlockType = (PacketType)ReadUint();
         var count = ReadUnsignedVarInt();
         Recipes = new string[count];
         for (var i = 0; i < count; i++)

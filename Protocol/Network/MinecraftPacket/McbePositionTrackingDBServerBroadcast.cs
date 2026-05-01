@@ -4,7 +4,7 @@ namespace Protocol.Network.MinecraftPacket;
 
 public class McbePositionTrackingDBServerBroadcast : Packet
 {
-	public enum Action
+	public enum Action : byte
 	{
 		Update = 0,
 		Destroy = 1,
@@ -19,7 +19,7 @@ public class McbePositionTrackingDBServerBroadcast : Packet
 	}
 
 
-	public byte BroadcastAction { get; set; }
+	public Action BroadcastAction { get; set; }
 
 
 	public int TrackingID { get; set; }
@@ -32,7 +32,7 @@ public class McbePositionTrackingDBServerBroadcast : Packet
 	{
 		base.EncodePacket();
 
-		Write(BroadcastAction);
+		Write((byte)BroadcastAction);
 		WriteSignedVarInt(TrackingID);
 
 
@@ -44,7 +44,7 @@ public class McbePositionTrackingDBServerBroadcast : Packet
 	{
 		base.DecodePacket();
 
-		BroadcastAction = ReadByte();
+		BroadcastAction = (Action)ReadByte();
 		TrackingID = ReadSignedVarInt();
 
 

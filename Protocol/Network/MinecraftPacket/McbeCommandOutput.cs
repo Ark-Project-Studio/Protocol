@@ -20,7 +20,7 @@ public class McbeCommandOutput : Packet
     }
 
 	public CommandOrigin CommandOrigin { get; set; }
-	public byte OutputType { get; set; }
+	public CommandOutputType OutputType { get; set; }
 	public uint SuccessCount { get; set; }
 	public System.Collections.Generic.List<CommandOutputMessage> OutputMessages { get; set; }
 	public Optional<string> DataSet { get; set; }
@@ -68,39 +68,39 @@ public class McbeCommandOutput : Packet
 			DataSet = new Optional<string>(ReadString());
 		}
 	}
-	private string CommandOutputTypeToString(byte outputType)
+	private string CommandOutputTypeToString(CommandOutputType outputType)
 	{
 		switch (outputType)
 		{
-			case (byte)CommandOutputType.None:
+			case CommandOutputType.None:
 				return "none";
-			case (byte)CommandOutputType.LastOutput:
+			case CommandOutputType.LastOutput:
 				return "lastoutput";
-			case (byte)CommandOutputType.Silent:
+			case CommandOutputType.Silent:
 				return "silent";
-			case (byte)CommandOutputType.AllOutput:
+			case CommandOutputType.AllOutput:
 				return "alloutput";
-			case (byte)CommandOutputType.DataSet:
+			case CommandOutputType.DataSet:
 				return "dataset";
 			default:
 				return "unknown";
 		}
 	}
 
-	private byte CommandOutputTypeFromString(string s)
+	private CommandOutputType CommandOutputTypeFromString(string s)
 	{
 		switch (s)
 		{
 			case "none":
-				return (byte)CommandOutputType.None;
+				return CommandOutputType.None;
 			case "lastoutput":
-				return (byte)CommandOutputType.LastOutput;
+				return CommandOutputType.LastOutput;
 			case "silent":
-				return (byte)CommandOutputType.Silent;
+				return CommandOutputType.Silent;
 			case "alloutput":
-				return (byte)CommandOutputType.AllOutput;
+				return CommandOutputType.AllOutput;
 			case "dataset":
-				return (byte)CommandOutputType.DataSet;
+				return CommandOutputType.DataSet;
 			default:
 				throw new FormatException($"Unknown output type: {s}");
 		}

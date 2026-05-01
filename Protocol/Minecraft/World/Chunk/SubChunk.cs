@@ -7,10 +7,10 @@ namespace Protocol.Minecraft.World.Chunk
 	// Enums
 	public enum HeightMapData : byte
 	{
-		None = 0,
+		NoData = 0,
 		HasData = 1,
-		TooHigh = 2,
-		TooLow = 3,
+		AllTooHigh = 2,
+		AllTooLow = 3,
 		AllCopied = 4
 	}
 
@@ -22,10 +22,11 @@ namespace Protocol.Minecraft.World.Chunk
 
 	public enum SubChunkResult : byte
 	{
+		Undefined = 0,
 		Success = 1,
-		ChunkNotFound = 2,
-		InvalidDimension = 3,
-		PlayerNotFound = 4,
+		LevelChunkDoesntExist = 2,
+		WrongDimension = 3,
+		PlayerDoesntExist = 4,
 		IndexOutOfBounds = 5,
 		SuccessAllAir = 6
 	}

@@ -1,4 +1,5 @@
-﻿using Protocol.Minecraft.Transaction;
+﻿#define NeedComplete
+using Protocol.Minecraft.Transaction;
 
 namespace Protocol.Network.MinecraftPacket;
 public class McbeInventoryTransaction : Packet
@@ -19,45 +20,44 @@ public class McbeInventoryTransaction : Packet
         Drop = -100
     }
 
-    public enum InventorySourceType
+    public enum InventoryTransactionSourceType : int
     {
-        Container = 0,
-        Global = 1,
+        InvalidInventory = -1,
+        ContainerInventory = 0,
+        GlobalInventory = 1,
         WorldInteraction = 2,
-        Creative = 3,
-        Crafting = 100,
-        Unspecified = 99999
+        CreativeInventory = 3,
+        NonImplementedFeatureTODO = 99999
     }
 
-    public enum ItemReleaseAction
+    public enum ItemReleaseActionType : uint
     {
         Release = 0,
         Use = 1
     }
 
-    public enum ItemUseAction
+    public enum ItemUseActionType : uint
     {
-        Place,
-        Clickblock = 0,
-        Use,
-        Clickair = 1,
-        Destroy = 2
+        Place = 0,
+        Use = 1,
+        Destroy = 2,
+        UseAsAttack = 3
     }
 
-    public enum ItemUseOnEntityAction
+    public enum ItemUseOnActorActionType : uint
     {
         Interact = 0,
         Attack = 1,
         ItemInteract = 2
     }
 
-    public enum TransactionType
+    public enum InventoryTransactionType : uint
     {
-        Normal = 0,
+        NormalTransaction = 0,
         InventoryMismatch = 1,
-        ItemUse = 2,
-        ItemUseOnEntity = 3,
-        ItemRelease = 4
+        ItemUseInventoryTransaction = 2,
+        ItemUseOnActorInventoryTransaction = 3,
+        ItemReleaseInventoryTransaction = 4
     }
 
     public enum TriggerType

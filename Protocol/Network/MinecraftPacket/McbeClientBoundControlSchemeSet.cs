@@ -1,5 +1,5 @@
 ﻿namespace Protocol.Network.MinecraftPacket;
-public enum ControlSchemeType : byte
+public enum ControlScheme : byte
 {
     LockedPlayerRelativeStrafe = 0,
     CameraRelative = 1,
@@ -16,7 +16,7 @@ public class McbeClientBoundControlSchemeSet : Packet
         IsMcbe = true;
     }
 
-    public ControlSchemeType ControlScheme { get; set; }
+    public ControlScheme ControlScheme { get; set; }
 
     protected override void EncodePacket()
     {
@@ -27,6 +27,6 @@ public class McbeClientBoundControlSchemeSet : Packet
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        ControlScheme = (ControlSchemeType)ReadByte();
+        ControlScheme = (ControlScheme)ReadByte();
     }
 }

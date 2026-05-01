@@ -3,10 +3,10 @@
 namespace Protocol.Network.MinecraftPacket;
 public class McbeSetScoreboardIdentity : Packet
 {
-    public enum Operations
+    public enum Type : byte
     {
-        RegisterIdentity = 0,
-        ClearIdentity = 1
+        Update = 0,
+        Remove = 1
     }
 
     public ScoreboardIdentityEntries entries;

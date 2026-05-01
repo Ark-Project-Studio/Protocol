@@ -24,18 +24,20 @@ namespace Protocol.Minecraft
 	public enum SubChunkPacketHeightMapType : byte
 	{
 		NoData = 0,
-		Data = 1,
+		HasData = 1,
 		AllTooHigh = 2,
-		AllTooLow = 3
+		AllTooLow = 3,
+		AllCopied = 4
 	}
 
 	public enum SubChunkRequestResult : byte
 	{
+		Undefined = 0,
 		Success = 1,
-		NoSuchChunk = 2,
+		LevelChunkDoesntExist = 2,
 		WrongDimension = 3,
-		NullPlayer = 4,
-		YIndexOutOfBounds = 5,
+		PlayerDoesntExist = 4,
+		IndexOutOfBounds = 5,
 		SuccessAllAir = 6
 	}
 }

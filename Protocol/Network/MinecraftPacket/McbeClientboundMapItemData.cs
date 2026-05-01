@@ -3,11 +3,13 @@ using Protocol.Minecraft.World.Map;
 
 namespace Protocol.Network.MinecraftPacket;
 
-public enum MapUpdateFlag
+public enum ClientboundMapItemDataType : uint
 {
-	Texture = 1 << 1,
-	Decoration = 1 << 2,
-	Initialisation = 1 << 3
+	Invalid = 0,
+	TextureUpdate = 2,
+	DecorationUpdate = 4,
+	Creation = 8,
+	All = 14
 }
 public class McbeClientboundMapItemData : Packet
 {
@@ -40,7 +42,7 @@ public class McbeClientboundMapItemData : Packet
 		Write(LockedMap);
 		Write(Origin);
 
-		if ((UpdateFlags & (uint)MapUpdateFlag.Initialisation) != 0)
+		if ((UpdateFlags & (uint)ClientboundMapItemDataType.Creation) != 0)
 		{
 			if (MapsIncludedIn != null)
 			{
@@ -52,12 +54,12 @@ public class McbeClientboundMapItemData : Packet
 			}
 		}
 
-		if ((UpdateFlags & ((uint)MapUpdateFlag.Initialisation | (uint)MapUpdateFlag.Decoration | (uint)MapUpdateFlag.Texture)) != 0)
+		if ((UpdateFlags & ((uint)ClientboundMapItemDataType.Creation | (uint)ClientboundMapItemDataType.DecorationUpdate | (uint)ClientboundMapItemDataType.TextureUpdate)) != 0)
 		{
 			Write(Scale);
 		}
 
-		if ((UpdateFlags & (uint)MapUpdateFlag.Decoration) != 0)
+		if ((UpdateFlags & (uint)ClientboundMapItemDataType.DecorationUpdate) != 0)
 		{
 			if (TrackedObjects != null)
 			{
@@ -78,7 +80,7 @@ public class McbeClientboundMapItemData : Packet
 			}
 		}
 
-		if ((UpdateFlags & (uint)MapUpdateFlag.Texture) != 0)
+		if ((UpdateFlags & (uint)ClientboundMapItemDataType.TextureUpdate) != 0)
 		{
 			WriteSignedVarInt(Width);
 			WriteSignedVarInt(Height);

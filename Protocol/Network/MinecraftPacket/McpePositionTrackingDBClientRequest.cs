@@ -2,7 +2,7 @@
 
 public class McbePositionTrackingDBClientRequest : Packet
 {
-	public enum Action
+	public enum Action : byte
 	{
 		Query = 0
 	}
@@ -15,7 +15,7 @@ public class McbePositionTrackingDBClientRequest : Packet
 	}
 
 
-	public byte RequestAction { get; set; }
+	public Action RequestAction { get; set; }
 
 
 	public int TrackingID { get; set; }
@@ -25,7 +25,7 @@ public class McbePositionTrackingDBClientRequest : Packet
 	{
 		base.EncodePacket();
 
-		Write(RequestAction);
+		Write((byte)RequestAction);
 		WriteSignedVarInt(TrackingID);
 	}
 
@@ -34,7 +34,7 @@ public class McbePositionTrackingDBClientRequest : Packet
 	{
 		base.DecodePacket();
 
-		RequestAction = ReadByte();
+		RequestAction = (Action)ReadByte();
 		TrackingID = ReadSignedVarInt();
 	}
 }

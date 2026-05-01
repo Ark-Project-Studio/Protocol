@@ -3,7 +3,7 @@
 namespace Protocol.Network.MinecraftPacket;
 public class McbeItemStackRequest : Packet
 {
-    public enum ActionType
+    public enum Type : byte
     {
         Take = 0,
         Place = 1,
@@ -12,8 +12,8 @@ public class McbeItemStackRequest : Packet
         Destroy = 4,
         Consume = 5,
         Create = 6,
-        PlaceIntoBundleDeprecated = 7,
-        TakeFromBundleDeprecated = 8,
+        PlaceInItemContainerDeprecated = 7,
+        TakeFromItemContainerDeprecated = 8,
         LabTableCombine = 9,
         BeaconPayment = 10,
         MineBlock = 11,
@@ -21,10 +21,10 @@ public class McbeItemStackRequest : Packet
         CraftRecipeAuto = 13,
         CraftCreative = 14,
         CraftRecipeOptional = 15,
-        CraftGrindstone = 16,
+        CraftGrindStone = 16,
         CraftLoom = 17,
-        CraftNotImplementedDeprecated = 18,
-        CraftResultsDeprecated = 19
+        CraftNonImplemented = 18,
+        CraftResults = 19
     }
 
     public ItemStackRequests requests;
