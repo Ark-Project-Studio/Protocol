@@ -3,8 +3,9 @@
 namespace Protocol.Network.MinecraftPacket;
 public class McbeCreativeContent : Packet
 {
-    public List<creativeGroup> groups;
-    public List<CreativeItemEntry> input;
+    public List<CreativeContentGroup> groups = new();
+    public List<CreativeContentWriteEntry> writeEntries = new();
+
     public McbeCreativeContent()
     {
         Id = 0x91;
@@ -15,13 +16,13 @@ public class McbeCreativeContent : Packet
     {
         base.EncodePacket();
         Write(groups);
-        Write(input);
+        Write(writeEntries);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        groups = ReadCreativeGroups();
-        input = ReadCreativeItemStacks();
+        groups = ReadCreativeContentGroups();
+        writeEntries = ReadCreativeContentWriteEntries();
     }
 }

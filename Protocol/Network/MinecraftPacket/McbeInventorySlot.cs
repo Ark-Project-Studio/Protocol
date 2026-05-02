@@ -6,9 +6,9 @@ public class McbeInventorySlot : Packet
 {
     public FullContainerName ContainerName = new();
     public byte inventoryId;
-    public Item item;
+    public NetworkItemStackDescriptor item;
     public uint slot;
-    public Item storageItem;
+    public NetworkItemStackDescriptor storageItem;
     public McbeInventorySlot()
     {
         Id = 0x32;
@@ -22,7 +22,7 @@ public class McbeInventorySlot : Packet
         WriteUnsignedVarInt(slot);
         Write(ContainerName);
         Write(storageItem);
-        Write(item,false);
+        Write(item);
     }
 
     protected override void DecodePacket()
@@ -31,7 +31,7 @@ public class McbeInventorySlot : Packet
         inventoryId = ReadByte();
         slot = ReadUnsignedVarInt();
         ContainerName = readFullContainerName();
-        storageItem = ReadItem(false);
-        item = ReadItem();
+        storageItem = ReadNetworkItemStackDescriptor();
+        item = ReadNetworkItemStackDescriptor();
     }
 }

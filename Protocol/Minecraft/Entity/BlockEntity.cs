@@ -28,8 +28,8 @@ public class BlockEntity
 	}
 
 
-	public virtual List<Item> GetDrops()
+	public virtual List<NetworkItemStackDescriptor> GetDrops()
 	{
-		return new List<Item>();
+		return new List<NetworkItemStackDescriptor>();
 	}
 }

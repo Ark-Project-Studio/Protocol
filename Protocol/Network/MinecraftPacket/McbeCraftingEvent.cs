@@ -18,10 +18,10 @@ public class McbeCraftingEvent : Packet
         SmithingTrim = 9
     }
 
-    public ItemStacks input;
+    public NetworkItemStackDescriptors input;
     public UUID recipeId;
     public int recipeType;
-    public ItemStacks result;
+    public NetworkItemStackDescriptors result;
     public byte windowId;
     public McbeCraftingEvent()
     {
@@ -45,7 +45,7 @@ public class McbeCraftingEvent : Packet
         windowId = ReadByte();
         recipeType = ReadSignedVarInt();
         recipeId = ReadUUID();
-        input = ReadItemStacks();
-        result = ReadItemStacks();
+        input = ReadNetworkItemStackDescriptors();
+        result = ReadNetworkItemStackDescriptors();
     }
 }

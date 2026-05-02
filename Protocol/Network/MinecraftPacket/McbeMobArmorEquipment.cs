@@ -3,11 +3,11 @@
 namespace Protocol.Network.MinecraftPacket;
 public class McbeMobArmorEquipment : Packet
 {
-    public Item body;
-    public Item boots;
-    public Item chestplate;
-    public Item helmet;
-    public Item leggings;
+    public NetworkItemStackDescriptor body;
+    public NetworkItemStackDescriptor boots;
+    public NetworkItemStackDescriptor chestplate;
+    public NetworkItemStackDescriptor helmet;
+    public NetworkItemStackDescriptor leggings;
     public ulong runtimeEntityId;
     public McbeMobArmorEquipment()
     {
@@ -30,10 +30,10 @@ public class McbeMobArmorEquipment : Packet
     {
         base.DecodePacket();
         runtimeEntityId = ReadUnsignedVarLong();
-        helmet = ReadItem();
-        chestplate = ReadItem();
-        leggings = ReadItem();
-        boots = ReadItem();
-        body = ReadItem();
+        helmet = ReadNetworkItemStackDescriptor();
+        chestplate = ReadNetworkItemStackDescriptor();
+        leggings = ReadNetworkItemStackDescriptor();
+        boots = ReadNetworkItemStackDescriptor();
+        body = ReadNetworkItemStackDescriptor();
     }
 }

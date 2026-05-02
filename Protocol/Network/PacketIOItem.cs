@@ -43,39 +43,35 @@ namespace Protocol.Network
 			return metadata;
 		}
 
-		public void Write(List<CreativeItemEntry> itemStacks)
+		public void Write(List<CreativeContentWriteEntry> entries)
 		{
-			WriteUnsignedVarInt((uint)itemStacks.Count);
+			WriteUnsignedVarInt((uint)entries.Count);
 
-			var netId = 0;
-			foreach (var item in itemStacks)
+			foreach (var entry in entries)
 			{
-				item.Item.RuntimeId = 0;
-				WriteUnsignedVarInt((uint)netId);
-				Write(item.Item,false);
-				WriteUnsignedVarInt(item.GroupIndex);
-				netId++;
+				WriteUnsignedVarInt(entry.NetId);
+				Write(entry.Item);
+				WriteUnsignedVarInt(entry.GroupIndex);
 			}
 		}
 
-		public List<CreativeItemEntry> ReadCreativeItemStacks()
+		public List<CreativeContentWriteEntry> ReadCreativeContentWriteEntries()
 		{
-			var metadata = new List<CreativeItemEntry>();
+			var entries = new List<CreativeContentWriteEntry>();
 
 			var count = ReadUnsignedVarInt();
 			for (int i = 0; i < count; i++)
 			{
-				var networkId = ReadUnsignedVarInt();
-				Item item = ReadItem(false);
-				item.NetworkId = (int)networkId;
+				uint networkId = ReadUnsignedVarInt();
+				NetworkItemInstanceDescriptor item = ReadNetworkItemInstanceDescriptor();
 				uint groupIndex = ReadUnsignedVarInt();
-				metadata.Add(new CreativeItemEntry(groupIndex, item));
+				entries.Add(new CreativeContentWriteEntry(networkId, item, groupIndex));
 			}
 
-			return metadata;
+			return entries;
 		}
 
-		public void Write(List<creativeGroup> groups)
+		public void Write(List<CreativeContentGroup> groups)
 		{
 			WriteUnsignedVarInt((uint)groups.Count);
 
@@ -83,27 +79,27 @@ namespace Protocol.Network
 			{
 				Write(group.Category);
 				Write(group.Name);
-				Write(group.Icon,false);
+				Write(group.Icon);
 			}
 		}
 
-		public List<creativeGroup> ReadCreativeGroups()
+		public List<CreativeContentGroup> ReadCreativeContentGroups()
 		{
-			var group = new List<creativeGroup>();
+			var group = new List<CreativeContentGroup>();
 
 			var groupCount = ReadUnsignedVarInt();
 			for (int i = 0; i < groupCount; i++)
 			{
 				int category = ReadInt();
 				string name = ReadString();
-				Item item = ReadItem(false);
-				group.Add(new creativeGroup(category, name, item));
+				NetworkItemInstanceDescriptor item = ReadNetworkItemInstanceDescriptor();
+				group.Add(new CreativeContentGroup(category, name, item));
 			}
 
 			return group;
 		}
 
-		public void Write(ItemStacks itemStacks)
+		public void Write(NetworkItemStackDescriptors itemStacks)
 		{
 			if (itemStacks == null)
 			{
@@ -114,27 +110,24 @@ namespace Protocol.Network
 			WriteUnsignedVarInt((uint)itemStacks.Count);
 			for (int i = 0; i < itemStacks.Count; i++)
 			{
-				Write(itemStacks[i],true);
+				Write(itemStacks[i]);
 			}
 		}
 
-		public ItemStacks ReadItemStacks()
+		public NetworkItemStackDescriptors ReadNetworkItemStackDescriptors()
 		{
-			var metadata = new ItemStacks();
+			var metadata = new NetworkItemStackDescriptors();
 
 			var count = ReadUnsignedVarInt();
 			for (int i = 0; i < count; i++)
 			{
-				int networkId = 0;
-				if (this is McbeCreativeContent) networkId = ReadVarInt();
-				Item item = ReadItem(true);
-				item.NetworkId = networkId;
+				NetworkItemStackDescriptor item = ReadNetworkItemStackDescriptor();
 				metadata.Add(item);
 			}
 
 			return metadata;
 		}
-		public void WriteItems(ItemStacks itemStacks)
+		public void Write(NetworkItemInstanceDescriptors itemStacks)
 		{
 			if (itemStacks == null)
 			{
@@ -145,18 +138,19 @@ namespace Protocol.Network
 			WriteUnsignedVarInt((uint)itemStacks.Count);
 			for (int i = 0; i < itemStacks.Count; i++)
 			{
-				Write(itemStacks[i], false);
+				Write(itemStacks[i]);
 			}
 		}
-		private ItemStacks ReadItems()
+
+		public NetworkItemInstanceDescriptors ReadNetworkItemInstanceDescriptors()
 		{
-			var items = new ItemStacks();
+			var items = new NetworkItemInstanceDescriptors();
 
 			var count = ReadUnsignedVarInt();
 
 			for (int i = 0; i < count; i++)
 			{
-				items.Add(ReadItem(false));
+				items.Add(ReadNetworkItemInstanceDescriptor());
 			}
 
 			return items;
@@ -164,59 +158,82 @@ namespace Protocol.Network
 
 		private const int ShieldId = 355;
 
-		public void Write(Item stack,bool withnet = true)
+		public void Write(NetworkItemStackDescriptor stack)
 		{
-			
+			if (stack == null || stack.Id == 0)
+			{
+				WriteSignedVarInt(0);
+				return;
+			}
+
 			WriteSignedVarInt(stack.Id);
 
-			Write((ushort)stack.Count);
-			WriteUnsignedVarInt((uint)stack.Metadata);
-			if (withnet)
+			Write(stack.StackSize,true);
+			WriteUnsignedVarInt(stack.Aux);
+			if (stack.NetId.HasValue)
 			{
-				if (stack.NetworkId != -1)
-				{
-					Write(true);
-					WriteVarInt(stack.NetworkId);
-				}
-				else
-				{
-					Write(false);
-				}
+				Write(true);
+				WriteSignedVarInt(stack.NetId.Value);
 			}
-		
+			else
+			{
+				Write(false);
+			}
 
-			WriteSignedVarInt(stack.RuntimeId);
+			WriteSignedVarInt(stack.BlockRuntimeId);
 
-			Write("none");
+			Write(stack.UserData ?? string.Empty);
 		}
 
-		public Item ReadItem(bool withnet = true)
+		public void Write(NetworkItemInstanceDescriptor stack)
+		{
+			if (stack == null || stack.Id == 0)
+			{
+				WriteSignedVarInt(0);
+				return;
+			}
+
+			WriteSignedVarInt(stack.Id);
+			Write(stack.StackSize,true);
+			WriteUnsignedVarInt(stack.Aux);
+			WriteSignedVarInt(stack.BlockRuntimeId);
+			Write(stack.UserData ?? string.Empty);
+		}
+
+		public NetworkItemStackDescriptor ReadNetworkItemStackDescriptor()
 		{
 			int id = ReadSignedVarInt();
+			var stack = new NetworkItemStackDescriptor { Id = id };
 			if (id == 0)
 			{
-				return new ItemAir();
+				return stack;
+			}
+			stack.StackSize = ReadUshort();
+			stack.Aux = ReadUnsignedVarInt();
+			var hasNetId = ReadBool();
+			if (hasNetId)
+			{
+				stack.NetId = new Optional<int>(ReadSignedVarInt());
+			}
+			stack.BlockRuntimeId = ReadSignedVarInt();
+
+			stack.UserData = ReadString();
+			return stack;
+		}
+
+		public NetworkItemInstanceDescriptor ReadNetworkItemInstanceDescriptor()
+		{
+			int id = ReadSignedVarInt();
+			var stack = new NetworkItemInstanceDescriptor { Id = id };
+			if (id == 0)
+			{
+				return stack;
 			}
 
-			short count = (short)ReadUshort();
-			var metadata = ReadUnsignedVarInt();
-
-
-			Item stack = new ItemAir();
-			stack.Metadata = (short)metadata;
-			stack.Id = (short)id;
-			if(withnet){
-				var readBool = ReadBool();
-				if (readBool)
-				{
-					stack.NetworkId = ReadVarInt();
-				}
-			}
-
-
-			stack.RuntimeId = ReadVarInt();
-
-			var readString = ReadString();
+			stack.StackSize = ReadUshort();
+			stack.Aux = ReadUnsignedVarInt();
+			stack.BlockRuntimeId = ReadSignedVarInt();
+			stack.UserData = ReadString();
 			return stack;
 		}
 
@@ -247,85 +264,64 @@ namespace Protocol.Network
 			return dictionary;
 		}
 
-		public void WriteRecipeIngredient(Item stack)
+		public void Write(RecipeIngredient ingredient)
 		{
-			if (stack == null || stack.Id == 0)
+			ingredient ??= new RecipeIngredient();
+			Write((byte)ingredient.DescriptorType);
+			switch (ingredient.DescriptorType)
 			{
-				Write(false);
-				WriteVarInt(0);
-				return;
+				case RecipeIngredientDescriptorType.InternalItem:
+					Write(ingredient.Id);
+					if (ingredient.Id != 0)
+					{
+						Write(ingredient.Aux);
+					}
+					break;
+				case RecipeIngredientDescriptorType.Molang:
+					Write(ingredient.Name);
+					Write(ingredient.MolangVersion);
+					break;
+				case RecipeIngredientDescriptorType.ItemTag:
+				case RecipeIngredientDescriptorType.ComplexAlias:
+					Write(ingredient.Name);
+					break;
+				case RecipeIngredientDescriptorType.Deferred:
+					Write(ingredient.Name);
+					Write((ushort)ingredient.Aux);
+					break;
 			}
 
-			Write(true);
-			var translated = new TranslatedItem(0, 0);
-			if (translated.Id != stack.Id)
-			{
-				Write((short)translated.Id);
-				Write(translated.Meta);
-			}
-			else
-			{
-				Write(stack.Id);
-				Write(stack.Metadata);
-			}
-
-			WriteSignedVarInt(stack.Count);
+			WriteSignedVarInt(ingredient.StackSize);
 		}
 
-		public Item ReadRecipeData()
+		public RecipeIngredient ReadRecipeIngredient()
 		{
-			short type = ReadByte();
-
-			if (type == 1)
+			var ingredient = new RecipeIngredient { DescriptorType = (RecipeIngredientDescriptorType)ReadByte() };
+			switch (ingredient.DescriptorType)
 			{
-				short id = ReadShort();
-				short meta = ReadShort();
-				short count = (short)ReadSignedVarInt();
-
-				return ItemFactory.GetItem(id, meta, count);
-			}
-			else if (type == 2)
-			{
-				string expression = ReadString();
-				int version = ReadByte();
-				short count = (short)ReadSignedVarInt();
-
-				return ItemFactory.GetItem(ItemFactory.GetItemIdByName(expression));
-			}
-			else if (type == 3)
-			{
-				string sId = ReadString();
-				short count = (short)ReadSignedVarInt();
-
-				return ItemFactory.GetItem(sId, 0, count);
-			}
-			else if (type == 4)
-			{
-				string sId = ReadString();
-				short meta = ReadShort();
-
-				return new ItemAir();
-			}
-			else if (type == 5)
-			{
-				string stri = ReadString();
-
-				ItemFactory.GetItem(ItemFactory.GetItemIdByName(stri));
+				case RecipeIngredientDescriptorType.InternalItem:
+					ingredient.Id = ReadShort();
+					if (ingredient.Id != 0)
+					{
+						ingredient.Aux = ReadShort();
+					}
+					break;
+				case RecipeIngredientDescriptorType.Molang:
+					ingredient.Name = ReadString();
+					ingredient.MolangVersion = ReadByte();
+					break;
+				case RecipeIngredientDescriptorType.ItemTag:
+				case RecipeIngredientDescriptorType.ComplexAlias:
+					ingredient.Name = ReadString();
+					break;
+				case RecipeIngredientDescriptorType.Deferred:
+					ingredient.Name = ReadString();
+					ingredient.Aux = (short)ReadUshort();
+					break;
 			}
 
-			short coun = (short)ReadSignedVarInt();
-
-			return new ItemAir();
-		}
-
-		public Item ReadShapedRecipeIngredient()
-		{
-			short type = ReadByte();
-			if (type == -1)
-			{
-			}
-
-			return new ItemAir();
+			ingredient.StackSize = ReadSignedVarInt();
+			return ingredient;
 		}
 
 		public void Write(Itemstates itemstates)

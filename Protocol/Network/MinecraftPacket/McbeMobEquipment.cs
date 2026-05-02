@@ -11,7 +11,7 @@ public class McbeMobEquipment : Packet
     /// <summary>
     /// The item stack being equipped. Empty item indicates no item.
     /// </summary>
-    public Item item;
+    public NetworkItemStackDescriptor item;
 
     /// <summary>
     /// The inventory slot index the item occupies within the container.
@@ -41,7 +41,7 @@ public class McbeMobEquipment : Packet
         WriteUnsignedVarLong(runtimeEntityId);
         Write(item);
         Write(slot);
-        Write(selectedSlot,false);
+        Write(selectedSlot);
         Write(containerId);
     }
 
@@ -49,7 +49,7 @@ public class McbeMobEquipment : Packet
     {
         base.DecodePacket();
         runtimeEntityId = ReadUnsignedVarLong();
-        item = ReadItem(false);
+         ReadNetworkItemInstanceDescriptor();
         slot = ReadByte();
         selectedSlot = ReadByte();
         containerId = ReadByte();

@@ -3,232 +3,210 @@ using System.Collections.Generic;
 using Protocol.Minecraft;
 using Protocol.Minecraft.Transaction;
 using Protocol.Network.MinecraftPacket;
-using Transaction = Protocol.Minecraft.Transaction.Transaction;
 
 namespace Protocol.Network
 {
 	public partial class Packet
 	{
-		public void Write(Transaction transaction)
+		public void WriteInventoryTransactionPacket(McbeInventoryTransaction packet)
 		{
-			WriteSignedVarInt(transaction.RequestId);
+			WriteSignedVarInt(packet.LegacyRequestRawId);
 
-			if (transaction.RequestId != 0)
+			if (ShouldWriteLegacySetItemSlots(packet.LegacyRequestRawId))
 			{
-				WriteUnsignedVarInt((uint)transaction.RequestRecords.Count);
-
-				foreach (var record in transaction.RequestRecords)
+				WriteUnsignedVarInt((uint)packet.LegacySetItemSlots.Count);
+				foreach (var slot in packet.LegacySetItemSlots)
 				{
-					Write(record.ContainerId);
-					WriteUnsignedVarInt((uint)record.Slots.Count);
-
-					foreach (var slot in record.Slots)
+					Write(slot.ContainerId);
+					WriteUnsignedVarInt((uint)slot.Slots.Count);
+					foreach (var value in slot.Slots)
 					{
-						Write(slot);
+						Write(value);
 					}
 				}
 			}
 
-			switch (transaction)
-			{
-				case InventoryMismatchTransaction _:
-					WriteUnsignedVarInt((uint)McbeInventoryTransaction.InventoryTransactionType.InventoryMismatch);
-					break;
-				case ItemReleaseTransaction _:
-					WriteUnsignedVarInt((uint)McbeInventoryTransaction.InventoryTransactionType.ItemReleaseInventoryTransaction);
-					break;
-				case ItemUseOnEntityTransaction _:
-					WriteUnsignedVarInt((uint)McbeInventoryTransaction.InventoryTransactionType.ItemUseOnActorInventoryTransaction);
-					break;
-				case ItemUseTransaction _:
-					WriteUnsignedVarInt((uint)McbeInventoryTransaction.InventoryTransactionType.ItemUseInventoryTransaction);
-					break;
-				case NormalTransaction _:
-					WriteUnsignedVarInt((uint)McbeInventoryTransaction.InventoryTransactionType.NormalTransaction);
-					break;
-			}
+			WriteUnsignedVarInt((uint)packet.TransactionType);
+			WriteInventoryTransactionActions(packet.InventoryTransactionActions);
+			WriteInventoryTransactionData(packet.TransactionData);
+		}
 
+		public void ReadInventoryTransactionPacket(McbeInventoryTransaction packet)
+		{
+			packet.LegacyRequestRawId = ReadSignedVarInt();
+			packet.LegacySetItemSlots.Clear();
 
-			WriteUnsignedVarInt((uint)transaction.TransactionRecords.Count);
-			foreach (var record in transaction.TransactionRecords)
+			if (ShouldWriteLegacySetItemSlots(packet.LegacyRequestRawId))
 			{
-				switch (record)
+				uint count = ReadUnsignedVarInt();
+				for (int i = 0; i < count; i++)
 				{
-					case ContainerTransactionRecord r:
-						WriteVarInt((int)McbeInventoryTransaction.InventoryTransactionSourceType.ContainerInventory);
-						WriteSignedVarInt(r.InventoryId);
-						break;
-					case GlobalTransactionRecord _:
-						WriteVarInt((int)McbeInventoryTransaction.InventoryTransactionSourceType.GlobalInventory);
-						break;
-					case WorldInteractionTransactionRecord r:
-						WriteVarInt((int)McbeInventoryTransaction.InventoryTransactionSourceType.WorldInteraction);
-						WriteVarInt(r.Flags);
-						break;
-					case CreativeTransactionRecord _:
-						WriteVarInt((int)McbeInventoryTransaction.InventoryTransactionSourceType.CreativeInventory);
-						break;
-					case CraftTransactionRecord r:
-						WriteVarInt((int)McbeInventoryTransaction.InventoryTransactionSourceType.NonImplementedFeatureTODO);
-						WriteVarInt((int)r.Action);
-						break;
+					var slot = new InventoryTransactionLegacySetItemSlot { ContainerId = ReadByte() };
+					uint slotCount = ReadUnsignedVarInt();
+					for (int j = 0; j < slotCount; j++)
+					{
+						slot.Slots.Add(ReadByte());
+					}
+					packet.LegacySetItemSlots.Add(slot);
 				}
-
-				WriteVarInt(record.Slot);
-				Write(record.OldItem);
-				Write(record.NewItem);
 			}
 
-			switch (transaction)
+			packet.TransactionType = (McbeInventoryTransaction.InventoryTransactionType)ReadUnsignedVarInt();
+			packet.InventoryTransactionActions = ReadInventoryTransactionActions();
+			packet.TransactionData = ReadInventoryTransactionData(packet.TransactionType);
+		}
+
+		public void WriteInventoryTransactionActions(List<InventoryTransactionAction> actions)
+		{
+			WriteUnsignedVarInt((uint)(actions?.Count ?? 0));
+			if (actions == null) return;
+
+			foreach (var action in actions)
 			{
-				case NormalTransaction _:
-				case InventoryMismatchTransaction _:
+				WriteInventoryTransactionAction(action);
+			}
+		}
+
+		public List<InventoryTransactionAction> ReadInventoryTransactionActions()
+		{
+			var actions = new List<InventoryTransactionAction>();
+			uint count = ReadUnsignedVarInt();
+			for (int i = 0; i < count; i++)
+			{
+				actions.Add(ReadInventoryTransactionAction());
+			}
+			return actions;
+		}
+
+		public void WriteInventoryTransactionAction(InventoryTransactionAction action)
+		{
+			WriteInventoryTransactionSource(action);
+			WriteUnsignedVarInt(action.InventorySlot);
+			Write(action.FromItem);
+			Write(action.ToItem);
+		}
+
+		public InventoryTransactionAction ReadInventoryTransactionAction()
+		{
+			var action = ReadInventoryTransactionSource();
+			action.InventorySlot = ReadUnsignedVarInt();
+			action.FromItem = ReadNetworkItemStackDescriptor();
+			action.ToItem = ReadNetworkItemStackDescriptor();
+			return action;
+		}
+
+		public void WriteInventoryTransactionSource(InventoryTransactionAction action)
+		{
+			WriteUnsignedVarInt((uint)action.SourceType);
+			switch (action.SourceType)
+			{
+				case McbeInventoryTransaction.InventoryTransactionSourceType.ContainerInventory:
+				case McbeInventoryTransaction.InventoryTransactionSourceType.NonImplementedFeatureTODO:
+					WriteSignedVarInt(action.ContainerId);
 					break;
-				case ItemUseTransaction t:
-					WriteUnsignedVarInt((uint)t.ActionType);
-					WriteUnsignedVarInt((uint)t.TriggerType);
-					Write(t.Position);
-					WriteSignedVarInt(t.Face);
-					WriteSignedVarInt(t.Slot);
-					Write(t.Item);
-					Write(t.FromPosition);
-					Write(t.ClickPosition);
-					WriteUnsignedVarInt(t.BlockRuntimeId);
-					Write(t.ClientPredictedResult);
-					break;
-				case ItemUseOnEntityTransaction t:
-					WriteUnsignedVarLong((ulong)t.EntityId);
-					WriteUnsignedVarInt((uint)t.ActionType);
-					WriteSignedVarInt(t.Slot);
-					Write(t.Item);
-					Write(t.FromPosition);
-					Write(t.ClickPosition);
-					break;
-				case ItemReleaseTransaction t:
-					WriteUnsignedVarInt((uint)t.ActionType);
-					WriteSignedVarInt(t.Slot);
-					Write(t.Item);
-					Write(t.FromPosition);
-					break;
-				default:
+				case McbeInventoryTransaction.InventoryTransactionSourceType.WorldInteraction:
+					WriteUnsignedVarInt(action.BitFlags);
 					break;
 			}
 		}
 
-		public Transaction ReadTransaction()
+		public InventoryTransactionAction ReadInventoryTransactionSource()
 		{
-			var requestId = ReadSignedVarInt();
-			var requestRecords = new List<RequestRecord>();
-			if (requestId != 0)
+			var action = new InventoryTransactionAction
 			{
-				var c1 = ReadUnsignedVarInt();
-				for (int i = 0; i < c1; i++)
+				SourceType = (McbeInventoryTransaction.InventoryTransactionSourceType)ReadUnsignedVarInt()
+			};
+
+			switch (action.SourceType)
+			{
+				case McbeInventoryTransaction.InventoryTransactionSourceType.ContainerInventory:
+				case McbeInventoryTransaction.InventoryTransactionSourceType.NonImplementedFeatureTODO:
+					action.ContainerId = ReadSignedVarInt();
+					break;
+				case McbeInventoryTransaction.InventoryTransactionSourceType.WorldInteraction:
+					action.BitFlags = ReadUnsignedVarInt();
+					break;
+			}
+
+			return action;
+		}
+
+		public void WriteInventoryTransactionData(InventoryTransactionData data)
+		{
+			switch (data)
+			{
+				case ItemUseInventoryTransactionData itemUse:
+					WriteUnsignedVarInt((uint)itemUse.ActionType);
+					WriteUnsignedVarInt((uint)itemUse.TriggerType);
+					Write(itemUse.Position);
+					WriteSignedVarInt(itemUse.Face);
+					WriteSignedVarInt(itemUse.Slot);
+					Write(itemUse.Item);
+					Write(itemUse.FromPosition);
+					Write(itemUse.ClickPosition);
+					WriteUnsignedVarInt(itemUse.TargetBlockRuntimeId);
+					Write((byte)itemUse.ClientPredictedResult);
+					Write((byte)itemUse.ClientCooldownState);
+					break;
+				case ItemUseOnActorInventoryTransactionData itemUseOnActor:
+					WriteUnsignedVarLong(itemUseOnActor.RuntimeId);
+					WriteUnsignedVarInt((uint)itemUseOnActor.ActionType);
+					WriteSignedVarInt(itemUseOnActor.Slot);
+					Write(itemUseOnActor.Item);
+					Write(itemUseOnActor.FromPosition);
+					Write(itemUseOnActor.HitPosition);
+					break;
+				case ItemReleaseInventoryTransactionData itemRelease:
+					WriteUnsignedVarInt((uint)itemRelease.ActionType);
+					WriteSignedVarInt(itemRelease.Slot);
+					Write(itemRelease.Item);
+					Write(itemRelease.FromPosition);
+					break;
+			}
+		}
+
+		public InventoryTransactionData ReadInventoryTransactionData(McbeInventoryTransaction.InventoryTransactionType type)
+		{
+			return type switch
+			{
+				McbeInventoryTransaction.InventoryTransactionType.InventoryMismatch => new InventoryMismatchTransactionData(),
+				McbeInventoryTransaction.InventoryTransactionType.ItemUseInventoryTransaction => new ItemUseInventoryTransactionData
 				{
-					var rr = new RequestRecord();
-					rr.ContainerId = ReadByte();
-					var c2 = ReadUnsignedVarInt();
-					for (int j = 0; j < c2; j++)
-					{
-						byte slot = ReadByte();
-						rr.Slots.Add(slot);
-					}
-
-					requestRecords.Add(rr);
-				}
-			}
-
-			var transactionType = (McbeInventoryTransaction.InventoryTransactionType)ReadVarInt();
-
-
-			var transactions = new List<TransactionRecord>();
-			uint count = ReadUnsignedVarInt();
-			for (int i = 0; i < count; i++)
-			{
-				TransactionRecord record;
-				int sourceType = ReadVarInt();
-				switch ((McbeInventoryTransaction.InventoryTransactionSourceType)sourceType)
+					ActionType = (McbeInventoryTransaction.ItemUseActionType)ReadUnsignedVarInt(),
+					TriggerType = (McbeInventoryTransaction.TriggerType)ReadUnsignedVarInt(),
+					Position = ReadBlockCoordinates(),
+					Face = ReadSignedVarInt(),
+					Slot = ReadSignedVarInt(),
+					Item = ReadNetworkItemStackDescriptor(),
+					FromPosition = ReadVector3(),
+					ClickPosition = ReadVector3(),
+					TargetBlockRuntimeId = ReadUnsignedVarInt(),
+					ClientPredictedResult = (McbeInventoryTransaction.PredictedResult)ReadByte(),
+					ClientCooldownState = (McbeInventoryTransaction.ClientCooldownState)ReadByte()
+				},
+				McbeInventoryTransaction.InventoryTransactionType.ItemUseOnActorInventoryTransaction => new ItemUseOnActorInventoryTransactionData
 				{
-					case McbeInventoryTransaction.InventoryTransactionSourceType.ContainerInventory:
-						record = new ContainerTransactionRecord() { InventoryId = ReadSignedVarInt() };
-						break;
-					case McbeInventoryTransaction.InventoryTransactionSourceType.GlobalInventory:
-						record = new GlobalTransactionRecord();
-						break;
-					case McbeInventoryTransaction.InventoryTransactionSourceType.WorldInteraction:
-						record = new WorldInteractionTransactionRecord() { Flags = ReadVarInt() };
-						break;
-					case McbeInventoryTransaction.InventoryTransactionSourceType.CreativeInventory:
-						record = new CreativeTransactionRecord() { InventoryId = 0x79 };
-						break;
-					case McbeInventoryTransaction.InventoryTransactionSourceType.InvalidInventory:
-					case McbeInventoryTransaction.InventoryTransactionSourceType.NonImplementedFeatureTODO:
-						record = new CraftTransactionRecord()
-							{ Action = (McbeInventoryTransaction.CraftingAction)ReadSignedVarInt() };
-						break;
-					default:
-						Console.WriteLine($"Unknown inventory source type={sourceType}");
-						continue;
-				}
+					RuntimeId = ReadUnsignedVarLong(),
+					ActionType = (McbeInventoryTransaction.ItemUseOnActorActionType)ReadUnsignedVarInt(),
+					Slot = ReadSignedVarInt(),
+					Item = ReadNetworkItemStackDescriptor(),
+					FromPosition = ReadVector3(),
+					HitPosition = ReadVector3()
+				},
+				McbeInventoryTransaction.InventoryTransactionType.ItemReleaseInventoryTransaction => new ItemReleaseInventoryTransactionData
+				{
+					ActionType = (McbeInventoryTransaction.ItemReleaseActionType)ReadUnsignedVarInt(),
+					Slot = ReadSignedVarInt(),
+					Item = ReadNetworkItemStackDescriptor(),
+					FromPosition = ReadVector3()
+				},
+				_ => new InventoryNormalTransactionData()
+			};
+		}
 
-				record.Slot = ReadVarInt();
-				record.OldItem = ReadItem();
-				record.NewItem = ReadItem();
-
-
-				transactions.Add(record);
-			}
-
-			Transaction transaction = null;
-			switch (transactionType)
-			{
-				case McbeInventoryTransaction.InventoryTransactionType.NormalTransaction:
-					transaction = new NormalTransaction();
-					break;
-				case McbeInventoryTransaction.InventoryTransactionType.InventoryMismatch:
-					transaction = new InventoryMismatchTransaction();
-					break;
-				case McbeInventoryTransaction.InventoryTransactionType.ItemUseInventoryTransaction:
-					transaction = new ItemUseTransaction()
-					{
-						ActionType = (McbeInventoryTransaction.ItemUseActionType)ReadVarInt(),
-						TriggerType = (McbeInventoryTransaction.TriggerType)ReadVarInt(),
-						Position = ReadBlockCoordinates(),
-						Face = ReadSignedVarInt(),
-						Slot = ReadSignedVarInt(),
-						Item = ReadItem(),
-						FromPosition = ReadVector3(),
-						ClickPosition = ReadVector3(),
-						BlockRuntimeId = ReadUnsignedVarInt(),
-						ClientPredictedResult = ReadUnsignedVarInt()
-					};
-					break;
-				case McbeInventoryTransaction.InventoryTransactionType.ItemUseOnActorInventoryTransaction:
-					transaction = new ItemUseOnEntityTransaction()
-					{
-						EntityId = ReadVarLong(),
-						ActionType = (McbeInventoryTransaction.ItemUseOnActorActionType)ReadVarInt(),
-						Slot = ReadSignedVarInt(),
-						Item = ReadItem(),
-						FromPosition = ReadVector3(),
-						ClickPosition = ReadVector3()
-					};
-					break;
-				case McbeInventoryTransaction.InventoryTransactionType.ItemReleaseInventoryTransaction:
-					transaction = new ItemReleaseTransaction()
-					{
-						ActionType = (McbeInventoryTransaction.ItemReleaseActionType)ReadVarInt(),
-						Slot = ReadSignedVarInt(),
-						Item = ReadItem(),
-						FromPosition = ReadVector3()
-					};
-					break;
-			}
-
-			transaction.TransactionRecords = transactions;
-			transaction.RequestId = requestId;
-			transaction.RequestRecords = requestRecords;
-
-			return transaction;
+		private static bool ShouldWriteLegacySetItemSlots(int legacyRequestRawId)
+		{
+			return legacyRequestRawId < -1 && (legacyRequestRawId & 1) == 0;
 		}
 
 		public StackRequestSlotInfo ReadStackRequestSlotInfo()
@@ -240,10 +218,9 @@ namespace Protocol.Network
 
 			return new StackRequestSlotInfo()
 			{
-				ContainerId = containerName.ContainerID,
+				FullContainerName = containerName,
 				Slot = slot,
-				StackNetworkId = stackNetworkId,
-				DynamicId = (int)containerName.DynamicContainerID.Value
+				StackNetworkId = stackNetworkId
 			};
 		}
 
@@ -278,10 +255,7 @@ namespace Protocol.Network
 
 		public void Write(StackRequestSlotInfo slotInfo)
 		{
-			Write(new FullContainerName()
-			{
-				ContainerID = slotInfo.ContainerId, DynamicContainerID = new Optional<uint>((uint)slotInfo.DynamicId)
-			});
+			Write(slotInfo.FullContainerName);
 			Write(slotInfo.Slot);
 			WriteSignedVarInt(slotInfo.StackNetworkId);
 		}
@@ -289,189 +263,97 @@ namespace Protocol.Network
 		public void Write(ItemStackRequests requests)
 		{
 			WriteUnsignedVarInt((uint)requests.Count);
-
 			foreach (ItemStackActionList request in requests)
 			{
 				WriteSignedVarInt(request.RequestId);
 				WriteUnsignedVarInt((uint)request.Count);
-
 				foreach (ItemStackAction action in request)
 				{
-					switch (action)
-					{
-						case TakeAction ta:
-						{
-							Write((byte)McbeItemStackRequest.Type.Take);
-							Write(ta.Count);
-							Write(ta.Source);
-							Write(ta.Destination);
-							break;
-						}
-
-						case PlaceAction ta:
-						{
-							Write((byte)McbeItemStackRequest.Type.Place);
-							Write(ta.Count);
-							Write(ta.Source);
-							Write(ta.Destination);
-							break;
-						}
-
-						case SwapAction ta:
-						{
-							Write((byte)McbeItemStackRequest.Type.Swap);
-							Write(ta.Source);
-							Write(ta.Destination);
-							break;
-						}
-
-						case DropAction ta:
-						{
-							Write((byte)McbeItemStackRequest.Type.Drop);
-							Write(ta.Count);
-							Write(ta.Source);
-							Write(ta.Randomly);
-							break;
-						}
-
-						case DestroyAction ta:
-						{
-							Write((byte)McbeItemStackRequest.Type.Destroy);
-							Write(ta.Count);
-							Write(ta.Source);
-							break;
-						}
-
-						case ConsumeAction ta:
-						{
-							Write((byte)McbeItemStackRequest.Type.Consume);
-							Write(ta.Count);
-							Write(ta.Source);
-							break;
-						}
-
-						case CreateAction ta:
-						{
-							Write((byte)McbeItemStackRequest.Type.Create);
-							Write(ta.ResultSlot);
-							break;
-						}
-
-						case PlaceIntoBundleAction ta:
-						{
-							Write((byte)McbeItemStackRequest.Type.PlaceInItemContainerDeprecated);
-							break;
-						}
-
-						case TakeFromBundleAction ta:
-						{
-							Write((byte)McbeItemStackRequest.Type.TakeFromItemContainerDeprecated);
-							break;
-						}
-
-						case LabTableCombineAction ta:
-						{
-							Write((byte)McbeItemStackRequest.Type.LabTableCombine);
-							break;
-						}
-
-						case BeaconPaymentAction ta:
-						{
-							Write((byte)McbeItemStackRequest.Type.BeaconPayment);
-							WriteSignedVarInt(ta.PrimaryEffect);
-							WriteSignedVarInt(ta.SecondaryEffect);
-							break;
-						}
-
-						case CraftAction ta:
-						{
-							Write((byte)McbeItemStackRequest.Type.CraftRecipe);
-							WriteUnsignedVarInt(ta.RecipeNetworkId);
-							Write(ta.TimesCrafted);
-							break;
-						}
-
-						case CraftAutoAction ta:
-						{
-							Write((byte)McbeItemStackRequest.Type.CraftRecipeAuto);
-							WriteUnsignedVarInt(ta.RecipeNetworkId);
-							Write(ta.TimesCrafted2);
-							Write(ta.TimesCrafted);
-							Write((byte)ta.Ingredients.Count);
-							foreach (Item item in ta.Ingredients)
-							{
-								WriteRecipeIngredient(item);
-							}
-
-							break;
-						}
-
-						case CraftCreativeAction ta:
-						{
-							Write((byte)McbeItemStackRequest.Type.CraftCreative);
-							WriteUnsignedVarInt(ta.CreativeItemNetworkId);
-							Write(ta.ClientPredictedResult);
-							break;
-						}
-
-						case CraftRecipeOptionalAction ta:
-						{
-							Write((byte)McbeItemStackRequest.Type.CraftRecipeOptional);
-							WriteUnsignedVarInt(ta.RecipeNetworkId);
-							Write(ta.FilteredStringIndex);
-							break;
-						}
-
-						case GrindstoneStackRequestAction ta:
-						{
-							Write((byte)McbeItemStackRequest.Type.CraftGrindStone);
-							WriteUnsignedVarInt(ta.RecipeNetworkId);
-							WriteVarInt(ta.RepairCost);
-							Write(ta.TimesCrafted);
-							break;
-						}
-
-						case LoomStackRequestAction ta:
-						{
-							Write((byte)McbeItemStackRequest.Type.CraftLoom);
-							Write(ta.PatternId);
-							Write(ta.TimesCrafted);
-							break;
-						}
-
-						case CraftNotImplementedDeprecatedAction ta:
-						{
-							Write((byte)McbeItemStackRequest.Type.CraftNonImplemented);
-							break;
-						}
-
-						case CraftResultDeprecatedAction ta:
-						{
-							Write((byte)McbeItemStackRequest.Type.CraftResults);
-							WriteItems(ta.ResultItems);
-							Write(ta.TimesCrafted);
-							break;
-						}
-
-						case MineBlockAction ta:
-						{
-							Write((byte)McbeItemStackRequest.Type.MineBlock);
-							WriteVarInt(ta.Slot);
-							WriteVarInt(ta.Durability);
-							WriteSignedVarInt(ta.stackNetworkId);
-							break;
-						}
-					}
+					Write((byte)action.ActionType);
+					Write(action);
 				}
 
-				WriteUnsignedVarInt((uint)request.filteredString.Count);
-
-				for (int fi = 0; fi < request.filteredString.Count; fi++)
+				WriteUnsignedVarInt((uint)request.StringsToFilter.Count);
+				foreach (var value in request.StringsToFilter)
 				{
-					Write(request.filteredString[fi]);
+					Write(value);
 				}
 
-				Write(request.FilterCause);
+				Write(request.StringsToFilterOrigin);
+			}
+		}
+
+		private void Write(ItemStackAction action)
+		{
+			switch (action.ActionType)
+			{
+				case ItemStackRequestActionType.Take:
+				case ItemStackRequestActionType.Place:
+					Write(action.Amount);
+					Write(action.Source);
+					Write(action.Destination);
+					break;
+				case ItemStackRequestActionType.Swap:
+					Write(action.Source);
+					Write(action.Destination);
+					break;
+				case ItemStackRequestActionType.Drop:
+					Write(action.Amount);
+					Write(action.Source);
+					Write(action.Randomly);
+					break;
+				case ItemStackRequestActionType.Destroy:
+				case ItemStackRequestActionType.Consume:
+					Write(action.Amount);
+					Write(action.Source);
+					break;
+				case ItemStackRequestActionType.Create:
+					Write(action.ResultsIndex);
+					break;
+				case ItemStackRequestActionType.BeaconPayment:
+					WriteVarInt(action.PrimaryEffectId);
+					WriteVarInt(action.SecondaryEffectId);
+					break;
+				case ItemStackRequestActionType.MineBlock:
+					WriteVarInt(action.Slot);
+					WriteVarInt(action.PredictedDurability);
+					if (action.PreValidationStatus == MineBlockPreValidationStatus.Valid && action.ItemStackNetId != 0)
+					{
+						WriteVarInt(action.ItemStackNetId);
+					}
+					break;
+				case ItemStackRequestActionType.CraftRecipe:
+				case ItemStackRequestActionType.CraftCreative:
+					WriteUnsignedVarInt(action.RecipeNetworkIdOrCreativeId);
+					WriteUnsignedVarInt(action.TimesCraftedVarInt);
+					break;
+				case ItemStackRequestActionType.CraftRecipeAuto:
+					WriteUnsignedVarInt(action.RecipeNetworkIdOrCreativeId);
+					Write(action.NumberOfRequestedCrafts);
+					Write(action.TimesCrafted);
+					Write((byte)action.Ingredients.Count);
+					foreach (var ingredient in action.Ingredients)
+					{
+						Write(ingredient);
+					}
+					break;
+				case ItemStackRequestActionType.CraftRecipeOptional:
+					WriteUnsignedVarInt(action.RecipeNetId);
+					Write(action.FilteredStringIndex);
+					break;
+				case ItemStackRequestActionType.CraftGrindStone:
+					WriteUnsignedVarInt((uint)action.ItemStackNetId);
+					Write(action.TimesCrafted);
+					WriteVarInt(action.RepairCost);
+					break;
+				case ItemStackRequestActionType.CraftLoom:
+					Write(action.PatternNameId);
+					Write(action.TimesCrafted);
+					break;
+				case ItemStackRequestActionType.CraftResults:
+					Write(action.CraftResults);
+					Write(action.TimesCrafted);
+					break;
 			}
 		}
 
@@ -497,178 +379,106 @@ namespace Protocol.Network
 
 				for (int j = 0; j < count; j++)
 				{
-					var actionType = (McbeItemStackRequest.Type)ReadByte();
+					var action = new ItemStackAction { ActionType = (ItemStackRequestActionType)ReadByte() };
 
-					switch (actionType)
+					switch (action.ActionType)
 					{
-						case McbeItemStackRequest.Type.Take:
+						case ItemStackRequestActionType.Take:
+						case ItemStackRequestActionType.Place:
 						{
-							var action = new TakeAction();
-							action.Count = ReadByte();
+							action.Amount = ReadByte();
 							action.Source = ReadStackRequestSlotInfo();
 							action.Destination = ReadStackRequestSlotInfo();
-							actions.Add(action);
 							break;
 						}
-						case McbeItemStackRequest.Type.Place:
+						case ItemStackRequestActionType.Swap:
 						{
-							var action = new PlaceAction();
-							action.Count = ReadByte();
 							action.Source = ReadStackRequestSlotInfo();
 							action.Destination = ReadStackRequestSlotInfo();
-							actions.Add(action);
 							break;
 						}
-						case McbeItemStackRequest.Type.Swap:
+						case ItemStackRequestActionType.Drop:
 						{
-							var action = new SwapAction();
-							action.Source = ReadStackRequestSlotInfo();
-							action.Destination = ReadStackRequestSlotInfo();
-							actions.Add(action);
-							break;
-						}
-						case McbeItemStackRequest.Type.Drop:
-						{
-							var action = new DropAction();
-							action.Count = ReadByte();
+							action.Amount = ReadByte();
 							action.Source = ReadStackRequestSlotInfo();
 							action.Randomly = ReadBool();
-							actions.Add(action);
 							break;
 						}
-						case McbeItemStackRequest.Type.Destroy:
+						case ItemStackRequestActionType.Destroy:
+						case ItemStackRequestActionType.Consume:
 						{
-							var action = new DestroyAction();
-							action.Count = ReadByte();
+							action.Amount = ReadByte();
 							action.Source = ReadStackRequestSlotInfo();
-							actions.Add(action);
 							break;
 						}
-						case McbeItemStackRequest.Type.Consume:
+						case ItemStackRequestActionType.Create:
 						{
-							var action = new ConsumeAction();
-							action.Count = ReadByte();
-							action.Source = ReadStackRequestSlotInfo();
-							actions.Add(action);
+							action.ResultsIndex = ReadByte();
 							break;
 						}
-						case McbeItemStackRequest.Type.Create:
+						case ItemStackRequestActionType.BeaconPayment:
 						{
-							var action = new CreateAction();
-							action.ResultSlot = ReadByte();
-							actions.Add(action);
+							action.PrimaryEffectId = ReadVarInt();
+							action.SecondaryEffectId = ReadVarInt();
 							break;
 						}
-
-						case McbeItemStackRequest.Type.PlaceInItemContainerDeprecated:
+						case ItemStackRequestActionType.MineBlock:
 						{
-							var action = new PlaceIntoBundleAction();
-							actions.Add(action);
+							action.Slot = ReadVarInt();
+							action.PredictedDurability = ReadVarInt();
+							action.ItemStackNetId = ReadVarInt();
+							action.PreValidationStatus = action.ItemStackNetId == 0 ? MineBlockPreValidationStatus.Invalid : MineBlockPreValidationStatus.Valid;
 							break;
 						}
-
-						case McbeItemStackRequest.Type.TakeFromItemContainerDeprecated:
+						case ItemStackRequestActionType.CraftRecipe:
+						case ItemStackRequestActionType.CraftCreative:
 						{
-							var action = new TakeFromBundleAction();
-							actions.Add(action);
+							action.RecipeNetworkIdOrCreativeId = ReadUnsignedVarInt();
+							action.TimesCraftedVarInt = ReadUnsignedVarInt();
 							break;
 						}
-						case McbeItemStackRequest.Type.LabTableCombine:
+						case ItemStackRequestActionType.CraftRecipeAuto:
 						{
-							var action = new LabTableCombineAction();
-							actions.Add(action);
-							break;
-						}
-						case McbeItemStackRequest.Type.BeaconPayment:
-						{
-							var action = new BeaconPaymentAction();
-							action.PrimaryEffect = ReadSignedVarInt();
-							action.SecondaryEffect = ReadSignedVarInt();
-							actions.Add(action);
-							break;
-						}
-						case McbeItemStackRequest.Type.CraftRecipe:
-						{
-							var action = new CraftAction();
-							action.RecipeNetworkId = ReadUnsignedVarInt();
-							action.TimesCrafted = ReadByte();
-							actions.Add(action);
-							break;
-						}
-						case McbeItemStackRequest.Type.CraftRecipeAuto:
-						{
-							var action = new CraftAutoAction();
-							action.RecipeNetworkId = ReadUnsignedVarInt();
-							action.TimesCrafted2 = ReadByte();
+							action.RecipeNetworkIdOrCreativeId = ReadUnsignedVarInt();
+							action.NumberOfRequestedCrafts = ReadByte();
 							action.TimesCrafted = ReadByte();
 							var cou = ReadByte();
 							for (var a = 0; a < cou; a++)
 							{
-								action.Ingredients.Add(ReadRecipeData());
+								action.Ingredients.Add(ReadRecipeIngredient());
 							}
-
-							actions.Add(action);
 							break;
 						}
-						case McbeItemStackRequest.Type.CraftCreative:
+						case ItemStackRequestActionType.CraftRecipeOptional:
 						{
-							var action = new CraftCreativeAction();
-							action.CreativeItemNetworkId = ReadUnsignedVarInt();
-							action.ClientPredictedResult = ReadByte();
-							actions.Add(action);
+							action.RecipeNetId = ReadUnsignedVarInt();
+							action.FilteredStringIndex = ReadUint();
 							break;
 						}
-						case McbeItemStackRequest.Type.CraftRecipeOptional:
+						case ItemStackRequestActionType.CraftGrindStone:
 						{
-							var action = new CraftRecipeOptionalAction();
-							action.RecipeNetworkId = ReadUnsignedVarInt();
-							action.FilteredStringIndex = ReadInt();
-							actions.Add(action);
-							break;
-						}
-						case McbeItemStackRequest.Type.CraftGrindStone:
-						{
-							var action = new GrindstoneStackRequestAction();
-							action.RecipeNetworkId = ReadUnsignedVarInt();
+							action.ItemStackNetId = (int)ReadUnsignedVarInt();
+							action.TimesCrafted = ReadByte();
 							action.RepairCost = ReadVarInt();
+							break;
+						}
+						case ItemStackRequestActionType.CraftLoom:
+						{
+							action.PatternNameId = ReadString();
 							action.TimesCrafted = ReadByte();
-							actions.Add(action);
 							break;
 						}
-						case McbeItemStackRequest.Type.CraftLoom:
+						case ItemStackRequestActionType.CraftResults:
 						{
-							var action = new LoomStackRequestAction();
-							action.PatternId = ReadString();
+							action.CraftResults = ReadNetworkItemInstanceDescriptors();
 							action.TimesCrafted = ReadByte();
-							actions.Add(action);
-							break;
-						}
-						case McbeItemStackRequest.Type.CraftNonImplemented:
-						{
-							var action = new CraftNotImplementedDeprecatedAction();
-							actions.Add(action);
-							break;
-						}
-						case McbeItemStackRequest.Type.CraftResults:
-						{
-							var action = new CraftResultDeprecatedAction();
-							action.ResultItems = ReadItems();
-							action.TimesCrafted = ReadByte();
-							actions.Add(action);
-							break;
-						}
-						case McbeItemStackRequest.Type.MineBlock:
-						{
-							var action = new MineBlockAction();
-							action.Slot = ReadVarInt();
-							action.Durability = ReadVarInt();
-							action.stackNetworkId = ReadSignedVarInt();
-							actions.Add(action);
 							break;
 						}
 						default:
-							throw new ArgumentOutOfRangeException();
+							break;
 					}
+
+					actions.Add(action);
 				}
 
 				requests.Add(actions);
@@ -677,10 +487,10 @@ namespace Protocol.Network
 
 				for (int fi = 0; fi < filterStringCount; fi++)
 				{
-					actions.filteredString.Add(ReadString());
+					actions.StringsToFilter.Add(ReadString());
 				}
 
-				var filterStringCause = ReadUint();
+				actions.StringsToFilterOrigin = ReadInt();
 			}
 
 			return requests;
@@ -698,21 +508,17 @@ namespace Protocol.Network
 				WriteUnsignedVarInt((uint)stackResponse.ResponseContainerInfos.Count);
 				foreach (StackResponseContainerInfo containerInfo in stackResponse.ResponseContainerInfos)
 				{
-					Write(new FullContainerName()
-					{
-						ContainerID = containerInfo.ContainerId,
-						DynamicContainerID = new Optional<uint>((uint)containerInfo.DynamicId)
-					});
+					Write(containerInfo.ContainerName);
 					WriteUnsignedVarInt((uint)containerInfo.Slots.Count);
 					foreach (StackResponseSlotInfo slot in containerInfo.Slots)
 					{
+						Write(slot.RequestedSlot);
 						Write(slot.Slot);
-						Write(slot.HotbarSlot);
 						Write(slot.Count);
 						WriteSignedVarInt(slot.StackNetworkId);
 						Write(slot.CustomName);
 						Write(slot.FilteredCustomName);
-						WriteSignedVarInt(slot.DurabilityCorrection);
+						WriteSignedVarInt(slot.DurationCorrection);
 					}
 				}
 			}
@@ -738,22 +544,20 @@ namespace Protocol.Network
 				for (int sub = 0; sub < subCount; sub++)
 				{
 					var containerInfo = new StackResponseContainerInfo();
-					var name = readFullContainerName();
-					containerInfo.ContainerId = name.ContainerID;
-					containerInfo.DynamicId = (int)name.DynamicContainerID.Value;
+					containerInfo.ContainerName = readFullContainerName();
 					var slotCount = ReadUnsignedVarInt();
 					containerInfo.Slots = new List<StackResponseSlotInfo>();
 
 					for (int si = 0; si < slotCount; si++)
 					{
 						var slot = new StackResponseSlotInfo();
+						slot.RequestedSlot = ReadByte();
 						slot.Slot = ReadByte();
-						slot.HotbarSlot = ReadByte();
 						slot.Count = ReadByte();
 						slot.StackNetworkId = ReadSignedVarInt();
 						slot.CustomName = ReadString();
 						slot.FilteredCustomName = ReadString();
-						slot.DurabilityCorrection = ReadSignedVarInt();
+						slot.DurationCorrection = ReadSignedVarInt();
 
 						containerInfo.Slots.Add(slot);
 					}

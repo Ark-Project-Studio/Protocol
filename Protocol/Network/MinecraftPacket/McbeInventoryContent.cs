@@ -5,9 +5,9 @@ namespace Protocol.Network.MinecraftPacket;
 public class McbeInventoryContent : Packet
 {
     public FullContainerName ContainerName = new();
-    public Item[] input;
+    public NetworkItemStackDescriptor[] input;
     public uint inventoryId;
-    public Item storageItem;
+    public NetworkItemStackDescriptor storageItem;
     public McbeInventoryContent()
     {
         Id = 0x31;
@@ -18,17 +18,17 @@ public class McbeInventoryContent : Packet
     {
         base.EncodePacket();
         WriteUnsignedVarInt(inventoryId);
-        WriteSlice(input,Write,true);
+        WriteSlice(input, Write);
         Write(ContainerName);
-        Write(storageItem,true);
+        Write(storageItem);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
         inventoryId = ReadUnsignedVarInt();
-        input = ReadSlice(ReadItem,true);
+        input = ReadSlice(ReadNetworkItemStackDescriptor);
         ContainerName = readFullContainerName();
-        storageItem = ReadItem();
+        storageItem = ReadNetworkItemStackDescriptor();
     }
 }

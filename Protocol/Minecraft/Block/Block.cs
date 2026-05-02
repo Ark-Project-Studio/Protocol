@@ -71,11 +71,16 @@ public class Block : ICloneable
 	}
 
 
-	public virtual Item GetItem(int count = 1)
+	public virtual NetworkItemStackDescriptor GetItem(int count = 1)
 	{
 		var id = Id;
 		if (id > 255) id = -(id - 255);
-		return ItemFactory.GetItem((short)id, Metadata, count);
+		return new NetworkItemStackDescriptor
+		{
+			Id = id,
+			StackSize = (ushort)count,
+			Aux = Metadata
+		};
 	}
 
 

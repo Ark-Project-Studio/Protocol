@@ -147,20 +147,20 @@ namespace Protocol.Network
 		public void Write(DimensionData data)
 		{
 			Write(data.Identifier);
-			WriteVarInt(data.MaxHeight);
-			WriteVarInt(data.MinHeight);
-			WriteVarInt(data.Generator);
-			WriteVarInt(data.Dimension);
+			WriteSignedVarInt(data.MaxHeight);
+			WriteSignedVarInt(data.MinHeight);
+			WriteSignedVarInt(data.Generator);
+			WriteSignedVarInt(data.Dimension);
 		}
 
 		public DimensionData ReadDimensionData()
 		{
 			DimensionData data = new DimensionData();
 			data.Identifier = ReadString();
-			data.MaxHeight = ReadVarInt();
-			data.MinHeight = ReadVarInt();
-			data.Generator = ReadVarInt();
-			data.Dimension = ReadVarInt();
+			data.MaxHeight = ReadSignedVarInt();
+			data.MinHeight = ReadSignedVarInt();
+			data.Generator = ReadSignedVarInt();
+			data.Dimension = ReadSignedVarInt();
 			return data;
 		}
 
@@ -372,437 +372,401 @@ namespace Protocol.Network
 			return mapData;
 		}
 
-		const byte Shapeless = 0;
-		const byte Shaped = 1;
-		const byte Furnace = 2;
-		const byte FurnaceData = 3;
-		const byte Multi = 4;
-		const byte ShulkerBox = 5;
-		const byte ShapelessChemistry = 6;
-		const byte ShapedChemistry = 7;
-		const byte SmithingTransform = 8;
-		const byte SmithingTrim = 9;
-
-		public void Write(Recipes recipes)
+		public void Write(CraftingDataEntries entries)
 		{
-			WriteUnsignedVarInt((uint)recipes.Count);
-			int UniqueId = 1;
-			foreach (Recipe recipe in recipes)
+			WriteUnsignedVarInt((uint)(entries?.Count ?? 0));
+			if (entries == null) return;
+
+			foreach (var entry in entries)
 			{
-				switch (recipe)
-				{
-					case ShapelessRecipe shapelessRecipe:
-					{
-						WriteSignedVarInt(Shapeless);
-
-						var rec = shapelessRecipe;
-						var uuid = new UUID(Guid.NewGuid().ToString());
-						Write($"{uuid}");
-						WriteVarInt(rec.Input.Count);
-						foreach (Item stack in rec.Input)
-						{
-							WriteRecipeIngredient(stack);
-						}
-
-						WriteVarInt(rec.Result.Count);
-						foreach (Item item in rec.Result)
-						{
-							item.RuntimeId = 0;
-							Write(item,false);
-						}
-
-						Write(rec.Id);
-						Write(rec.Block);
-						WriteSignedVarInt(0);
-						Write((byte)1);
-						WriteVarInt(UniqueId);
-
-						break;
-					}
-					case ShapedRecipe shapedRecipe:
-					{
-						WriteSignedVarInt(Shaped);
-
-						var rec = shapedRecipe;
-						var uuid = new UUID(Guid.NewGuid().ToString());
-						Write($"{uuid}");
-						WriteSignedVarInt(rec.Width);
-						WriteSignedVarInt(rec.Height);
-						for (int w = 0; w < rec.Width; w++)
-						{
-							for (int h = 0; h < rec.Height; h++)
-							{
-								WriteRecipeIngredient(rec.Input[(h * rec.Width) + w]);
-							}
-						}
-
-						WriteVarInt(rec.Result.Count);
-						foreach (Item item in rec.Result)
-						{
-							item.RuntimeId = 0;
-							Write(item,false);
-						}
-
-						Write(rec.Id);
-						Write(rec.Block);
-						WriteUnsignedVarInt(0);
-						Write(true);
-						Write((byte)1);
-						WriteVarInt(UniqueId);
-
-						break;
-					}
-					case SmeltingRecipe smeltingRecipe:
-					{
-						var rec = smeltingRecipe;
-						if (rec.Input.Metadata == 0)
-						{
-							WriteSignedVarInt(Furnace);
-							WriteSignedVarInt(rec.Input.Id);
-							Write(rec.Result,false);
-							Write(rec.Block);
-						}
-						else
-						{
-							WriteSignedVarInt(FurnaceData);
-							WriteSignedVarInt(rec.Input.Id);
-							WriteSignedVarInt(rec.Input.Metadata);
-							Write(rec.Result,false);
-							Write(rec.Block);
-						}
-
-						break;
-					}
-					case MultiRecipe multiRecipe:
-					{
-						WriteSignedVarInt(Multi);
-						Write(recipe.Id);
-						WriteVarInt(UniqueId);
-						break;
-					}
-				}
-
-				UniqueId++;
+				Write(entry);
 			}
 		}
 
-		public Recipes ReadRecipes()
+		public CraftingDataEntries ReadCraftingDataEntries()
 		{
-			var recipes = new Recipes();
-
-			int count = (int)ReadUnsignedVarInt();
-
+			var entries = new CraftingDataEntries();
+			var count = ReadUnsignedVarInt();
 			for (int i = 0; i < count; i++)
 			{
-				int recipeType = ReadSignedVarInt();
+				entries.Add(ReadCraftingDataEntry());
+			}
 
+			return entries;
+		}
 
-				if (recipeType < 0)
-				{
-					Console.WriteLine("Read void recipe");
+		public void Write(CraftingDataEntry entry)
+		{
+			WriteSignedVarInt((int)entry.Type);
+			switch (entry.Type)
+			{
+				case CraftingDataEntryType.Shapeless:
+					WriteShapelessRecipe((ShapelessRecipe)entry.Recipe);
 					break;
-				}
+				case CraftingDataEntryType.Shaped:
+					WriteShapedRecipe((ShapedRecipe)entry.Recipe);
+					break;
+				case CraftingDataEntryType.Furnace:
+					break;
+				case CraftingDataEntryType.FurnaceAux:
+					break;
+				case CraftingDataEntryType.Multi:
+					WriteMultiRecipe((MultiRecipe)entry.Recipe);
+					break;
+				case CraftingDataEntryType.UserDataShapeless:
+					WriteUserDataShapelessRecipe((UserDataShapelessRecipe)entry.Recipe);
+					break;
+				case CraftingDataEntryType.ShapelessChemistry:
+					WriteShapelessChemistryRecipe((ShapelessChemistryRecipe)entry.Recipe);
+					break;
+				case CraftingDataEntryType.ShapedChemistry:
+					WriteShapedRecipe(((ShapedChemistryRecipe)entry.Recipe).ChemistryRecipe);
+					break;
+				case CraftingDataEntryType.SmithingTransform:
+					WriteSmithingTransformRecipe((SmithingTransformRecipe)entry.Recipe);
+					break;
+				case CraftingDataEntryType.SmithingTrim:
+					WriteSmithingTrimRecipe((SmithingTrimRecipe)entry.Recipe);
+					break;
+			}
+		}
 
-				switch (recipeType)
+		public CraftingDataEntry ReadCraftingDataEntry()
+		{
+			var type = (CraftingDataEntryType)ReadSignedVarInt();
+			Recipe recipe = type switch
+			{
+				CraftingDataEntryType.Shapeless => ReadShapelessRecipe(),
+				CraftingDataEntryType.Shaped => ReadShapedRecipe(),
+				CraftingDataEntryType.Furnace => new FurnaceRecipe(),
+				CraftingDataEntryType.FurnaceAux => new FurnaceAuxRecipe(),
+				CraftingDataEntryType.Multi => ReadMultiRecipe(),
+				CraftingDataEntryType.UserDataShapeless => ReadUserDataShapelessRecipe(),
+				CraftingDataEntryType.ShapelessChemistry => ReadShapelessChemistryRecipe(),
+				CraftingDataEntryType.ShapedChemistry => new ShapedChemistryRecipe { ChemistryRecipe = ReadShapedRecipe() },
+				CraftingDataEntryType.SmithingTransform => ReadSmithingTransformRecipe(),
+				CraftingDataEntryType.SmithingTrim => ReadSmithingTrimRecipe(),
+				_ => throw new InvalidDataException($"Unknown crafting data entry type: {type}")
+			};
+
+			return new CraftingDataEntry { Type = type, Recipe = recipe };
+		}
+
+		private void WriteUnlockingRequirement(RecipeUnlockingRequirement requirement)
+		{
+			requirement ??= new RecipeUnlockingRequirement();
+			Write((byte)requirement.UnlockingContext);
+			if (requirement.UnlockingContext == RecipeUnlockingContext.None)
+			{
+				WriteUnsignedVarInt((uint)requirement.UnlockingIngredients.Count);
+				foreach (var ingredient in requirement.UnlockingIngredients)
 				{
-					case Shapeless:
-					case ShulkerBox:
-					{
-						var recipe = new ShapelessRecipe();
-						ReadString();
-						int ingrediensCount = ReadVarInt();
-						for (int j = 0; j < ingrediensCount; j++)
-						{
-							recipe.Input.Add(ReadRecipeData());
-						}
-
-						int resultCount = ReadVarInt();
-						for (int j = 0; j < resultCount; j++)
-						{
-							recipe.Result.Add(ReadItem(false));
-						}
-
-						recipe.Id = ReadUUID();
-						recipe.Block = ReadString();
-						ReadSignedVarInt();
-						var unlockReq = ReadByte();
-						if (unlockReq == 0)
-						{
-							var ingredientCount = ReadVarInt();
-							for (int a = 0; a < ingredientCount; a++)
-							{
-								ReadRecipeData();
-							}
-						}
-
-						recipe.UniqueId = ReadVarInt();
-
-
-						break;
-					}
-					case Shaped:
-					{
-						var uniqueid = ReadString();
-
-						int width = ReadSignedVarInt();
-						int height = ReadSignedVarInt();
-
-						var recipe = new ShapedRecipe(width, height);
-						if (width > 3 || height > 3)
-							throw new Exception("Wrong number of ingredience. Width=" + width + ", height=" + height);
-						for (int w = 0; w < width; w++)
-						{
-							for (int h = 0; h < height; h++)
-							{
-								recipe.Input[(h * width) + w] = ReadRecipeData();
-							}
-						}
-
-						int resultCount = ReadVarInt();
-
-						for (int j = 0; j < resultCount; j++)
-						{
-							recipe.Result.Add(ReadItem(false));
-						}
-
-						recipe.Id = ReadUUID();
-
-						recipe.Block = ReadString();
-						ReadUnsignedVarInt();
-						var symetric = ReadBool();
-						var unlockReq = ReadByte();
-						if (unlockReq == 0)
-						{
-							var ingredientCount = ReadVarInt();
-							for (int a = 0; a < ingredientCount; a++)
-							{
-								ReadRecipeData();
-							}
-						}
-
-						recipe.UniqueId = ReadVarInt();
-						recipes.Add(recipe);
-
-						break;
-					}
-					case Furnace:
-					{
-						var recipe = new SmeltingRecipe();
-						short id = (short)ReadSignedVarInt();
-
-						Item result = ReadItem(false);
-						recipe.Block = ReadString();
-						recipe.Input = ItemFactory.GetItem(id, 0);
-						recipe.Result = result;
-
-
-						break;
-					}
-					case FurnaceData:
-					{
-						var recipe = new SmeltingRecipe();
-						short id = (short)ReadSignedVarInt();
-						short meta = (short)ReadSignedVarInt();
-						Item result = ReadItem(false);
-						recipe.Block = ReadString();
-						recipe.Input = ItemFactory.GetItem(id, meta);
-						recipe.Result = result;
-
-
-						break;
-					}
-					case Multi:
-					{
-						var recipe = new MultiRecipe();
-						recipe.Id = ReadUUID();
-						recipe.UniqueId = ReadVarInt();
-
-						break;
-					}
-					case ShapelessChemistry:
-					{
-						var recipe = new ShapelessRecipe();
-						ReadString();
-						int ingrediensCount = ReadVarInt();
-						for (int j = 0; j < ingrediensCount; j++)
-						{
-							recipe.Input.Add(ReadRecipeData());
-						}
-
-						int resultCount = ReadVarInt();
-						for (int j = 0; j < resultCount; j++)
-						{
-							recipe.Result.Add(ReadItem(false));
-						}
-
-						recipe.Id = ReadUUID();
-						recipe.Block = ReadString();
-						ReadSignedVarInt();
-						recipe.UniqueId = ReadVarInt();
-
-
-						break;
-					}
-					case ShapedChemistry:
-					{
-						ReadString();
-						int width = ReadSignedVarInt();
-						int height = ReadSignedVarInt();
-						var recipe = new ShapedRecipe(width, height);
-						if (width > 3 || height > 3)
-							throw new Exception("Wrong number of ingredience. Width=" + width + ", height=" + height);
-						for (int w = 0; w < width; w++)
-						{
-							for (int h = 0; h < height; h++)
-							{
-								recipe.Input[(h * width) + w] = ReadRecipeData();
-							}
-						}
-
-						int resultCount = ReadVarInt();
-						for (int j = 0; j < resultCount; j++)
-						{
-							recipe.Result.Add(ReadItem(false));
-						}
-
-						recipe.Id = ReadUUID();
-						recipe.Block = ReadString();
-						ReadSignedVarInt();
-						recipe.UniqueId = ReadVarInt();
-
-						break;
-					}
-					case SmithingTrim:
-					{
-						var recipe = new SmithingTrimRecipe();
-						recipe.RecipeId = ReadString();
-						recipe.Template = ReadRecipeData();
-						recipe.Input = ReadRecipeData();
-						recipe.Addition = ReadRecipeData();
-						recipe.Block = ReadString();
-						recipe.UniqueId = ReadVarInt();
-
-
-						break;
-					}
-					case SmithingTransform:
-					{
-						var recipe = new SmithingTransformRecipe();
-						recipe.RecipeId = ReadString();
-						recipe.Template = ReadRecipeData();
-						recipe.Input = ReadRecipeData();
-						recipe.Addition = ReadRecipeData();
-						recipe.Output = ReadItem(false);
-						recipe.Block = ReadString();
-						recipe.UniqueId = ReadVarInt();
-
-
-						break;
-					}
-					default:
-						Console.WriteLine($"Read unknown recipe type: {recipeType}");
-
-						break;
+					Write(ingredient);
 				}
 			}
-
-
-			return recipes;
 		}
 
-		public void Write(PotionContainerChangeRecipe[] recipes)
+		private RecipeUnlockingRequirement ReadUnlockingRequirement()
 		{
-			WriteSignedVarInt(0);
-		}
-
-		public PotionContainerChangeRecipe[] ReadPotionContainerChangeRecipes()
-		{
-			int count = (int)ReadUnsignedVarInt();
-			var recipes = new PotionContainerChangeRecipe[count];
-			for (int i = 0; i < recipes.Length; i++)
+			var requirement = new RecipeUnlockingRequirement { UnlockingContext = (RecipeUnlockingContext)ReadByte() };
+			if (requirement.UnlockingContext == RecipeUnlockingContext.None)
 			{
-				var recipe = new PotionContainerChangeRecipe();
-				recipe.Input = ReadVarInt();
-				recipe.Ingredient = ReadVarInt();
-				recipe.Output = ReadVarInt();
-
-				recipes[i] = recipe;
-			}
-
-			return recipes;
-		}
-
-		public void Write(MaterialReducerRecipe[] reducerRecipes)
-		{
-			WriteUnsignedVarInt((uint)reducerRecipes.Length);
-
-			for (int i = 0; i < reducerRecipes.Length; i++)
-			{
-				var recipe = reducerRecipes[i];
-				WriteVarInt((recipe.Input << 16) | recipe.InputMeta);
-				WriteUnsignedVarInt((uint)recipe.Output.Length);
-
-				foreach (var output in recipe.Output)
+				var count = ReadUnsignedVarInt();
+				for (int i = 0; i < count; i++)
 				{
-					WriteVarInt(output.ItemId);
-					WriteVarInt(output.ItemCount);
+					requirement.UnlockingIngredients.Add(ReadRecipeIngredient());
 				}
+			}
+
+			return requirement;
+		}
+
+		private void WriteRecipeIngredients(List<RecipeIngredient> ingredients)
+		{
+			WriteUnsignedVarInt((uint)(ingredients?.Count ?? 0));
+			if (ingredients == null) return;
+			foreach (var ingredient in ingredients) Write(ingredient);
+		}
+
+		private List<RecipeIngredient> ReadRecipeIngredients()
+		{
+			var ingredients = new List<RecipeIngredient>();
+			var count = ReadUnsignedVarInt();
+			for (int i = 0; i < count; i++) ingredients.Add(ReadRecipeIngredient());
+			return ingredients;
+		}
+
+		private void WriteShapelessRecipe(ShapelessRecipe recipe)
+		{
+			Write(recipe.RecipeUniqueId);
+			WriteRecipeIngredients(recipe.IngredientList);
+			Write(recipe.ProductionList);
+			Write(recipe.RecipeId);
+			Write(recipe.RecipeTag);
+			WriteSignedVarInt(recipe.Priority);
+			WriteUnlockingRequirement(recipe.UnlockingRequirement);
+			WriteUnsignedVarInt(recipe.NetId);
+		}
+
+		private ShapelessRecipe ReadShapelessRecipe()
+		{
+			return new ShapelessRecipe
+			{
+				RecipeUniqueId = ReadString(),
+				IngredientList = ReadRecipeIngredients(),
+				ProductionList = ReadNetworkItemInstanceDescriptors(),
+				RecipeId = ReadUUID(),
+				RecipeTag = ReadString(),
+				Priority = ReadSignedVarInt(),
+				UnlockingRequirement = ReadUnlockingRequirement(),
+				NetId = ReadUnsignedVarInt()
+			};
+		}
+
+		private void WriteShapedRecipe(ShapedRecipe recipe)
+		{
+			Write(recipe.RecipeUniqueId);
+			WriteSignedVarInt(recipe.GridWidth);
+			WriteSignedVarInt(recipe.GridHeight);
+			foreach (var ingredient in recipe.IngredientList) Write(ingredient);
+			Write(recipe.ProductionList);
+			Write(recipe.RecipeId);
+			Write(recipe.RecipeTag);
+			WriteSignedVarInt(recipe.Priority);
+			Write(recipe.AssumeSymmetry);
+			WriteUnlockingRequirement(recipe.UnlockingRequirement);
+			WriteUnsignedVarInt(recipe.NetId);
+		}
+
+		private ShapedRecipe ReadShapedRecipe()
+		{
+			var recipe = new ShapedRecipe
+			{
+				RecipeUniqueId = ReadString(),
+				GridWidth = ReadSignedVarInt(),
+				GridHeight = ReadSignedVarInt()
+			};
+
+			var ingredientCount = recipe.GridWidth * recipe.GridHeight;
+			for (int i = 0; i < ingredientCount; i++) recipe.IngredientList.Add(ReadRecipeIngredient());
+			recipe.ProductionList = ReadNetworkItemInstanceDescriptors();
+			recipe.RecipeId = ReadUUID();
+			recipe.RecipeTag = ReadString();
+			recipe.Priority = ReadSignedVarInt();
+			recipe.AssumeSymmetry = ReadBool();
+			recipe.UnlockingRequirement = ReadUnlockingRequirement();
+			recipe.NetId = ReadUnsignedVarInt();
+			return recipe;
+		}
+
+		private void WriteMultiRecipe(MultiRecipe recipe)
+		{
+			Write(recipe.MultiRecipeId);
+			WriteUnsignedVarInt(recipe.NetId);
+		}
+
+		private MultiRecipe ReadMultiRecipe()
+		{
+			return new MultiRecipe { MultiRecipeId = ReadUUID(), NetId = ReadUnsignedVarInt() };
+		}
+
+		private void WriteUserDataShapelessRecipe(UserDataShapelessRecipe recipe)
+		{
+			Write(recipe.RecipeUniqueId);
+			WriteRecipeIngredients(recipe.IngredientList);
+			Write(recipe.ProductionList);
+			Write(recipe.RecipeId);
+			Write(recipe.RecipeTag);
+			WriteSignedVarInt(recipe.Priority);
+			WriteUnlockingRequirement(recipe.UnlockingRequirement);
+			WriteUnsignedVarInt(recipe.NetId);
+		}
+
+		private UserDataShapelessRecipe ReadUserDataShapelessRecipe()
+		{
+			return new UserDataShapelessRecipe
+			{
+				RecipeUniqueId = ReadString(),
+				IngredientList = ReadRecipeIngredients(),
+				ProductionList = ReadNetworkItemInstanceDescriptors(),
+				RecipeId = ReadUUID(),
+				RecipeTag = ReadString(),
+				Priority = ReadSignedVarInt(),
+				UnlockingRequirement = ReadUnlockingRequirement(),
+				NetId = ReadUnsignedVarInt()
+			};
+		}
+
+		private void WriteShapelessChemistryRecipe(ShapelessChemistryRecipe recipe)
+		{
+			Write(recipe.RecipeUniqueId);
+			WriteRecipeIngredients(recipe.IngredientList);
+			Write(recipe.ProductionList);
+			Write(recipe.RecipeId);
+			Write(recipe.RecipeTag);
+			WriteSignedVarInt(recipe.Priority);
+			WriteUnsignedVarInt(recipe.NetId);
+		}
+
+		private ShapelessChemistryRecipe ReadShapelessChemistryRecipe()
+		{
+			return new ShapelessChemistryRecipe
+			{
+				RecipeUniqueId = ReadString(),
+				IngredientList = ReadRecipeIngredients(),
+				ProductionList = ReadNetworkItemInstanceDescriptors(),
+				RecipeId = ReadUUID(),
+				RecipeTag = ReadString(),
+				Priority = ReadSignedVarInt(),
+				NetId = ReadUnsignedVarInt()
+			};
+		}
+
+		private void WriteSmithingTransformRecipe(SmithingTransformRecipe recipe)
+		{
+			Write(recipe.RecipeUniqueId);
+			Write(recipe.Template);
+			Write(recipe.Base);
+			Write(recipe.Addition);
+			Write(recipe.Result);
+			Write(recipe.RecipeTag);
+			WriteUnsignedVarInt(recipe.NetId);
+		}
+
+		private SmithingTransformRecipe ReadSmithingTransformRecipe()
+		{
+			return new SmithingTransformRecipe
+			{
+				RecipeUniqueId = ReadString(),
+				Template = ReadRecipeIngredient(),
+				Base = ReadRecipeIngredient(),
+				Addition = ReadRecipeIngredient(),
+				Result = ReadNetworkItemInstanceDescriptor(),
+				RecipeTag = ReadString(),
+				NetId = ReadUnsignedVarInt()
+			};
+		}
+
+		private void WriteSmithingTrimRecipe(SmithingTrimRecipe recipe)
+		{
+			Write(recipe.RecipeUniqueId);
+			Write(recipe.Template);
+			Write(recipe.Base);
+			Write(recipe.Addition);
+			Write(recipe.RecipeTag);
+			WriteUnsignedVarInt(recipe.NetId);
+		}
+
+		private SmithingTrimRecipe ReadSmithingTrimRecipe()
+		{
+			return new SmithingTrimRecipe
+			{
+				RecipeUniqueId = ReadString(),
+				Template = ReadRecipeIngredient(),
+				Base = ReadRecipeIngredient(),
+				Addition = ReadRecipeIngredient(),
+				RecipeTag = ReadString(),
+				NetId = ReadUnsignedVarInt()
+			};
+		}
+
+		public void Write(List<PotionMixDataEntry> recipes)
+		{
+			WriteUnsignedVarInt((uint)(recipes?.Count ?? 0));
+			if (recipes == null) return;
+			foreach (var recipe in recipes)
+			{
+				WriteSignedVarInt(recipe.FromPotionId);
+				WriteSignedVarInt(recipe.FromPotionAux);
+				WriteSignedVarInt(recipe.ReagentItemId);
+				WriteSignedVarInt(recipe.ReagentItemAux);
+				WriteSignedVarInt(recipe.ToPotionId);
+				WriteSignedVarInt(recipe.ToPotionAux);
 			}
 		}
 
-		public MaterialReducerRecipe[] ReadMaterialReducerRecipes()
+		public List<PotionMixDataEntry> ReadPotionMixDataEntries()
 		{
-			int count = (int)ReadUnsignedVarInt();
-			var recipes = new MaterialReducerRecipe[count];
-			for (int i = 0; i < recipes.Length; i++)
+			var entries = new List<PotionMixDataEntry>();
+			var count = ReadUnsignedVarInt();
+			for (int i = 0; i < count; i++)
 			{
-				var inputIdAndMeta = ReadVarInt();
-				var inputId = inputIdAndMeta >> 16;
-				var inputMeta = inputIdAndMeta & 0x7fff;
-
-				var outputCount = (int)ReadUnsignedVarInt();
-				MaterialReducerRecipe.MaterialReducerRecipeOutput[] outputs =
-					new MaterialReducerRecipe.MaterialReducerRecipeOutput[outputCount];
-
-				for (int o = 0; o < outputs.Length; o++)
+				entries.Add(new PotionMixDataEntry
 				{
-					var itemId = ReadVarInt();
-					var itemCount = ReadVarInt();
+					FromPotionId = ReadSignedVarInt(),
+					FromPotionAux = ReadSignedVarInt(),
+					ReagentItemId = ReadSignedVarInt(),
+					ReagentItemAux = ReadSignedVarInt(),
+					ToPotionId = ReadSignedVarInt(),
+					ToPotionAux = ReadSignedVarInt()
+				});
+			}
 
-					outputs[o] = new MaterialReducerRecipe.MaterialReducerRecipeOutput(itemId, itemCount);
+			return entries;
+		}
+
+		public void Write(List<ContainerMixDataEntry> recipes)
+		{
+			WriteUnsignedVarInt((uint)(recipes?.Count ?? 0));
+			if (recipes == null) return;
+			foreach (var recipe in recipes)
+			{
+				WriteSignedVarInt(recipe.InputItemId);
+				WriteSignedVarInt(recipe.ReagentItemId);
+				WriteSignedVarInt(recipe.ToItemId);
+			}
+		}
+
+		public List<ContainerMixDataEntry> ReadContainerMixDataEntries()
+		{
+			var entries = new List<ContainerMixDataEntry>();
+			var count = ReadUnsignedVarInt();
+			for (int i = 0; i < count; i++)
+			{
+				entries.Add(new ContainerMixDataEntry
+				{
+					InputItemId = ReadSignedVarInt(),
+					ReagentItemId = ReadSignedVarInt(),
+					ToItemId = ReadSignedVarInt()
+				});
+			}
+
+			return entries;
+		}
+
+		public void Write(List<MaterialReducerDataEntry> reducerRecipes)
+		{
+			WriteUnsignedVarInt((uint)(reducerRecipes?.Count ?? 0));
+			if (reducerRecipes == null) return;
+			foreach (var recipe in reducerRecipes)
+			{
+				WriteSignedVarInt(recipe.Input);
+				WriteUnsignedVarInt((uint)recipe.Items.Count);
+				foreach (var item in recipe.Items)
+				{
+					WriteSignedVarInt(item.ItemId);
+					WriteSignedVarInt(item.ItemCount);
+				}
+			}
+		}
+
+		public List<MaterialReducerDataEntry> ReadMaterialReducerDataEntries()
+		{
+			var entries = new List<MaterialReducerDataEntry>();
+			var count = ReadUnsignedVarInt();
+			for (int i = 0; i < count; i++)
+			{
+				var entry = new MaterialReducerDataEntry { Input = ReadSignedVarInt() };
+				var itemCount = ReadUnsignedVarInt();
+				for (int itemIndex = 0; itemIndex < itemCount; itemIndex++)
+				{
+					entry.Items.Add(new MaterialReducerItemInfo { ItemId = ReadSignedVarInt(), ItemCount = ReadSignedVarInt() });
 				}
 
-				var recipe = new MaterialReducerRecipe(inputId, inputMeta, outputs);
-
-				recipes[i] = recipe;
+				entries.Add(entry);
 			}
 
-			return recipes;
-		}
-
-		public void Write(PotionTypeRecipe[] recipes)
-		{
-			WriteSignedVarInt(0);
-		}
-
-		public PotionTypeRecipe[] ReadPotionTypeRecipes()
-		{
-			int count = (int)ReadUnsignedVarInt();
-			var recipes = new PotionTypeRecipe[count];
-			for (int i = 0; i < recipes.Length; i++)
-			{
-				var recipe = new PotionTypeRecipe();
-				recipe.Input = ReadVarInt();
-				recipe.InputMeta = ReadVarInt();
-				recipe.Ingredient = ReadVarInt();
-				recipe.IngredientMeta = ReadVarInt();
-				recipe.Output = ReadVarInt();
-				recipe.OutputMeta = ReadVarInt();
-
-				recipes[i] = recipe;
-			}
-
-			return recipes;
+			return entries;
 		}
 	}
 }

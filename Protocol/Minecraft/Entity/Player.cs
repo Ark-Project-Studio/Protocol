@@ -13,9 +13,6 @@ public class Player : Entity
 	private Dictionary<ChunkCoordinates, McbeWrapper> _chunksUsed = new();
 	private ChunkCoordinates _currentChunkPosition;
 
-	internal IInventory _openInventory = null;
-
-
 	public Player(string entityTypeId, Level level) : base(entityTypeId, level)
 	{
 	}

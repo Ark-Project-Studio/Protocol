@@ -5,7 +5,7 @@ public class McbeAddItemEntity : Packet
 {
     public long entityIdSelf;
     public bool isFromFishing;
-    public Item item;
+    public NetworkItemStackDescriptor item;
     public MetadataDictionary metadata;
     public ulong runtimeEntityId;
     public float speedX;
@@ -41,7 +41,7 @@ public class McbeAddItemEntity : Packet
         base.DecodePacket();
         entityIdSelf = ReadSignedVarLong();
         runtimeEntityId = ReadUnsignedVarLong();
-        item = ReadItem();
+        item = ReadNetworkItemStackDescriptor();
         x = ReadFloat();
         y = ReadFloat();
         z = ReadFloat();

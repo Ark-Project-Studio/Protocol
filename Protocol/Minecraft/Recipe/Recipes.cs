@@ -2,196 +2,163 @@ using Protocol.Utils;
 
 namespace Protocol.Minecraft;
 
-public class Recipes : List<Recipe>
+public class CraftingDataEntries : List<CraftingDataEntry>
 {
+}
+
+public class CraftingDataEntry
+{
+	public CraftingDataEntryType Type { get; set; }
+	public Recipe Recipe { get; set; } = new ShapelessRecipe();
+}
+
+public enum CraftingDataEntryType : int
+{
+	Shapeless = 0,
+	Shaped = 1,
+	Furnace = 2,
+	FurnaceAux = 3,
+	Multi = 4,
+	UserDataShapeless = 5,
+	ShapelessChemistry = 6,
+	ShapedChemistry = 7,
+	SmithingTransform = 8,
+	SmithingTrim = 9
 }
 
 public abstract class Recipe
 {
-	public UUID Id { get; set; } = new(Guid.NewGuid().ToString());
-	public string Block { get; set; }
 }
 
-public class MultiRecipe : Recipe
+public enum RecipeUnlockingContext : byte
 {
-	public int UniqueId { get; set; }
+	None = 0,
+	AlwaysUnlocked = 1,
+	PlayerInWater = 2,
+	PlayerHasManyItems = 3
+}
+
+public class RecipeUnlockingRequirement
+{
+	public RecipeUnlockingContext UnlockingContext { get; set; }
+	public List<RecipeIngredient> UnlockingIngredients { get; set; } = new();
 }
 
 public class ShapelessRecipe : Recipe
 {
-	public ShapelessRecipe()
-	{
-		Input = new List<Item>();
-		Result = new List<Item>();
-	}
-
-	public ShapelessRecipe(List<Item> result, List<Item> input, string block = null) : this()
-	{
-		Result = result;
-		Input = input;
-		Block = block;
-	}
-
-	public ShapelessRecipe(Item result, List<Item> input, string block = null) : this()
-	{
-		Result.Add(result);
-		Input = input;
-		Block = block;
-	}
-
-	public int UniqueId { get; set; }
-	public List<Item> Input { get; private set; }
-	public List<Item> Result { get; }
+	public string RecipeUniqueId { get; set; } = string.Empty;
+	public List<RecipeIngredient> IngredientList { get; set; } = new();
+	public NetworkItemInstanceDescriptors ProductionList { get; set; } = new();
+	public UUID RecipeId { get; set; } = new(Guid.Empty.ToString());
+	public string RecipeTag { get; set; } = string.Empty;
+	public int Priority { get; set; }
+	public RecipeUnlockingRequirement UnlockingRequirement { get; set; } = new();
+	public uint NetId { get; set; }
 }
 
 public class ShapedRecipe : Recipe
 {
-	public ShapedRecipe(int width, int height)
-	{
-		Width = width;
-		Height = height;
-		Input = new Item[Width * height];
-		Result = new List<Item>();
-	}
-
-	public ShapedRecipe(int width, int height, Item result, Item[] input, string block = null) : this(width, height)
-	{
-		Result.Add(result);
-		Input = input;
-		Block = block;
-	}
-
-	public ShapedRecipe(int width, int height, List<Item> result, Item[] input, string block = null) : this(width,
-		height)
-	{
-		Result = result;
-		Input = input;
-		Block = block;
-	}
-
-	public int UniqueId { get; set; }
-	public int Width { get; set; }
-	public int Height { get; set; }
-	public Item[] Input { get; set; }
-	public List<Item> Result { get; set; }
+	public string RecipeUniqueId { get; set; } = string.Empty;
+	public int GridWidth { get; set; }
+	public int GridHeight { get; set; }
+	public List<RecipeIngredient> IngredientList { get; set; } = new();
+	public NetworkItemInstanceDescriptors ProductionList { get; set; } = new();
+	public UUID RecipeId { get; set; } = new(Guid.Empty.ToString());
+	public string RecipeTag { get; set; } = string.Empty;
+	public int Priority { get; set; }
+	public bool AssumeSymmetry { get; set; }
+	public RecipeUnlockingRequirement UnlockingRequirement { get; set; } = new();
+	public uint NetId { get; set; }
 }
 
-public class SmeltingRecipe : Recipe
+public class FurnaceRecipe : Recipe
 {
-	public SmeltingRecipe()
-	{
-	}
+}
 
-	public SmeltingRecipe(Item result, Item input, string block = null) : this()
-	{
-		Result = result;
-		Input = input;
-		Block = block;
-	}
+public class FurnaceAuxRecipe : Recipe
+{
+}
 
-	public Item Input { get; set; }
-	public Item Result { get; set; }
+public class MultiRecipe : Recipe
+{
+	public UUID MultiRecipeId { get; set; } = new(Guid.Empty.ToString());
+	public uint NetId { get; set; }
+}
+
+public class UserDataShapelessRecipe : Recipe
+{
+	public string RecipeUniqueId { get; set; } = string.Empty;
+	public List<RecipeIngredient> IngredientList { get; set; } = new();
+	public NetworkItemInstanceDescriptors ProductionList { get; set; } = new();
+	public UUID RecipeId { get; set; } = new(Guid.Empty.ToString());
+	public string RecipeTag { get; set; } = string.Empty;
+	public int Priority { get; set; }
+	public RecipeUnlockingRequirement UnlockingRequirement { get; set; } = new();
+	public uint NetId { get; set; }
+}
+
+public class ShapelessChemistryRecipe : Recipe
+{
+	public string RecipeUniqueId { get; set; } = string.Empty;
+	public List<RecipeIngredient> IngredientList { get; set; } = new();
+	public NetworkItemInstanceDescriptors ProductionList { get; set; } = new();
+	public UUID RecipeId { get; set; } = new(Guid.Empty.ToString());
+	public string RecipeTag { get; set; } = string.Empty;
+	public int Priority { get; set; }
+	public uint NetId { get; set; }
+}
+
+public class ShapedChemistryRecipe : Recipe
+{
+	public ShapedRecipe ChemistryRecipe { get; set; } = new();
 }
 
 public class SmithingTransformRecipe : Recipe
 {
-	public SmithingTransformRecipe()
-	{
-	}
-
-	public SmithingTransformRecipe(string recipeid, Item output, Item template, Item input, Item addition,
-		string block) : this()
-	{
-		RecipeId = recipeid;
-		Output = output;
-		Template = template;
-		Input = input;
-		Addition = addition;
-		Block = block;
-	}
-
-	public string RecipeId { get; set; }
-	public int UniqueId { get; set; }
-	public Item Template { get; set; }
-	public Item Input { get; set; }
-	public Item Addition { get; set; }
-	public Item Output { get; set; }
+	public string RecipeUniqueId { get; set; } = string.Empty;
+	public RecipeIngredient Template { get; set; } = new();
+	public RecipeIngredient Base { get; set; } = new();
+	public RecipeIngredient Addition { get; set; } = new();
+	public NetworkItemInstanceDescriptor Result { get; set; } = NetworkItemInstanceDescriptor.Empty;
+	public string RecipeTag { get; set; } = string.Empty;
+	public uint NetId { get; set; }
 }
 
 public class SmithingTrimRecipe : Recipe
 {
-	public SmithingTrimRecipe()
-	{
-	}
-
-	public SmithingTrimRecipe(string recipeid, Item output, Item template, Item input, Item addition, string block) :
-		this()
-	{
-		RecipeId = recipeid;
-		Output = output;
-		Template = template;
-		Input = input;
-		Addition = addition;
-		Block = block;
-	}
-
-	public string RecipeId { get; set; }
-	public int UniqueId { get; set; }
-	public Item Template { get; set; }
-	public Item Input { get; set; }
-	public Item Addition { get; set; }
-	public Item Output { get; set; }
+	public string RecipeUniqueId { get; set; } = string.Empty;
+	public RecipeIngredient Template { get; set; } = new();
+	public RecipeIngredient Base { get; set; } = new();
+	public RecipeIngredient Addition { get; set; } = new();
+	public string RecipeTag { get; set; } = string.Empty;
+	public uint NetId { get; set; }
 }
 
-public class PotionContainerChangeRecipe
+public class PotionMixDataEntry
 {
-	public int Input { get; set; }
-	public int Ingredient { get; set; }
-	public int Output { get; set; }
+	public int FromPotionId { get; set; }
+	public int FromPotionAux { get; set; }
+	public int ReagentItemId { get; set; }
+	public int ReagentItemAux { get; set; }
+	public int ToPotionId { get; set; }
+	public int ToPotionAux { get; set; }
 }
 
-public class PotionTypeRecipe
+public class ContainerMixDataEntry
 {
-	public int Input { get; set; }
-	public int InputMeta { get; set; }
-	public int Ingredient { get; set; }
-	public int IngredientMeta { get; set; }
-	public int Output { get; set; }
-	public int OutputMeta { get; set; }
+	public int InputItemId { get; set; }
+	public int ReagentItemId { get; set; }
+	public int ToItemId { get; set; }
 }
 
-public class MaterialReducerRecipe
+public class MaterialReducerDataEntry
 {
-	public MaterialReducerRecipe()
-	{
-	}
-
-	public MaterialReducerRecipe(int inputId, int inputMeta, params MaterialReducerRecipeOutput[] outputs)
-	{
-		Input = inputId;
-		InputMeta = inputMeta;
-
-		Output = outputs;
-	}
-
 	public int Input { get; set; }
-	public int InputMeta { get; set; }
+	public List<MaterialReducerItemInfo> Items { get; set; } = new();
+}
 
-	public MaterialReducerRecipeOutput[] Output { get; set; }
-
-	public class MaterialReducerRecipeOutput
-	{
-		public MaterialReducerRecipeOutput()
-		{
-		}
-
-		public MaterialReducerRecipeOutput(int itemId, int itemCount)
-		{
-			ItemId = itemId;
-			ItemCount = itemCount;
-		}
-
-		public int ItemId { get; set; }
-		public int ItemCount { get; set; }
-	}
+public class MaterialReducerItemInfo
+{
+	public int ItemId { get; set; }
+	public int ItemCount { get; set; }
 }

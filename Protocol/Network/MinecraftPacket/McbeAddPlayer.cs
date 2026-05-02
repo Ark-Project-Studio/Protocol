@@ -10,7 +10,7 @@ public class McbeAddPlayer : Packet
     public long entityIdSelf;
     public uint gameType;
     public float headYaw;
-    public Item item;
+    public NetworkItemStackDescriptor item;
     public AbilityLayers layers;
     public EntityLinks links;
     public MetadataDictionary metadata;
@@ -79,7 +79,7 @@ public class McbeAddPlayer : Packet
         pitch = ReadFloat();
         yaw = ReadFloat();
         headYaw = ReadFloat();
-        item = ReadItem();
+        item = ReadNetworkItemStackDescriptor();
         gameType = ReadUnsignedVarInt();
         metadata = ReadMetadataDictionary();
         syncdata = ReadPropertySyncData();

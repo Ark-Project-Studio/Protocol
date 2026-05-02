@@ -3,11 +3,12 @@
 namespace Protocol.Network.MinecraftPacket;
 public class McbeCraftingData : Packet
 {
-    public bool isClean;
-    public MaterialReducerRecipe[] materialReducerRecipes;
-    public PotionContainerChangeRecipe[] potionContainerRecipes;
-    public PotionTypeRecipe[] potionTypeRecipes;
-    public Recipes recipes;
+    public CraftingDataEntries craftingDataEntries = new();
+    public List<PotionMixDataEntry> potionMixDataEntries = new();
+    public List<ContainerMixDataEntry> containerMixDataEntries = new();
+    public List<MaterialReducerDataEntry> materialReducerDataEntries = new();
+    public bool clearRecipe;
+
     public McbeCraftingData()
     {
         Id = 0x34;
@@ -17,20 +18,20 @@ public class McbeCraftingData : Packet
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        Write(recipes);
-        Write(potionTypeRecipes);
-        Write(potionContainerRecipes);
-        Write(materialReducerRecipes);
-        Write(isClean);
+        Write(craftingDataEntries);
+        Write(potionMixDataEntries);
+        Write(containerMixDataEntries);
+        Write(materialReducerDataEntries);
+        Write(clearRecipe);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        recipes = ReadRecipes();
-        potionTypeRecipes = ReadPotionTypeRecipes();
-        potionContainerRecipes = ReadPotionContainerChangeRecipes();
-        materialReducerRecipes = ReadMaterialReducerRecipes();
-        isClean = ReadBool();
+        craftingDataEntries = ReadCraftingDataEntries();
+        potionMixDataEntries = ReadPotionMixDataEntries();
+        containerMixDataEntries = ReadContainerMixDataEntries();
+        materialReducerDataEntries = ReadMaterialReducerDataEntries();
+        clearRecipe = ReadBool();
     }
 }

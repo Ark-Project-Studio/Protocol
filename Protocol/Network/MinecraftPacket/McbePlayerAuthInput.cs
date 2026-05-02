@@ -22,10 +22,10 @@ public readonly struct InventoryAction
     public int WindowID { get; }
     public uint SourceFlags { get; }
     public uint InventorySlot { get; }
-    public Item OldItem { get; }
-    public Item NewItem { get; }
+    public NetworkItemStackDescriptor OldItem { get; }
+    public NetworkItemStackDescriptor NewItem { get; }
 
-    public InventoryAction(uint sourceType, int windowID, uint sourceFlags, uint inventorySlot, Item oldItem, Item newItem)
+    public InventoryAction(uint sourceType, int windowID, uint sourceFlags, uint inventorySlot, NetworkItemStackDescriptor oldItem, NetworkItemStackDescriptor newItem)
     {
         SourceType = sourceType;
         WindowID = windowID;
@@ -46,14 +46,14 @@ public readonly struct UseItemTransactionData
     public BlockCoordinates BlockPosition { get; }
     public int BlockFace { get; }
     public int HotBarSlot { get; }
-    public Item HeldItem { get; }
+    public NetworkItemStackDescriptor HeldItem { get; }
     public Vector3 Position { get; }
     public Vector3 ClickedPosition { get; }
     public uint BlockRuntimeID { get; }
     public uint ClientPrediction { get; }
 	public byte ClientCooldownState { get; }
 
-	public UseItemTransactionData(int legacyRequestID, LegacySetItemSlot[] legacySetItemSlots, InventoryAction[] actions, uint actionType, uint triggerType, BlockCoordinates blockPosition, int blockFace, int hotBarSlot, Item heldItem, Vector3 position, Vector3 clickedPosition, uint blockRuntimeID, uint clientPrediction,byte clientCooldownState)
+    public UseItemTransactionData(int legacyRequestID, LegacySetItemSlot[] legacySetItemSlots, InventoryAction[] actions, uint actionType, uint triggerType, BlockCoordinates blockPosition, int blockFace, int hotBarSlot, NetworkItemStackDescriptor heldItem, Vector3 position, Vector3 clickedPosition, uint blockRuntimeID, uint clientPrediction,byte clientCooldownState)
     {
         LegacyRequestID = legacyRequestID;
         LegacySetItemSlots = legacySetItemSlots ?? Array.Empty<LegacySetItemSlot>();
@@ -343,7 +343,7 @@ public class McbePlayerAuthInput : Packet
         var blockPosition = ReadBlockCoordinates();
         var blockFace = ReadSignedVarInt();
         var hotBarSlot = ReadSignedVarInt();
-        var heldItem = ReadItem();
+        var heldItem = ReadNetworkItemStackDescriptor();
         var position = ReadVector3();
         var clickedPosition = ReadVector3();
         var blockRuntimeID = ReadUnsignedVarInt();
@@ -387,8 +387,8 @@ public class McbePlayerAuthInput : Packet
         var windowID = ReadSignedVarInt();
         var sourceFlags = ReadUnsignedVarInt();
         var inventorySlot = ReadUnsignedVarInt();
-        var oldItem = ReadItem();
-        var newItem = ReadItem();
+        var oldItem = ReadNetworkItemStackDescriptor();
+        var newItem = ReadNetworkItemStackDescriptor();
         return new InventoryAction(sourceType, windowID, sourceFlags, inventorySlot, oldItem, newItem);
     }
 

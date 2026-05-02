@@ -10,9 +10,10 @@ public class ItemUseTransaction : Transaction
 	public BlockCoordinates Position { get; set; }
 	public int Face { get; set; }
 	public int Slot { get; set; }
-	public Item Item { get; set; }
+	public NetworkItemStackDescriptor Item { get; set; }
 	public Vector3 FromPosition { get; set; }
 	public Vector3 ClickPosition { get; set; }
 	public uint BlockRuntimeId { get; set; }
-	public uint ClientPredictedResult { get; set; }
+	public byte ClientPredictedResult { get; set; }
+	public byte ClientCooldownState { get; set; }
 }
