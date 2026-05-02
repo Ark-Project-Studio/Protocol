@@ -257,8 +257,8 @@ namespace Protocol.Network
 			if (list == null) list = new ScoreEntries();
 
 			Write((byte)(list.FirstOrDefault() is ScoreEntryRemove
-				? McbeSetScore.Types.Remove
-				: McbeSetScore.Types.Change));
+				? McbeSetScore.PacketType.Remove
+				: McbeSetScore.PacketType.Change));
 			WriteUnsignedVarInt((uint)list.Count);
 			foreach (var entry in list)
 			{
@@ -273,17 +273,17 @@ namespace Protocol.Network
 
 				if (entry is ScoreEntryChangePlayer player)
 				{
-					Write((byte)McbeSetScore.ChangeTypes.Player);
+					Write((byte)McbeSetScore.IdentityType.Player);
 					WriteSignedVarLong(player.EntityId);
 				}
 				else if (entry is ScoreEntryChangeEntity entity)
 				{
-					Write((byte)McbeSetScore.ChangeTypes.Entity);
+					Write((byte)McbeSetScore.IdentityType.Entity);
 					WriteSignedVarLong(entity.EntityId);
 				}
 				else if (entry is ScoreEntryChangeFakePlayer fakePlayer)
 				{
-					Write((byte)McbeSetScore.ChangeTypes.FakePlayer);
+					Write((byte)McbeSetScore.IdentityType.FakePlayer);
 					Write(fakePlayer.CustomName);
 				}
 			}
@@ -302,22 +302,22 @@ namespace Protocol.Network
 
 				ScoreEntry entry = null;
 
-				if (type == (int)McbeSetScore.Types.Remove)
+				if (type == (int)McbeSetScore.PacketType.Remove)
 				{
 					entry = new ScoreEntryRemove();
 				}
 				else
 				{
-					McbeSetScore.ChangeTypes changeType = (McbeSetScore.ChangeTypes)ReadByte();
+					McbeSetScore.IdentityType changeType = (McbeSetScore.IdentityType)ReadByte();
 					switch (changeType)
 					{
-						case McbeSetScore.ChangeTypes.Player:
+						case McbeSetScore.IdentityType.Player:
 							entry = new ScoreEntryChangePlayer { EntityId = ReadSignedVarLong() };
 							break;
-						case McbeSetScore.ChangeTypes.Entity:
+						case McbeSetScore.IdentityType.Entity:
 							entry = new ScoreEntryChangeEntity { EntityId = ReadSignedVarLong() };
 							break;
-						case McbeSetScore.ChangeTypes.FakePlayer:
+						case McbeSetScore.IdentityType.FakePlayer:
 							entry = new ScoreEntryChangeFakePlayer { CustomName = ReadString() };
 							break;
 					}
@@ -340,8 +340,8 @@ namespace Protocol.Network
 			if (list == null) list = new ScoreboardIdentityEntries();
 
 			Write((byte)(list.FirstOrDefault() is ScoreboardClearIdentityEntry
-				? McbeSetScoreboardIdentity.Operations.ClearIdentity
-				: McbeSetScoreboardIdentity.Operations.RegisterIdentity));
+				? McbeSetScoreboardIdentity.Type.Remove
+				: McbeSetScoreboardIdentity.Type.Update));
 			WriteUnsignedVarInt((uint)list.Count);
 			foreach (var entry in list)
 			{
@@ -357,7 +357,7 @@ namespace Protocol.Network
 		{
 			ScoreboardIdentityEntries list = new ScoreboardIdentityEntries();
 
-			McbeSetScoreboardIdentity.Operations type = (McbeSetScoreboardIdentity.Operations)ReadByte();
+			McbeSetScoreboardIdentity.Type type = (McbeSetScoreboardIdentity.Type)ReadByte();
 			var length = ReadUnsignedVarInt();
 			for (var i = 0; i < length; ++i)
 			{
@@ -365,14 +365,14 @@ namespace Protocol.Network
 
 				switch (type)
 				{
-					case McbeSetScoreboardIdentity.Operations.RegisterIdentity:
+					case McbeSetScoreboardIdentity.Type.Update:
 						list.Add(new ScoreboardRegisterIdentityEntry()
 						{
 							Id = scoreboardId,
 							EntityId = ReadSignedVarLong()
 						});
 						break;
-					case McbeSetScoreboardIdentity.Operations.ClearIdentity:
+					case McbeSetScoreboardIdentity.Type.Remove:
 						list.Add(new ScoreboardClearIdentityEntry() { Id = scoreboardId });
 						break;
 				}

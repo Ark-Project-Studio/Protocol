@@ -1,11 +1,17 @@
 ﻿namespace Protocol.Network.MinecraftPacket;
+public enum ObjectiveSortOrder : int
+{
+    Ascending = 0,
+    Descending = 1
+}
+
 public class McbeSetDisplayObjective : Packet
 {
     public string criteriaName;
     public string displayName;
     public string displaySlot;
     public string objectiveName;
-    public int sortOrder;
+    public ObjectiveSortOrder sortOrder;
     public McbeSetDisplayObjective()
     {
         Id = 0x6b;
@@ -19,7 +25,7 @@ public class McbeSetDisplayObjective : Packet
         Write(objectiveName);
         Write(displayName);
         Write(criteriaName);
-        WriteSignedVarInt(sortOrder);
+        WriteSignedVarInt((int)sortOrder);
     }
 
     protected override void DecodePacket()
@@ -29,6 +35,6 @@ public class McbeSetDisplayObjective : Packet
         objectiveName = ReadString();
         displayName = ReadString();
         criteriaName = ReadString();
-        sortOrder = ReadSignedVarInt();
+        sortOrder = (ObjectiveSortOrder)ReadSignedVarInt();
     }
 }

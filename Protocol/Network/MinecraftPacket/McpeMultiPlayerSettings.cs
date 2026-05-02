@@ -2,11 +2,11 @@
 
 public class McbeMultiPlayerSettings : Packet
 {
-	public enum Action
+	public enum Type : int
 	{
-		EnableMultiPlayer = 0,
-		DisableMultiPlayer = 1,
-		RefreshJoinCode = 2
+		EnableMultiplayer = 0,
+		DisableMultiplayer = 1,
+		RefreshJoincode = 2
 	}
 
 	public McbeMultiPlayerSettings()
@@ -16,17 +16,17 @@ public class McbeMultiPlayerSettings : Packet
 	}
 
 
-	public int ActionType { get; set; }
+	public Type ActionType { get; set; }
 
 	protected override void EncodePacket()
 	{
 		base.EncodePacket();
-		WriteSignedVarInt(ActionType);
+		WriteSignedVarInt((int)ActionType);
 	}
 
 	protected override void DecodePacket()
 	{
 		base.DecodePacket();
-		ActionType = ReadSignedVarInt();
+		ActionType = (Type)ReadSignedVarInt();
 	}
 }

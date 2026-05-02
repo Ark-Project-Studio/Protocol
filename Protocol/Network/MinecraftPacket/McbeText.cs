@@ -138,13 +138,13 @@ public class McbeText : Packet
 				break;
 			case TextType.Raw:
 			case TextType.Tip:
-			case TextType.System:
-			case TextType.Object:
-			case TextType.ObjectWhisper:
-			case TextType.ObjectAnnouncement:
+			case TextType.SystemMessage:
+			case TextType.TextObject:
+			case TextType.TextObjectWhisper:
+			case TextType.TextObjectAnnouncement:
 				Message = ReadString();
 				break;
-			case TextType.Translation:
+			case TextType.Translate:
 			case TextType.Popup:
 			case TextType.JukeboxPopup:
 				Message = ReadString();

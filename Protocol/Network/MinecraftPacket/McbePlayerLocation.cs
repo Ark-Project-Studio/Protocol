@@ -3,10 +3,10 @@
 namespace Protocol.Network.MinecraftPacket;
 public class McbePlayerLocation : Packet
 {
-    public enum PlayerLocation
+    public enum Type : int
     {
-        PlayerLocationTypeCoordinates = 0,
-        PlayerLocationTypeHide = 1
+        PlayerLocationCoordinates = 0,
+        PlayerLocationHide = 1
     }
 
     public McbePlayerLocation()
@@ -15,25 +15,25 @@ public class McbePlayerLocation : Packet
         IsMcbe = true;
     }
 
-    public int Type { get; set; }
+    public Type PlayerLocationType { get; set; }
     public long EntityUniqueID { get; set; }
     public Vector3 Position { get; set; }
 
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        Write(Type);
+        Write((int)PlayerLocationType);
         WriteSignedVarLong(EntityUniqueID);
-        if (Type == (int)PlayerLocation.PlayerLocationTypeCoordinates)
+        if (PlayerLocationType == Type.PlayerLocationCoordinates)
             Write(Position);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        Type = ReadInt();
+        PlayerLocationType = (Type)ReadInt();
         EntityUniqueID = ReadSignedVarLong();
-        if (Type == (int)PlayerLocation.PlayerLocationTypeCoordinates)
+        if (PlayerLocationType == Type.PlayerLocationCoordinates)
             Position = ReadVector3();
         else
             Position = Vector3.Zero;

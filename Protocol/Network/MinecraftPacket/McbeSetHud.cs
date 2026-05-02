@@ -1,25 +1,27 @@
 ﻿namespace Protocol.Network.MinecraftPacket;
-public static class HudElement
+public enum HudElement : int
 {
-    public const int PaperDoll = 0;
-    public const int Armour = 1;
-    public const int ToolTips = 2;
-    public const int TouchControls = 3;
-    public const int Crosshair = 4;
-    public const int HotBar = 5;
-    public const int Health = 6;
-    public const int ProgressBar = 7;
-    public const int Hunger = 8;
-    public const int AirBubbles = 9;
-    public const int HorseHealth = 10;
-    public const int StatusEffects = 11;
-    public const int ItemText = 12;
+    PaperDoll = 0,
+    Armor = 1,
+    ToolTips = 2,
+    TouchControls = 3,
+    Crosshair = 4,
+    HotBar = 5,
+    Health = 6,
+    ProgressBar = 7,
+    Hunger = 8,
+    AirBubbles = 9,
+    HorseHealth = 10,
+    StatusEffects = 11,
+    ItemText = 12,
+    Count = 13
 }
 
-public static class HudVisibility
+public enum HudVisibility : int
 {
-    public const int Hide = 0;
-    public const int Reset = 1;
+    Hide = 0,
+    Reset = 1,
+    Count = 2
 }
 
 public class McbeSetHud : Packet
@@ -30,8 +32,8 @@ public class McbeSetHud : Packet
         IsMcbe = true;
     }
 
-    public int[] Elements { get; set; } = new int[0];
-    public int Visibility { get; set; }
+    public HudElement[] Elements { get; set; } = new HudElement[0];
+    public HudVisibility Visibility { get; set; }
 
     protected override void EncodePacket()
     {
@@ -39,17 +41,17 @@ public class McbeSetHud : Packet
         WriteUnsignedVarInt((uint)(Elements?.Length ?? 0));
         if (Elements != null)
             foreach (var element in Elements)
-                WriteSignedVarInt(element);
-        WriteSignedVarInt(Visibility);
+                WriteSignedVarInt((int)element);
+            WriteSignedVarInt((int)Visibility);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
         var count = ReadUnsignedVarInt();
-        Elements = new int[count];
+        Elements = new HudElement[count];
         for (var i = 0; i < count; i++)
-            Elements[i] = ReadSignedVarInt();
-        Visibility = ReadSignedVarInt();
+            Elements[i] = (HudElement)ReadSignedVarInt();
+        Visibility = (HudVisibility)ReadSignedVarInt();
     }
 }

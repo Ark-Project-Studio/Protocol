@@ -277,8 +277,8 @@ namespace Protocol.Network
 			switch (origin)
 			{
 				case (uint)CommandOriginType.Player: return "player";
-				case (uint)CommandOriginType.Block: return "commandblock";
-				case (uint)CommandOriginType.MinecartBlock: return "minecartcommandblock";
+				case (uint)CommandOriginType.CommandBlock: return "commandblock";
+				case (uint)CommandOriginType.MinecartCommandBlock: return "minecartcommandblock";
 				case (uint)CommandOriginType.DevConsole: return "devconsole";
 				case (uint)CommandOriginType.Test: return "test";
 				case (uint)CommandOriginType.AutomationPlayer: return "automationplayer";
@@ -290,8 +290,8 @@ namespace Protocol.Network
 				case (uint)CommandOriginType.EntityServer: return "entityserver";
 				case (uint)CommandOriginType.Precompiled: return "precompiled";
 				case (uint)CommandOriginType.GameDirectorEntityServer: return "gamedirectorentityserver";
-				case (uint)CommandOriginType.Script: return "scripting";
-				case (uint)CommandOriginType.Executor: return "executecontext";
+				case (uint)CommandOriginType.Scripting: return "scripting";
+				case (uint)CommandOriginType.ExecuteContext: return "executecontext";
 				default: return "unknown";
 			}
 		}
@@ -301,8 +301,8 @@ namespace Protocol.Network
 			switch (s)
 			{
 				case "player": return (uint)CommandOriginType.Player;
-				case "commandblock": return (uint)CommandOriginType.Block;
-				case "minecartcommandblock": return (uint)CommandOriginType.MinecartBlock;
+				case "commandblock": return (uint)CommandOriginType.CommandBlock;
+				case "minecartcommandblock": return (uint)CommandOriginType.MinecartCommandBlock;
 				case "devconsole": return (uint)CommandOriginType.DevConsole;
 				case "test": return (uint)CommandOriginType.Test;
 				case "automationplayer": return (uint)CommandOriginType.AutomationPlayer;
@@ -314,8 +314,8 @@ namespace Protocol.Network
 				case "entityserver": return (uint)CommandOriginType.EntityServer;
 				case "precompiled": return (uint)CommandOriginType.Precompiled;
 				case "gamedirectorentityserver": return (uint)CommandOriginType.GameDirectorEntityServer;
-				case "scripting": return (uint)CommandOriginType.Script;
-				case "executecontext": return (uint)CommandOriginType.Executor;
+				case "scripting": return (uint)CommandOriginType.Scripting;
+				case "executecontext": return (uint)CommandOriginType.ExecuteContext;
 				default: throw new FormatException($"Unknown origin: {s}");
 			}
 		}

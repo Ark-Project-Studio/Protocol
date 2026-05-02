@@ -1,10 +1,18 @@
 ﻿namespace Protocol.Network.MinecraftPacket;
+public enum MobEffectEvent : byte
+{
+    Invalid = 0,
+    Add = 1,
+    Update = 2,
+    Remove = 3
+}
+
 public class McbeMobEffect : Packet
 {
     public int amplifier;
     public int duration;
     public int effectId;
-    public byte eventId;
+    public MobEffectEvent eventId;
     public bool ambient;
     public bool particles;
     public ulong runtimeEntityId;
@@ -19,7 +27,7 @@ public class McbeMobEffect : Packet
     {
         base.EncodePacket();
         WriteUnsignedVarLong(runtimeEntityId);
-        Write(eventId);
+        Write((byte)eventId);
         WriteSignedVarInt(effectId);
         WriteSignedVarInt(amplifier);
         Write(particles);
@@ -32,7 +40,7 @@ public class McbeMobEffect : Packet
     {
         base.DecodePacket();
         runtimeEntityId = ReadUnsignedVarLong();
-        eventId = ReadByte();
+        eventId = (MobEffectEvent)ReadByte();
         effectId = ReadSignedVarInt();
         amplifier = ReadSignedVarInt();
         particles = ReadBool();

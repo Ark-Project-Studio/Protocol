@@ -18,8 +18,8 @@ public class EntityLink
 {
 	public enum EntityLinkType : byte
 	{
-		Remove = 0,
-		Rider = 1,
+		None = 0,
+		Riding = 1,
 		Passenger = 2
 	}
 

@@ -1,13 +1,15 @@
 ﻿using Protocol.Minecraft;
 
 namespace Protocol.Network.MinecraftPacket;
-public enum GameTestRequestRotation : byte
+public enum Rotation : byte
 {
-    Rotation0 = 0,
-    Rotation90 = 1,
-    Rotation180 = 2,
-    Rotation270 = 3,
-    Rotation360 = 4
+    None = 0,
+    Rotate90 = 1,
+    Rotate180 = 2,
+    Rotate270 = 3,
+    Clockwise90 = 1,
+    Clockwise180 = 2,
+    CounterClockwise90 = 3
 }
 
 public class McbeGameTestRequest : Packet
@@ -19,7 +21,7 @@ public class McbeGameTestRequest : Packet
     }
 
     public string Name { get; set; } = string.Empty;
-    public GameTestRequestRotation Rotation { get; set; }
+    public Rotation Rotation { get; set; }
     public int Repetitions { get; set; }
     public BlockCoordinates Position { get; set; }
     public bool StopOnError { get; set; }
@@ -43,7 +45,7 @@ public class McbeGameTestRequest : Packet
         base.DecodePacket();
         MaxTestsPerBatch = ReadSignedVarInt();
         Repetitions = ReadSignedVarInt();
-        Rotation = (GameTestRequestRotation)ReadByte();
+        Rotation = (Rotation)ReadByte();
         StopOnError = ReadBool();
         Position = ReadBlockCoordinates();
         TestsPerRow = ReadSignedVarInt();

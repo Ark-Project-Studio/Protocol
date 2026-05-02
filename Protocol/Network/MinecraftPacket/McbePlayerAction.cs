@@ -3,7 +3,7 @@
 namespace Protocol.Network.MinecraftPacket;
 public class McbePlayerAction : Packet
 {
-    public int actionId;
+    public PlayerActionType actionId;
     public BlockCoordinates coordinates;
     public int face;
     public BlockCoordinates resultCoordinates;
@@ -18,7 +18,7 @@ public class McbePlayerAction : Packet
     {
         base.EncodePacket();
         WriteUnsignedVarLong(runtimeEntityId);
-        WriteSignedVarInt(actionId);
+        WriteSignedVarInt((int)actionId);
         Write(coordinates);
         Write(resultCoordinates);
         WriteSignedVarInt(face);
@@ -28,7 +28,7 @@ public class McbePlayerAction : Packet
     {
         base.DecodePacket();
         runtimeEntityId = ReadUnsignedVarLong();
-        actionId = ReadSignedVarInt();
+        actionId = (PlayerActionType)ReadSignedVarInt();
         coordinates = ReadBlockCoordinates();
         resultCoordinates = ReadBlockCoordinates();
         face = ReadSignedVarInt();

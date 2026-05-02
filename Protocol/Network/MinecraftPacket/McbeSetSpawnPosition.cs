@@ -1,11 +1,17 @@
 ﻿using Protocol.Minecraft;
 
 namespace Protocol.Network.MinecraftPacket;
+public enum SpawnPositionType : int
+{
+    PlayerRespawn = 0,
+    WorldSpawn = 1
+}
+
 public class McbeSetSpawnPosition : Packet
 {
     public BlockCoordinates coordinates;
     public int dimension;
-    public int spawnType;
+    public SpawnPositionType spawnType;
     public BlockCoordinates spawnBlockPosition;
     public McbeSetSpawnPosition()
     {
@@ -16,7 +22,7 @@ public class McbeSetSpawnPosition : Packet
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        WriteSignedVarInt(spawnType);
+        WriteSignedVarInt((int)spawnType);
         Write(coordinates);
         WriteSignedVarInt(dimension);
         Write(spawnBlockPosition);
@@ -25,7 +31,7 @@ public class McbeSetSpawnPosition : Packet
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        spawnType = ReadSignedVarInt();
+        spawnType = (SpawnPositionType)ReadSignedVarInt();
         coordinates = ReadBlockCoordinates();
         dimension = ReadSignedVarInt();
         spawnBlockPosition = ReadBlockCoordinates();

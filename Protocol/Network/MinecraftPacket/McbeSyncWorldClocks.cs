@@ -15,7 +15,7 @@ namespace Protocol.Network.MinecraftPacket
 	public class McbeSyncWorldClocks : Packet
 	{
 		
-		public uint PayloadType { get; set; }
+		public ClockPayloadType PayloadType { get; set; }
 		public System.Collections.Generic.List<SyncWorldClockStateData> SyncStates { get; set; }
 		public System.Collections.Generic.List<WorldClockData> Clocks { get; set; }
 		public ulong AddClockID { get; set; }
@@ -31,11 +31,11 @@ namespace Protocol.Network.MinecraftPacket
 		protected override void EncodePacket()
 		{
 			base.EncodePacket();
-			WriteUnsignedVarInt(PayloadType);
+			WriteUnsignedVarInt((uint)PayloadType);
 
 			switch (PayloadType)
 			{
-				case (uint)ClockPayloadType.SyncState:
+				case ClockPayloadType.SyncState:
 					if (SyncStates != null)
 					{
 						WriteSlice(SyncStates.ToArray(), Write);
@@ -46,7 +46,7 @@ namespace Protocol.Network.MinecraftPacket
 					}
 					break;
 
-				case (uint)ClockPayloadType.InitializeRegistry:
+				case ClockPayloadType.InitializeRegistry:
 					if (Clocks != null)
 					{
 						WriteSlice(Clocks.ToArray(), Write);
@@ -57,7 +57,7 @@ namespace Protocol.Network.MinecraftPacket
 					}
 					break;
 
-				case (uint)ClockPayloadType.AddTimeMarker:
+				case ClockPayloadType.AddTimeMarker:
 					WriteUnsignedVarLong(AddClockID);
 					if (AddTimeMarkers != null)
 					{
@@ -69,7 +69,7 @@ namespace Protocol.Network.MinecraftPacket
 					}
 					break;
 
-				case (uint)ClockPayloadType.RemoveTimeMarker:
+				case ClockPayloadType.RemoveTimeMarker:
 					WriteUnsignedVarLong(RemoveClockID);
 					if (RemoveTimeMarkerIDs != null)
 					{
@@ -90,28 +90,28 @@ namespace Protocol.Network.MinecraftPacket
 		{
 			base.DecodePacket();
 
-			PayloadType = ReadUnsignedVarInt();
+			PayloadType = (ClockPayloadType)ReadUnsignedVarInt();
 			
 
 			switch (PayloadType)
 			{
-				case (uint)ClockPayloadType.SyncState:
+				case ClockPayloadType.SyncState:
 					SyncStates = new System.Collections.Generic.List<SyncWorldClockStateData>(
 						ReadSlice(ReadSyncWorldClockStateData));
 					break;
 
-				case (uint)ClockPayloadType.InitializeRegistry:
+				case ClockPayloadType.InitializeRegistry:
 					Clocks = new System.Collections.Generic.List<WorldClockData>(
 						ReadSlice(ReadWorldClockData));
 					break;
 
-				case (uint)ClockPayloadType.AddTimeMarker:
+				case ClockPayloadType.AddTimeMarker:
 					AddClockID = ReadUnsignedVarLong();
 					AddTimeMarkers = new System.Collections.Generic.List<TimeMarkerData>(
 						ReadSlice(ReadTimeMarkerData));
 					break;
 
-				case (uint)ClockPayloadType.RemoveTimeMarker:
+				case ClockPayloadType.RemoveTimeMarker:
 					RemoveClockID = ReadUnsignedVarLong();
 					RemoveTimeMarkerIDs = new System.Collections.Generic.List<ulong>(
 						ReadSlice(ReadUnsignedVarLong));

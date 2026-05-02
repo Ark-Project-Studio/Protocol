@@ -1,16 +1,17 @@
 ﻿namespace Protocol.Network.MinecraftPacket;
 public class McbeNetworkSettings : Packet
 {
-    public enum Compression
+    public enum CompressionAlgorithm : short
     {
-        Nothing = 0,
-        Everything = 1
+        None = -1,
+        Zlib = 0,
+        Snappy = 1
     }
 
     public bool clientThrottleEnabled;
     public float clientThrottleScalar;
     public byte clientThrottleThreshold;
-    public short compressionAlgorithm;
+    public CompressionAlgorithm compressionAlgorithm;
     public short compressionThreshold;
     public McbeNetworkSettings()
     {
@@ -22,7 +23,7 @@ public class McbeNetworkSettings : Packet
     {
         base.EncodePacket();
         Write(compressionThreshold);
-        Write(compressionAlgorithm);
+        Write((short)compressionAlgorithm);
         Write(clientThrottleEnabled);
         Write(clientThrottleThreshold);
         Write(clientThrottleScalar);
@@ -32,7 +33,7 @@ public class McbeNetworkSettings : Packet
     {
         base.DecodePacket();
         compressionThreshold = ReadShort();
-        compressionAlgorithm = ReadShort();
+        compressionAlgorithm = (CompressionAlgorithm)ReadShort();
         clientThrottleEnabled = ReadBool();
         clientThrottleThreshold = ReadByte();
         clientThrottleScalar = ReadFloat();

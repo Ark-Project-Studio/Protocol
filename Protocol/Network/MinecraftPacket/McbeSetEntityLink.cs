@@ -1,14 +1,14 @@
 ﻿namespace Protocol.Network.MinecraftPacket;
 public class McbeSetEntityLink : Packet
 {
-    public enum LinkActions
+    public enum ActorLinkType : byte
     {
-        Remove = 0,
-        Ride = 1,
+        None = 0,
+        Riding = 1,
         Passenger = 2
     }
 
-    public byte linkType;
+    public ActorLinkType linkType;
     public bool passengerInitiated;
     public long riddenId;
     public long riderId;
@@ -25,7 +25,7 @@ public class McbeSetEntityLink : Packet
         base.EncodePacket();
         WriteSignedVarLong(riddenId);
         WriteSignedVarLong(riderId);
-        Write(linkType);
+        Write((byte)linkType);
         Write(immediate);
         Write(passengerInitiated);
         Write(vehicleAngularVelocity);
@@ -36,7 +36,7 @@ public class McbeSetEntityLink : Packet
         base.DecodePacket();
         riddenId = ReadSignedVarLong();
         riderId = ReadSignedVarLong();
-        linkType = ReadByte();
+        linkType = (ActorLinkType)ReadByte();
         immediate = ReadBool();
         passengerInitiated = ReadBool();
         vehicleAngularVelocity = ReadFloat();

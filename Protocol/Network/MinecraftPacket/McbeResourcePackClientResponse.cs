@@ -12,7 +12,7 @@ public class McbeResourcePackClientResponse : Packet
     }
 
     public ResourcePackIds resourcepackids;
-    public byte responseStatus;
+    public ResponseStatus responseStatus;
     public McbeResourcePackClientResponse()
     {
         Id = 0x08;
@@ -22,7 +22,7 @@ public class McbeResourcePackClientResponse : Packet
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        Write(responseStatus);
+        Write((byte)responseStatus);
         Write((ushort)(resourcepackids?.Count ?? 0));
         if (resourcepackids == null) return;
 
@@ -35,7 +35,7 @@ public class McbeResourcePackClientResponse : Packet
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        responseStatus = ReadByte();
+        responseStatus = (ResponseStatus)ReadByte();
         var count = ReadUshort();
         resourcepackids = new ResourcePackIds();
         for (int i = 0; i < count; i++)

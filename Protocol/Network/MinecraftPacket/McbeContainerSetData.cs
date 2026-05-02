@@ -3,7 +3,7 @@ public class McbeContainerSetData : Packet
 {
     public int property;
     public int value;
-    public byte windowId;
+    public ContainerID windowId;
     public McbeContainerSetData()
     {
         Id = 0x33;
@@ -13,7 +13,7 @@ public class McbeContainerSetData : Packet
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        Write(windowId);
+        Write((byte)windowId);
         WriteSignedVarInt(property);
         WriteSignedVarInt(value);
     }
@@ -21,7 +21,7 @@ public class McbeContainerSetData : Packet
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        windowId = ReadByte();
+        windowId = (ContainerID)ReadByte();
         property = ReadSignedVarInt();
         value = ReadSignedVarInt();
     }

@@ -88,73 +88,74 @@ public struct PlayerBlockAction
 
 public class McbePlayerAuthInput : Packet
 {
-    public enum InputFlags
+    public enum PlayerAuthInputData
     {
-        InputFlagAscend,
-        InputFlagDescend,
-        InputFlagNorthJump,
-        InputFlagJumpDown,
-        InputFlagSprintDown,
-        InputFlagChangeHeight,
-        InputFlagJumping,
-        InputFlagAutoJumpingInWater,
-        InputFlagSneaking,
-        InputFlagSneakDown,
-        InputFlagUp,
-        InputFlagDown,
-        InputFlagLeft,
-        InputFlagRight,
-        InputFlagUpLeft,
-        InputFlagUpRight,
-        InputFlagWantUp,
-        InputFlagWantDown,
-        InputFlagWantDownSlow,
-        InputFlagWantUpSlow,
-        InputFlagSprinting,
-        InputFlagAscendBlock,
-        InputFlagDescendBlock,
-        InputFlagSneakToggleDown,
-        InputFlagPersistSneak,
-        InputFlagStartSprinting,
-        InputFlagStopSprinting,
-        InputFlagStartSneaking,
-        InputFlagStopSneaking,
-        InputFlagStartSwimming,
-        InputFlagStopSwimming,
-        InputFlagStartJumping,
-        InputFlagStartGliding,
-        InputFlagStopGliding,
-        InputFlagPerformItemInteraction,
-        InputFlagPerformBlockActions,
-        InputFlagPerformItemStackRequest,
-        InputFlagHandledTeleport,
-        InputFlagEmoting,
-        InputFlagMissedSwing,
-        InputFlagStartCrawling,
-        InputFlagStopCrawling,
-        InputFlagStartFlying,
-        InputFlagStopFlying,
-        InputFlagClientAckServerData,
-        InputFlagClientPredictedVehicle,
-        InputFlagPaddlingLeft,
-        InputFlagPaddlingRight,
-        InputFlagBlockBreakingDelayEnabled,
-        InputFlagHorizontalCollision,
-        InputFlagVerticalCollision,
-        InputFlagDownLeft,
-        InputFlagDownRight,
-        InputFlagStartUsingItem,
-        InputFlagCameraRelativeMovementEnabled,
-        InputFlagRotControlledByMoveDirection,
-        InputFlagStartSpinAttack,
-        InputFlagStopSpinAttack,
-        InputFlagIsHotbarTouchOnly,
-        InputFlagJumpReleasedRaw,
-        InputFlagJumpPressedRaw,
-        InputFlagJumpCurrentRaw,
-        InputFlagSneakReleasedRaw,
-        InputFlagSneakPressedRaw,
-        InputFlagSneakCurrentRaw
+        Ascend = 0,
+        Descend = 1,
+        NorthJumpDeprecated = 2,
+        JumpDown = 3,
+        SprintDown = 4,
+        ChangeHeight = 5,
+        Jumping = 6,
+        AutoJumpingInWater = 7,
+        Sneaking = 8,
+        SneakDown = 9,
+        Up = 10,
+        Down = 11,
+        Left = 12,
+        Right = 13,
+        UpLeft = 14,
+        UpRight = 15,
+        WantUp = 16,
+        WantDown = 17,
+        WantDownSlow = 18,
+        WantUpSlow = 19,
+        Sprinting = 20,
+        AscendBlock = 21,
+        DescendBlock = 22,
+        SneakToggleDown = 23,
+        PersistSneak = 24,
+        StartSprinting = 25,
+        StopSprinting = 26,
+        StartSneaking = 27,
+        StopSneaking = 28,
+        StartSwimming = 29,
+        StopSwimming = 30,
+        StartJumping = 31,
+        StartGliding = 32,
+        StopGliding = 33,
+        PerformItemInteraction = 34,
+        PerformBlockActions = 35,
+        PerformItemStackRequest = 36,
+        HandledTeleport = 37,
+        Emoting = 38,
+        MissedSwing = 39,
+        StartCrawling = 40,
+        StopCrawling = 41,
+        StartFlying = 42,
+        StopFlying = 43,
+        ClientAckServerData = 44,
+        IsInClientPredictedVehicle = 45,
+        PaddlingLeft = 46,
+        PaddlingRight = 47,
+        BlockBreakingDelayEnabled = 48,
+        HorizontalCollision = 49,
+        VerticalCollision = 50,
+        DownLeft = 51,
+        DownRight = 52,
+        StartUsingItem = 53,
+        IsCameraRelativeMovementEnabled = 54,
+        IsRotControlledByMoveDirection = 55,
+        StartSpinAttack = 56,
+        StopSpinAttack = 57,
+        IsHotbarOnlyTouch = 58,
+        JumpReleasedRaw = 59,
+        JumpPressedRaw = 60,
+        JumpCurrentRaw = 61,
+        SneakReleasedRaw = 62,
+        SneakPressedRaw = 63,
+        SneakCurrentRaw = 64,
+        InputNum = 65
     }
 
     public enum InputModes
@@ -229,11 +230,11 @@ public class McbePlayerAuthInput : Packet
         Write(InteractYaw);
         WriteUnsignedVarLong(Tick);
         Write(Delta);
-        if (InputData.Load((int)InputFlags.InputFlagPerformItemInteraction))
+        if (InputData.Load((int)PlayerAuthInputData.PerformItemInteraction))
             WriteUseItemTransactionData(ItemInteractionData);
-        if (InputData.Load((int)InputFlags.InputFlagPerformItemStackRequest))
+        if (InputData.Load((int)PlayerAuthInputData.PerformItemStackRequest))
             Write(ItemStack);
-        if (InputData.Load((int)InputFlags.InputFlagPerformBlockActions))
+        if (InputData.Load((int)PlayerAuthInputData.PerformBlockActions))
         {
             WriteSignedVarInt(PlayerBlockAction_?.Length ?? 0);
             if (PlayerBlockAction_ != null)
@@ -241,7 +242,7 @@ public class McbePlayerAuthInput : Packet
                     WritePlayerBlockAction(action);
         }
 
-        if (InputData.Load((int)InputFlags.InputFlagClientPredictedVehicle))
+        if (InputData.Load((int)PlayerAuthInputData.IsInClientPredictedVehicle))
         {
             Write(VehicleRotation);
             WriteSignedVarLong(ClientPredictedVehicle);
@@ -268,13 +269,13 @@ public class McbePlayerAuthInput : Packet
         InteractYaw = ReadFloat();
         Tick = ReadUnsignedVarLong();
         Delta = ReadVector3();
-        if (InputData.Load((int)InputFlags.InputFlagPerformItemInteraction))
+        if (InputData.Load((int)PlayerAuthInputData.PerformItemInteraction))
             ItemInteractionData = ReadUseItemTransactionData();
-        if (InputData.Load((int)InputFlags.InputFlagPerformItemStackRequest))
+        if (InputData.Load((int)PlayerAuthInputData.PerformItemStackRequest))
             ItemStack = ReadItemStackRequests(true);
         else
             ItemStack = new ItemStackRequests();
-        if (InputData.Load((int)InputFlags.InputFlagPerformBlockActions))
+        if (InputData.Load((int)PlayerAuthInputData.PerformBlockActions))
         {
             var blockActionsCount = ReadSignedVarInt();
             PlayerBlockAction_ = new PlayerBlockAction[blockActionsCount];
@@ -286,7 +287,7 @@ public class McbePlayerAuthInput : Packet
             PlayerBlockAction_ = Array.Empty<PlayerBlockAction>();
         }
 
-        if (InputData.Load((int)InputFlags.InputFlagClientPredictedVehicle))
+        if (InputData.Load((int)PlayerAuthInputData.IsInClientPredictedVehicle))
         {
             VehicleRotation = ReadVector2();
             ClientPredictedVehicle = ReadSignedVarLong();

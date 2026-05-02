@@ -1,14 +1,23 @@
 ﻿namespace Protocol.Network.MinecraftPacket;
 public struct PlayerArmourDamageEntry
 {
-    public byte ArmourSlot { get; set; }
+    public ArmorSlot ArmourSlot { get; set; }
     public short Damage { get; set; }
 
-    public PlayerArmourDamageEntry(byte armourSlot, short damage)
+    public PlayerArmourDamageEntry(ArmorSlot armourSlot, short damage)
     {
         ArmourSlot = armourSlot;
         Damage = damage;
     }
+}
+
+public enum ArmorSlot : byte
+{
+    Head = 0,
+    Torso = 1,
+    Legs = 2,
+    Feet = 3,
+    Body = 4
 }
 
 public class McbePlayerArmourDamage : Packet
@@ -16,10 +25,10 @@ public class McbePlayerArmourDamage : Packet
     [Flags]
     public enum PlayerArmorDamageFlags : byte
     {
-        Helmet = 0,
-        Chestplate = 1,
-        Leggings = 2,
-        Boots = 3,
+        Head = 0,
+        Torso = 1,
+        Legs = 2,
+        Feet = 3,
         Body = 4
     }
 
@@ -37,7 +46,7 @@ public class McbePlayerArmourDamage : Packet
         WriteVarInt(count);
         foreach (var entry in playerArmourDamageEntries)
         {
-            Write(entry.ArmourSlot);
+            Write((byte)entry.ArmourSlot);
             Write(entry.Damage);
         }
     }
@@ -49,7 +58,7 @@ public class McbePlayerArmourDamage : Packet
         int count = ReadVarInt();
         for (int i = 0; i < count; i++)
         {
-            byte armourSlot = ReadByte();
+            ArmorSlot armourSlot = (ArmorSlot)ReadByte();
             short damage = ReadShort();
             playerArmourDamageEntries.Add(new PlayerArmourDamageEntry(armourSlot, damage));
         }

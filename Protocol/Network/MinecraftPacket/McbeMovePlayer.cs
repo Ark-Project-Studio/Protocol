@@ -1,6 +1,4 @@
 namespace Protocol.Network.MinecraftPacket;
-public class McbeMovePlayer : Packet
-{
     public enum PositionMode : byte
     {
         Normal = 0,
@@ -18,6 +16,9 @@ public class McbeMovePlayer : Packet
         Behavior = 4,
         Count = 5
     }
+
+public class McbeMovePlayer : Packet
+{
 
     public float headYaw;
     public PositionMode mode;

@@ -2,7 +2,7 @@ using System.Numerics;
 
 namespace Protocol.Network.MinecraftPacket
 {
-	public enum ScriptDebugShapeType :
+	public enum PrimitiveShapesType :
 		byte
 	{
 		Line = 0,
@@ -20,7 +20,10 @@ namespace Protocol.Network.MinecraftPacket
 		Text = 4,
 
 
-		Arrow = 5
+		Arrow = 5,
+
+
+		NumShapeTypes = 6
 	}
 
 
@@ -34,7 +37,7 @@ namespace Protocol.Network.MinecraftPacket
 		public ulong NetworkID { get; set; }
 
 
-		public Optional<byte> Type { get; set; }
+		public Optional<PrimitiveShapesType> Type { get; set; }
 
 
 		public Optional<Vector3> Location { get; set; }
@@ -90,7 +93,7 @@ namespace Protocol.Network.MinecraftPacket
 				Write(shape.NetworkID);
 
 				Write(shape.Type.HasValue);
-				if (shape.Type.HasValue) Write(shape.Type.Value);
+				if (shape.Type.HasValue) Write((byte)shape.Type.Value);
 
 
 				Write(shape.Location.HasValue);
@@ -154,7 +157,7 @@ namespace Protocol.Network.MinecraftPacket
 
 
 				var hasType = ReadBool();
-				if (hasType) shape.Type = new Optional<byte>(ReadByte());
+				if (hasType) shape.Type = new Optional<PrimitiveShapesType>((PrimitiveShapesType)ReadByte());
 
 
 				var hasLocation = ReadBool();

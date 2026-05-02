@@ -2,16 +2,6 @@
 
 namespace Protocol.Network.MinecraftPacket;
 
-public enum Flags
-{
-	None = 0,
-	Neighbors = 1,
-	Network = 2,
-	Nographic = 4,
-	Priority = 8,
-	All = Neighbors | Network,
-	AllPriority = All | Priority
-}
 public class McbeUpdateBlock : Packet
 {
    

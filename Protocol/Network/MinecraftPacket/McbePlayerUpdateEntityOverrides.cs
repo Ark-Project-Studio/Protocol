@@ -1,12 +1,12 @@
 namespace Protocol.Network.MinecraftPacket;
 public class McbePlayerUpdateEntityOverrides : Packet
 {
-    public enum PlayerUpdate : byte
+    public enum UpdateType : byte
     {
-        PlayerUpdateEntityOverridesTypeClearAll = 0,
-        PlayerUpdateEntityOverridesTypeRemove = 1,
-        PlayerUpdateEntityOverridesTypeInt = 2,
-        PlayerUpdateEntityOverridesTypeFloat = 3
+        ClearOverrides = 0,
+        RemoveOverride = 1,
+        SetIntOverride = 2,
+        SetFloatOverride = 3
     }
 
     public McbePlayerUpdateEntityOverrides()
@@ -17,7 +17,7 @@ public class McbePlayerUpdateEntityOverrides : Packet
 
     public ulong EntityRuntimeID { get; set; }
     public uint PropertyIndex { get; set; }
-    public byte Type { get; set; }
+    public UpdateType Type { get; set; }
     public int IntValue { get; set; }
     public float FloatValue { get; set; }
 
@@ -26,10 +26,10 @@ public class McbePlayerUpdateEntityOverrides : Packet
         base.EncodePacket();
         WriteUnsignedVarLong(EntityRuntimeID);
         WriteUnsignedVarInt(PropertyIndex);
-        Write(Type);
-        if (Type == (byte)PlayerUpdate.PlayerUpdateEntityOverridesTypeInt)
+        Write((byte)Type);
+        if (Type == UpdateType.SetIntOverride)
             Write(IntValue);
-        else if (Type == (byte)PlayerUpdate.PlayerUpdateEntityOverridesTypeFloat)
+        else if (Type == UpdateType.SetFloatOverride)
             Write(FloatValue);
     }
 
@@ -38,12 +38,12 @@ public class McbePlayerUpdateEntityOverrides : Packet
         base.DecodePacket();
         EntityRuntimeID = ReadUnsignedVarLong();
         PropertyIndex = ReadUnsignedVarInt();
-        Type = ReadByte();
+        Type = (UpdateType)ReadByte();
         IntValue = 0;
         FloatValue = 0.0f;
-        if (Type == (byte)PlayerUpdate.PlayerUpdateEntityOverridesTypeInt)
+        if (Type == UpdateType.SetIntOverride)
             IntValue = ReadInt();
-        else if (Type == (byte)PlayerUpdate.PlayerUpdateEntityOverridesTypeFloat)
+        else if (Type == UpdateType.SetFloatOverride)
             FloatValue = ReadFloat();
     }
 }

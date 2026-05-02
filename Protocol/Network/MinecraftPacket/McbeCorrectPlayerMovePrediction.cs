@@ -4,7 +4,7 @@ namespace Protocol.Network.MinecraftPacket;
 
 public class McbeCorrectPlayerMovePrediction : Packet
 {
-	public enum PredictionType : byte
+	public enum RewindType : byte
 	{
 		Player = 0,
 		Vehicle = 1
@@ -18,7 +18,7 @@ public class McbeCorrectPlayerMovePrediction : Packet
 	}
 
 
-	public PredictionType Type { get; set; }
+	public RewindType Type { get; set; }
 
 
 	public Vector3 Position { get; set; }
@@ -61,7 +61,7 @@ public class McbeCorrectPlayerMovePrediction : Packet
 	{
 		base.DecodePacket();
 
-		Type = (PredictionType)ReadByte();
+		Type = (RewindType)ReadByte();
 		Position = ReadVector3();
 		Delta = ReadVector3();
 		Rotation = ReadVector2();

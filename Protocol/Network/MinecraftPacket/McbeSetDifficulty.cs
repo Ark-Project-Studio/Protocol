@@ -1,7 +1,17 @@
 ﻿namespace Protocol.Network.MinecraftPacket;
+public enum Difficulty : uint
+{
+    Peaceful = 0,
+    Easy = 1,
+    Normal = 2,
+    Hard = 3,
+    Count = 4,
+    Unknown = 5
+}
+
 public class McbeSetDifficulty : Packet
 {
-    public uint difficulty;
+    public Difficulty difficulty;
     public McbeSetDifficulty()
     {
         Id = 0x3c;
@@ -11,12 +21,12 @@ public class McbeSetDifficulty : Packet
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        WriteUnsignedVarInt(difficulty);
+        WriteUnsignedVarInt((uint)difficulty);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        difficulty = ReadUnsignedVarInt();
+        difficulty = (Difficulty)ReadUnsignedVarInt();
     }
 }

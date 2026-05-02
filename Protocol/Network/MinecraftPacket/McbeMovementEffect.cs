@@ -1,7 +1,10 @@
 namespace Protocol.Network.MinecraftPacket;
 public enum MovementEffectType
 {
-    GlideBoost = 0
+    Invalid = -1,
+    GlideBoost = 0,
+    DolphinBoost = 1,
+    Count = 2
 }
 
 public class McbeMovementEffect : Packet

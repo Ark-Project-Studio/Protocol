@@ -1,22 +1,22 @@
 ﻿namespace Protocol.Network.MinecraftPacket;
 public class McbeBossEvent : Packet
 {
-    public enum Type
+    public enum EventType : uint
     {
-        AddBoss = 0,
-        AddPlayer = 1,
-        RemoveBoss = 2,
-        RemovePlayer = 3,
-        UpdateProgress = 4,
+        Add = 0,
+        PlayerAdded = 1,
+        Remove = 2,
+        PlayerRemoved = 3,
+        UpdatePercent = 4,
         UpdateName = 5,
-        UpdateOptions = 6,
+        UpdateProperties = 6,
         UpdateStyle = 7,
         Query = 8
     }
 
     public long bossEntityId;
     public uint color = 0xff00ff00;
-    public uint eventType;
+    public EventType eventType;
     public string filteredTitle;
     public float healthPercent;
     public uint overlay = 0xff00ff00;
@@ -33,20 +33,20 @@ public class McbeBossEvent : Packet
     {
         base.EncodePacket();
         WriteSignedVarLong(bossEntityId);
-        WriteUnsignedVarInt(eventType);
-        switch ((Type)eventType)
+        WriteUnsignedVarInt((uint)eventType);
+        switch (eventType)
         {
-            case Type.AddPlayer:
-            case Type.RemovePlayer:
+            case EventType.PlayerAdded:
+            case EventType.PlayerRemoved:
                 WriteSignedVarLong(playerId);
                 break;
-            case Type.UpdateProgress:
+            case EventType.UpdatePercent:
                 Write(healthPercent);
                 break;
-            case Type.UpdateName:
+            case EventType.UpdateName:
                 Write(title);
                 break;
-            case Type.AddBoss:
+            case EventType.Add:
                 Write(title);
                 Write(filteredTitle);
                 Write(healthPercent);
@@ -54,16 +54,16 @@ public class McbeBossEvent : Packet
                 WriteUnsignedVarInt(color);
                 WriteUnsignedVarInt(overlay);
                 break;
-            case Type.UpdateOptions:
+            case EventType.UpdateProperties:
                 Write(darkenScreen);
                 WriteUnsignedVarInt(color);
                 WriteUnsignedVarInt(overlay);
                 break;
-            case Type.UpdateStyle:
+            case EventType.UpdateStyle:
                 WriteUnsignedVarInt(color);
                 WriteUnsignedVarInt(overlay);
                 break;
-            case Type.Query:
+            case EventType.Query:
                 WriteSignedVarLong(playerId);
                 break;
         }
@@ -73,20 +73,20 @@ public class McbeBossEvent : Packet
     {
         base.DecodePacket();
         bossEntityId = ReadSignedVarLong();
-        eventType = ReadUnsignedVarInt();
-        switch ((Type)eventType)
+        eventType = (EventType)ReadUnsignedVarInt();
+        switch (eventType)
         {
-            case Type.AddPlayer:
-            case Type.RemovePlayer:
+            case EventType.PlayerAdded:
+            case EventType.PlayerRemoved:
                 playerId = ReadSignedVarLong();
                 break;
-            case Type.UpdateProgress:
+            case EventType.UpdatePercent:
                 healthPercent = ReadFloat();
                 break;
-            case Type.UpdateName:
+            case EventType.UpdateName:
                 title = ReadString();
                 break;
-            case Type.AddBoss:
+            case EventType.Add:
                 title = ReadString();
                 filteredTitle = ReadString();
                 healthPercent = ReadFloat();
@@ -94,16 +94,16 @@ public class McbeBossEvent : Packet
                 color = ReadUnsignedVarInt();
                 overlay = ReadUnsignedVarInt();
                 break;
-            case Type.UpdateOptions:
+            case EventType.UpdateProperties:
                 darkenScreen = ReadUshort();
                 color = ReadUnsignedVarInt();
                 overlay = ReadUnsignedVarInt();
                 break;
-            case Type.UpdateStyle:
+            case EventType.UpdateStyle:
                 color = ReadUnsignedVarInt();
                 overlay = ReadUnsignedVarInt();
                 break;
-            case Type.Query:
+            case EventType.Query:
                 playerId = ReadSignedVarLong();
                 break;
         }

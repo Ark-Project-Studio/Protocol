@@ -32,19 +32,19 @@ namespace Protocol.Network
 			switch (transaction)
 			{
 				case InventoryMismatchTransaction _:
-					WriteUnsignedVarInt((int)McbeInventoryTransaction.TransactionType.InventoryMismatch);
+					WriteUnsignedVarInt((uint)McbeInventoryTransaction.InventoryTransactionType.InventoryMismatch);
 					break;
 				case ItemReleaseTransaction _:
-					WriteUnsignedVarInt((int)McbeInventoryTransaction.TransactionType.ItemRelease);
+					WriteUnsignedVarInt((uint)McbeInventoryTransaction.InventoryTransactionType.ItemReleaseInventoryTransaction);
 					break;
 				case ItemUseOnEntityTransaction _:
-					WriteUnsignedVarInt((int)McbeInventoryTransaction.TransactionType.ItemUseOnEntity);
+					WriteUnsignedVarInt((uint)McbeInventoryTransaction.InventoryTransactionType.ItemUseOnActorInventoryTransaction);
 					break;
 				case ItemUseTransaction _:
-					WriteUnsignedVarInt((int)McbeInventoryTransaction.TransactionType.ItemUse);
+					WriteUnsignedVarInt((uint)McbeInventoryTransaction.InventoryTransactionType.ItemUseInventoryTransaction);
 					break;
 				case NormalTransaction _:
-					WriteUnsignedVarInt((int)McbeInventoryTransaction.TransactionType.Normal);
+					WriteUnsignedVarInt((uint)McbeInventoryTransaction.InventoryTransactionType.NormalTransaction);
 					break;
 			}
 
@@ -55,21 +55,21 @@ namespace Protocol.Network
 				switch (record)
 				{
 					case ContainerTransactionRecord r:
-						WriteVarInt((int)McbeInventoryTransaction.InventorySourceType.Container);
+						WriteVarInt((int)McbeInventoryTransaction.InventoryTransactionSourceType.ContainerInventory);
 						WriteSignedVarInt(r.InventoryId);
 						break;
 					case GlobalTransactionRecord _:
-						WriteVarInt((int)McbeInventoryTransaction.InventorySourceType.Global);
+						WriteVarInt((int)McbeInventoryTransaction.InventoryTransactionSourceType.GlobalInventory);
 						break;
 					case WorldInteractionTransactionRecord r:
-						WriteVarInt((int)McbeInventoryTransaction.InventorySourceType.WorldInteraction);
+						WriteVarInt((int)McbeInventoryTransaction.InventoryTransactionSourceType.WorldInteraction);
 						WriteVarInt(r.Flags);
 						break;
 					case CreativeTransactionRecord _:
-						WriteVarInt((int)McbeInventoryTransaction.InventorySourceType.Creative);
+						WriteVarInt((int)McbeInventoryTransaction.InventoryTransactionSourceType.CreativeInventory);
 						break;
 					case CraftTransactionRecord r:
-						WriteVarInt((int)McbeInventoryTransaction.InventorySourceType.Crafting);
+						WriteVarInt((int)McbeInventoryTransaction.InventoryTransactionSourceType.NonImplementedFeatureTODO);
 						WriteVarInt((int)r.Action);
 						break;
 				}
@@ -137,7 +137,7 @@ namespace Protocol.Network
 				}
 			}
 
-			var transactionType = (McbeInventoryTransaction.TransactionType)ReadVarInt();
+			var transactionType = (McbeInventoryTransaction.InventoryTransactionType)ReadVarInt();
 
 
 			var transactions = new List<TransactionRecord>();
@@ -146,22 +146,22 @@ namespace Protocol.Network
 			{
 				TransactionRecord record;
 				int sourceType = ReadVarInt();
-				switch ((McbeInventoryTransaction.InventorySourceType)sourceType)
+				switch ((McbeInventoryTransaction.InventoryTransactionSourceType)sourceType)
 				{
-					case McbeInventoryTransaction.InventorySourceType.Container:
+					case McbeInventoryTransaction.InventoryTransactionSourceType.ContainerInventory:
 						record = new ContainerTransactionRecord() { InventoryId = ReadSignedVarInt() };
 						break;
-					case McbeInventoryTransaction.InventorySourceType.Global:
+					case McbeInventoryTransaction.InventoryTransactionSourceType.GlobalInventory:
 						record = new GlobalTransactionRecord();
 						break;
-					case McbeInventoryTransaction.InventorySourceType.WorldInteraction:
+					case McbeInventoryTransaction.InventoryTransactionSourceType.WorldInteraction:
 						record = new WorldInteractionTransactionRecord() { Flags = ReadVarInt() };
 						break;
-					case McbeInventoryTransaction.InventorySourceType.Creative:
+					case McbeInventoryTransaction.InventoryTransactionSourceType.CreativeInventory:
 						record = new CreativeTransactionRecord() { InventoryId = 0x79 };
 						break;
-					case McbeInventoryTransaction.InventorySourceType.Unspecified:
-					case McbeInventoryTransaction.InventorySourceType.Crafting:
+					case McbeInventoryTransaction.InventoryTransactionSourceType.InvalidInventory:
+					case McbeInventoryTransaction.InventoryTransactionSourceType.NonImplementedFeatureTODO:
 						record = new CraftTransactionRecord()
 							{ Action = (McbeInventoryTransaction.CraftingAction)ReadSignedVarInt() };
 						break;
@@ -181,16 +181,16 @@ namespace Protocol.Network
 			Transaction transaction = null;
 			switch (transactionType)
 			{
-				case McbeInventoryTransaction.TransactionType.Normal:
+				case McbeInventoryTransaction.InventoryTransactionType.NormalTransaction:
 					transaction = new NormalTransaction();
 					break;
-				case McbeInventoryTransaction.TransactionType.InventoryMismatch:
+				case McbeInventoryTransaction.InventoryTransactionType.InventoryMismatch:
 					transaction = new InventoryMismatchTransaction();
 					break;
-				case McbeInventoryTransaction.TransactionType.ItemUse:
+				case McbeInventoryTransaction.InventoryTransactionType.ItemUseInventoryTransaction:
 					transaction = new ItemUseTransaction()
 					{
-						ActionType = (McbeInventoryTransaction.ItemUseAction)ReadVarInt(),
+						ActionType = (McbeInventoryTransaction.ItemUseActionType)ReadVarInt(),
 						TriggerType = (McbeInventoryTransaction.TriggerType)ReadVarInt(),
 						Position = ReadBlockCoordinates(),
 						Face = ReadSignedVarInt(),
@@ -202,21 +202,21 @@ namespace Protocol.Network
 						ClientPredictedResult = ReadUnsignedVarInt()
 					};
 					break;
-				case McbeInventoryTransaction.TransactionType.ItemUseOnEntity:
+				case McbeInventoryTransaction.InventoryTransactionType.ItemUseOnActorInventoryTransaction:
 					transaction = new ItemUseOnEntityTransaction()
 					{
 						EntityId = ReadVarLong(),
-						ActionType = (McbeInventoryTransaction.ItemUseOnEntityAction)ReadVarInt(),
+						ActionType = (McbeInventoryTransaction.ItemUseOnActorActionType)ReadVarInt(),
 						Slot = ReadSignedVarInt(),
 						Item = ReadItem(),
 						FromPosition = ReadVector3(),
 						ClickPosition = ReadVector3()
 					};
 					break;
-				case McbeInventoryTransaction.TransactionType.ItemRelease:
+				case McbeInventoryTransaction.InventoryTransactionType.ItemReleaseInventoryTransaction:
 					transaction = new ItemReleaseTransaction()
 					{
-						ActionType = (McbeInventoryTransaction.ItemReleaseAction)ReadVarInt(),
+						ActionType = (McbeInventoryTransaction.ItemReleaseActionType)ReadVarInt(),
 						Slot = ReadSignedVarInt(),
 						Item = ReadItem(),
 						FromPosition = ReadVector3()
@@ -301,7 +301,7 @@ namespace Protocol.Network
 					{
 						case TakeAction ta:
 						{
-							Write((byte)McbeItemStackRequest.ActionType.Take);
+							Write((byte)McbeItemStackRequest.Type.Take);
 							Write(ta.Count);
 							Write(ta.Source);
 							Write(ta.Destination);
@@ -310,7 +310,7 @@ namespace Protocol.Network
 
 						case PlaceAction ta:
 						{
-							Write((byte)McbeItemStackRequest.ActionType.Place);
+							Write((byte)McbeItemStackRequest.Type.Place);
 							Write(ta.Count);
 							Write(ta.Source);
 							Write(ta.Destination);
@@ -319,7 +319,7 @@ namespace Protocol.Network
 
 						case SwapAction ta:
 						{
-							Write((byte)McbeItemStackRequest.ActionType.Swap);
+							Write((byte)McbeItemStackRequest.Type.Swap);
 							Write(ta.Source);
 							Write(ta.Destination);
 							break;
@@ -327,7 +327,7 @@ namespace Protocol.Network
 
 						case DropAction ta:
 						{
-							Write((byte)McbeItemStackRequest.ActionType.Drop);
+							Write((byte)McbeItemStackRequest.Type.Drop);
 							Write(ta.Count);
 							Write(ta.Source);
 							Write(ta.Randomly);
@@ -336,7 +336,7 @@ namespace Protocol.Network
 
 						case DestroyAction ta:
 						{
-							Write((byte)McbeItemStackRequest.ActionType.Destroy);
+							Write((byte)McbeItemStackRequest.Type.Destroy);
 							Write(ta.Count);
 							Write(ta.Source);
 							break;
@@ -344,7 +344,7 @@ namespace Protocol.Network
 
 						case ConsumeAction ta:
 						{
-							Write((byte)McbeItemStackRequest.ActionType.Consume);
+							Write((byte)McbeItemStackRequest.Type.Consume);
 							Write(ta.Count);
 							Write(ta.Source);
 							break;
@@ -352,32 +352,32 @@ namespace Protocol.Network
 
 						case CreateAction ta:
 						{
-							Write((byte)McbeItemStackRequest.ActionType.Create);
+							Write((byte)McbeItemStackRequest.Type.Create);
 							Write(ta.ResultSlot);
 							break;
 						}
 
 						case PlaceIntoBundleAction ta:
 						{
-							Write((byte)McbeItemStackRequest.ActionType.PlaceIntoBundleDeprecated);
+							Write((byte)McbeItemStackRequest.Type.PlaceInItemContainerDeprecated);
 							break;
 						}
 
 						case TakeFromBundleAction ta:
 						{
-							Write((byte)McbeItemStackRequest.ActionType.TakeFromBundleDeprecated);
+							Write((byte)McbeItemStackRequest.Type.TakeFromItemContainerDeprecated);
 							break;
 						}
 
 						case LabTableCombineAction ta:
 						{
-							Write((byte)McbeItemStackRequest.ActionType.LabTableCombine);
+							Write((byte)McbeItemStackRequest.Type.LabTableCombine);
 							break;
 						}
 
 						case BeaconPaymentAction ta:
 						{
-							Write((byte)McbeItemStackRequest.ActionType.BeaconPayment);
+							Write((byte)McbeItemStackRequest.Type.BeaconPayment);
 							WriteSignedVarInt(ta.PrimaryEffect);
 							WriteSignedVarInt(ta.SecondaryEffect);
 							break;
@@ -385,7 +385,7 @@ namespace Protocol.Network
 
 						case CraftAction ta:
 						{
-							Write((byte)McbeItemStackRequest.ActionType.CraftRecipe);
+							Write((byte)McbeItemStackRequest.Type.CraftRecipe);
 							WriteUnsignedVarInt(ta.RecipeNetworkId);
 							Write(ta.TimesCrafted);
 							break;
@@ -393,7 +393,7 @@ namespace Protocol.Network
 
 						case CraftAutoAction ta:
 						{
-							Write((byte)McbeItemStackRequest.ActionType.CraftRecipeAuto);
+							Write((byte)McbeItemStackRequest.Type.CraftRecipeAuto);
 							WriteUnsignedVarInt(ta.RecipeNetworkId);
 							Write(ta.TimesCrafted2);
 							Write(ta.TimesCrafted);
@@ -408,7 +408,7 @@ namespace Protocol.Network
 
 						case CraftCreativeAction ta:
 						{
-							Write((byte)McbeItemStackRequest.ActionType.CraftCreative);
+							Write((byte)McbeItemStackRequest.Type.CraftCreative);
 							WriteUnsignedVarInt(ta.CreativeItemNetworkId);
 							Write(ta.ClientPredictedResult);
 							break;
@@ -416,7 +416,7 @@ namespace Protocol.Network
 
 						case CraftRecipeOptionalAction ta:
 						{
-							Write((byte)McbeItemStackRequest.ActionType.CraftRecipeOptional);
+							Write((byte)McbeItemStackRequest.Type.CraftRecipeOptional);
 							WriteUnsignedVarInt(ta.RecipeNetworkId);
 							Write(ta.FilteredStringIndex);
 							break;
@@ -424,7 +424,7 @@ namespace Protocol.Network
 
 						case GrindstoneStackRequestAction ta:
 						{
-							Write((byte)McbeItemStackRequest.ActionType.CraftGrindstone);
+							Write((byte)McbeItemStackRequest.Type.CraftGrindStone);
 							WriteUnsignedVarInt(ta.RecipeNetworkId);
 							WriteVarInt(ta.RepairCost);
 							Write(ta.TimesCrafted);
@@ -433,7 +433,7 @@ namespace Protocol.Network
 
 						case LoomStackRequestAction ta:
 						{
-							Write((byte)McbeItemStackRequest.ActionType.CraftLoom);
+							Write((byte)McbeItemStackRequest.Type.CraftLoom);
 							Write(ta.PatternId);
 							Write(ta.TimesCrafted);
 							break;
@@ -441,13 +441,13 @@ namespace Protocol.Network
 
 						case CraftNotImplementedDeprecatedAction ta:
 						{
-							Write((byte)McbeItemStackRequest.ActionType.CraftNotImplementedDeprecated);
+							Write((byte)McbeItemStackRequest.Type.CraftNonImplemented);
 							break;
 						}
 
 						case CraftResultDeprecatedAction ta:
 						{
-							Write((byte)McbeItemStackRequest.ActionType.CraftResultsDeprecated);
+							Write((byte)McbeItemStackRequest.Type.CraftResults);
 							WriteItems(ta.ResultItems);
 							Write(ta.TimesCrafted);
 							break;
@@ -455,7 +455,7 @@ namespace Protocol.Network
 
 						case MineBlockAction ta:
 						{
-							Write((byte)McbeItemStackRequest.ActionType.MineBlock);
+							Write((byte)McbeItemStackRequest.Type.MineBlock);
 							WriteVarInt(ta.Slot);
 							WriteVarInt(ta.Durability);
 							WriteSignedVarInt(ta.stackNetworkId);
@@ -497,11 +497,11 @@ namespace Protocol.Network
 
 				for (int j = 0; j < count; j++)
 				{
-					var actionType = (McbeItemStackRequest.ActionType)ReadByte();
+					var actionType = (McbeItemStackRequest.Type)ReadByte();
 
 					switch (actionType)
 					{
-						case McbeItemStackRequest.ActionType.Take:
+						case McbeItemStackRequest.Type.Take:
 						{
 							var action = new TakeAction();
 							action.Count = ReadByte();
@@ -510,7 +510,7 @@ namespace Protocol.Network
 							actions.Add(action);
 							break;
 						}
-						case McbeItemStackRequest.ActionType.Place:
+						case McbeItemStackRequest.Type.Place:
 						{
 							var action = new PlaceAction();
 							action.Count = ReadByte();
@@ -519,7 +519,7 @@ namespace Protocol.Network
 							actions.Add(action);
 							break;
 						}
-						case McbeItemStackRequest.ActionType.Swap:
+						case McbeItemStackRequest.Type.Swap:
 						{
 							var action = new SwapAction();
 							action.Source = ReadStackRequestSlotInfo();
@@ -527,7 +527,7 @@ namespace Protocol.Network
 							actions.Add(action);
 							break;
 						}
-						case McbeItemStackRequest.ActionType.Drop:
+						case McbeItemStackRequest.Type.Drop:
 						{
 							var action = new DropAction();
 							action.Count = ReadByte();
@@ -536,7 +536,7 @@ namespace Protocol.Network
 							actions.Add(action);
 							break;
 						}
-						case McbeItemStackRequest.ActionType.Destroy:
+						case McbeItemStackRequest.Type.Destroy:
 						{
 							var action = new DestroyAction();
 							action.Count = ReadByte();
@@ -544,7 +544,7 @@ namespace Protocol.Network
 							actions.Add(action);
 							break;
 						}
-						case McbeItemStackRequest.ActionType.Consume:
+						case McbeItemStackRequest.Type.Consume:
 						{
 							var action = new ConsumeAction();
 							action.Count = ReadByte();
@@ -552,7 +552,7 @@ namespace Protocol.Network
 							actions.Add(action);
 							break;
 						}
-						case McbeItemStackRequest.ActionType.Create:
+						case McbeItemStackRequest.Type.Create:
 						{
 							var action = new CreateAction();
 							action.ResultSlot = ReadByte();
@@ -560,26 +560,26 @@ namespace Protocol.Network
 							break;
 						}
 
-						case McbeItemStackRequest.ActionType.PlaceIntoBundleDeprecated:
+						case McbeItemStackRequest.Type.PlaceInItemContainerDeprecated:
 						{
 							var action = new PlaceIntoBundleAction();
 							actions.Add(action);
 							break;
 						}
 
-						case McbeItemStackRequest.ActionType.TakeFromBundleDeprecated:
+						case McbeItemStackRequest.Type.TakeFromItemContainerDeprecated:
 						{
 							var action = new TakeFromBundleAction();
 							actions.Add(action);
 							break;
 						}
-						case McbeItemStackRequest.ActionType.LabTableCombine:
+						case McbeItemStackRequest.Type.LabTableCombine:
 						{
 							var action = new LabTableCombineAction();
 							actions.Add(action);
 							break;
 						}
-						case McbeItemStackRequest.ActionType.BeaconPayment:
+						case McbeItemStackRequest.Type.BeaconPayment:
 						{
 							var action = new BeaconPaymentAction();
 							action.PrimaryEffect = ReadSignedVarInt();
@@ -587,7 +587,7 @@ namespace Protocol.Network
 							actions.Add(action);
 							break;
 						}
-						case McbeItemStackRequest.ActionType.CraftRecipe:
+						case McbeItemStackRequest.Type.CraftRecipe:
 						{
 							var action = new CraftAction();
 							action.RecipeNetworkId = ReadUnsignedVarInt();
@@ -595,7 +595,7 @@ namespace Protocol.Network
 							actions.Add(action);
 							break;
 						}
-						case McbeItemStackRequest.ActionType.CraftRecipeAuto:
+						case McbeItemStackRequest.Type.CraftRecipeAuto:
 						{
 							var action = new CraftAutoAction();
 							action.RecipeNetworkId = ReadUnsignedVarInt();
@@ -610,7 +610,7 @@ namespace Protocol.Network
 							actions.Add(action);
 							break;
 						}
-						case McbeItemStackRequest.ActionType.CraftCreative:
+						case McbeItemStackRequest.Type.CraftCreative:
 						{
 							var action = new CraftCreativeAction();
 							action.CreativeItemNetworkId = ReadUnsignedVarInt();
@@ -618,7 +618,7 @@ namespace Protocol.Network
 							actions.Add(action);
 							break;
 						}
-						case McbeItemStackRequest.ActionType.CraftRecipeOptional:
+						case McbeItemStackRequest.Type.CraftRecipeOptional:
 						{
 							var action = new CraftRecipeOptionalAction();
 							action.RecipeNetworkId = ReadUnsignedVarInt();
@@ -626,7 +626,7 @@ namespace Protocol.Network
 							actions.Add(action);
 							break;
 						}
-						case McbeItemStackRequest.ActionType.CraftGrindstone:
+						case McbeItemStackRequest.Type.CraftGrindStone:
 						{
 							var action = new GrindstoneStackRequestAction();
 							action.RecipeNetworkId = ReadUnsignedVarInt();
@@ -635,7 +635,7 @@ namespace Protocol.Network
 							actions.Add(action);
 							break;
 						}
-						case McbeItemStackRequest.ActionType.CraftLoom:
+						case McbeItemStackRequest.Type.CraftLoom:
 						{
 							var action = new LoomStackRequestAction();
 							action.PatternId = ReadString();
@@ -643,13 +643,13 @@ namespace Protocol.Network
 							actions.Add(action);
 							break;
 						}
-						case McbeItemStackRequest.ActionType.CraftNotImplementedDeprecated:
+						case McbeItemStackRequest.Type.CraftNonImplemented:
 						{
 							var action = new CraftNotImplementedDeprecatedAction();
 							actions.Add(action);
 							break;
 						}
-						case McbeItemStackRequest.ActionType.CraftResultsDeprecated:
+						case McbeItemStackRequest.Type.CraftResults:
 						{
 							var action = new CraftResultDeprecatedAction();
 							action.ResultItems = ReadItems();
@@ -657,7 +657,7 @@ namespace Protocol.Network
 							actions.Add(action);
 							break;
 						}
-						case McbeItemStackRequest.ActionType.MineBlock:
+						case McbeItemStackRequest.Type.MineBlock:
 						{
 							var action = new MineBlockAction();
 							action.Slot = ReadVarInt();

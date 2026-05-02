@@ -2,8 +2,8 @@
 public class McbeContainerClose : Packet
 {
     public bool server;
-    public byte containerType;
-    public byte windowId;
+    public ContainerType containerType;
+    public ContainerID windowId;
 
     public McbeContainerClose()
     {
@@ -14,16 +14,16 @@ public class McbeContainerClose : Packet
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        Write(windowId);
-        Write(containerType);
+        Write((byte)windowId);
+        Write((byte)containerType);
         Write(server);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        windowId = ReadByte();
-        containerType = ReadByte();
+        windowId = (ContainerID)ReadByte();
+        containerType = (ContainerType)ReadByte();
         server = ReadBool();
     }
 }

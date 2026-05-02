@@ -54,7 +54,7 @@ public class McbeClientboundMapItemData : Packet
 			}
 		}
 
-		if ((UpdateFlags & ((uint)ClientboundMapItemDataType.Creation | (uint)ClientboundMapItemDataType.DecorationUpdate | (uint)ClientboundMapItemDataType.TextureUpdate)) != 0)
+		if ((UpdateFlags & (uint)ClientboundMapItemDataType.All) != 0)
 		{
 			Write(Scale);
 		}
@@ -109,18 +109,18 @@ public class McbeClientboundMapItemData : Packet
         Origin = ReadBlockCoordinates();
 		
 
-		if ((UpdateFlags & (uint)MapUpdateFlag.Initialisation) != 0)
+		if ((UpdateFlags & (uint)ClientboundMapItemDataType.Creation) != 0)
 		{
 			MapsIncludedIn = new System.Collections.Generic.List<long>(
 				ReadSlice(ReadSignedVarLong));
 		}
 
-		if ((UpdateFlags & ((uint)MapUpdateFlag.Initialisation | (uint)MapUpdateFlag.Decoration | (uint)MapUpdateFlag.Texture)) != 0)
+		if ((UpdateFlags & (uint)ClientboundMapItemDataType.All) != 0)
 		{
 			Scale = ReadByte();
 		}
 
-		if ((UpdateFlags & (uint)MapUpdateFlag.Decoration) != 0)
+		if ((UpdateFlags & (uint)ClientboundMapItemDataType.DecorationUpdate) != 0)
 		{
 			TrackedObjects = new System.Collections.Generic.List<MapTrackedObject>(
 				ReadSlice(ReadMapTrackedObject));
@@ -128,7 +128,7 @@ public class McbeClientboundMapItemData : Packet
 				ReadSlice(ReadMapDecoration));
 		}
 
-		if ((UpdateFlags & (uint)MapUpdateFlag.Texture) != 0)
+		if ((UpdateFlags & (uint)ClientboundMapItemDataType.TextureUpdate) != 0)
 		{
 			Width = ReadSignedVarInt();
 			Height = ReadSignedVarInt();

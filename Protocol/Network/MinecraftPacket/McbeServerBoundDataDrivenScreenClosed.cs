@@ -16,7 +16,7 @@ namespace Protocol.Network.MinecraftPacket
 	{
 		
 		public Optional<uint> FormID { get; set; }
-		public byte CloseReason { get; set; }
+		public DataDrivenScreenCloseReason CloseReason { get; set; }
 		public McbeServerBoundDataDrivenScreenClosed()
 		{
 			Id = 343;
@@ -31,7 +31,7 @@ namespace Protocol.Network.MinecraftPacket
 			{
 				Write(FormID.Value);
 			}
-			Write(CloseReason);
+			Write((byte)CloseReason);
 		}
 
 		protected override void DecodePacket()
@@ -42,7 +42,7 @@ namespace Protocol.Network.MinecraftPacket
 			{
 				FormID = new Optional<uint>(ReadUint());
 			}
-			CloseReason = ReadByte();
+			CloseReason = (DataDrivenScreenCloseReason)ReadByte();
 		}
 	}
 }

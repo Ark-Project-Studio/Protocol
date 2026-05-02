@@ -253,7 +253,7 @@ namespace Protocol.Network
 				return;
 			}
 
-			Write((byte)SubChunkPacketHeightMapType.Data);
+			Write((byte)SubChunkPacketHeightMapType.HasData);
 
 			for (int i = 0; i < data.Heights.Length; i++)
 			{
@@ -265,7 +265,7 @@ namespace Protocol.Network
 		{
 			SubChunkPacketHeightMapType type = (SubChunkPacketHeightMapType)ReadByte();
 
-			if (type != SubChunkPacketHeightMapType.Data)
+			if (type != SubChunkPacketHeightMapType.HasData)
 				return null;
 
 			short[] heights = new short[256];
