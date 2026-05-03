@@ -8,7 +8,7 @@ public class McbeAddEntity : Packet
     public long entityIdSelf;
     public string entityType;
     public float headYaw;
-    public EntityLinks links;
+    public EntityLink[] links;
     public MetadataDictionary metadata;
     public float pitch;
     public ulong runtimeEntityId;

@@ -2,10 +2,6 @@ using Protocol.Utils;
 
 namespace Protocol.Minecraft;
 
-public class CraftingDataEntries : List<CraftingDataEntry>
-{
-}
-
 public class CraftingDataEntry
 {
 	public CraftingDataEntryType Type { get; set; }
@@ -48,7 +44,7 @@ public class ShapelessRecipe : Recipe
 {
 	public string RecipeUniqueId { get; set; } = string.Empty;
 	public List<RecipeIngredient> IngredientList { get; set; } = new();
-	public NetworkItemInstanceDescriptors ProductionList { get; set; } = new();
+	public NetworkItemInstanceDescriptor[] ProductionList { get; set; } = [];
 	public UUID RecipeId { get; set; } = new(Guid.Empty.ToString());
 	public string RecipeTag { get; set; } = string.Empty;
 	public int Priority { get; set; }
@@ -62,7 +58,7 @@ public class ShapedRecipe : Recipe
 	public int GridWidth { get; set; }
 	public int GridHeight { get; set; }
 	public List<RecipeIngredient> IngredientList { get; set; } = new();
-	public NetworkItemInstanceDescriptors ProductionList { get; set; } = new();
+	public NetworkItemInstanceDescriptor[] ProductionList { get; set; } = [];
 	public UUID RecipeId { get; set; } = new(Guid.Empty.ToString());
 	public string RecipeTag { get; set; } = string.Empty;
 	public int Priority { get; set; }
@@ -89,7 +85,7 @@ public class UserDataShapelessRecipe : Recipe
 {
 	public string RecipeUniqueId { get; set; } = string.Empty;
 	public List<RecipeIngredient> IngredientList { get; set; } = new();
-	public NetworkItemInstanceDescriptors ProductionList { get; set; } = new();
+	public NetworkItemInstanceDescriptor[] ProductionList { get; set; } = [];
 	public UUID RecipeId { get; set; } = new(Guid.Empty.ToString());
 	public string RecipeTag { get; set; } = string.Empty;
 	public int Priority { get; set; }
@@ -101,7 +97,7 @@ public class ShapelessChemistryRecipe : Recipe
 {
 	public string RecipeUniqueId { get; set; } = string.Empty;
 	public List<RecipeIngredient> IngredientList { get; set; } = new();
-	public NetworkItemInstanceDescriptors ProductionList { get; set; } = new();
+	public NetworkItemInstanceDescriptor[] ProductionList { get; set; } = [];
 	public UUID RecipeId { get; set; } = new(Guid.Empty.ToString());
 	public string RecipeTag { get; set; } = string.Empty;
 	public int Priority { get; set; }

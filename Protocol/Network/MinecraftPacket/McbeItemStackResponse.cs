@@ -3,7 +3,7 @@
 namespace Protocol.Network.MinecraftPacket;
 public class McbeItemStackResponse : Packet
 {
-    public ItemStackResponses responses;
+    public ItemStackResponse[] responses;
     public McbeItemStackResponse()
     {
         Id = 0x94;

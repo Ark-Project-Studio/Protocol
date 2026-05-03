@@ -49,7 +49,7 @@ public class McbeMobEquipment : Packet
     {
         base.DecodePacket();
         runtimeEntityId = ReadUnsignedVarLong();
-         ReadNetworkItemInstanceDescriptor();
+        ReadNetworkItemStackDescriptor();
         slot = ReadByte();
         selectedSlot = ReadByte();
         containerId = ReadByte();

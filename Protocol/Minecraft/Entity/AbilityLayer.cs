@@ -1,9 +1,5 @@
 namespace Protocol.Minecraft
 {
-	public class AbilityLayers : List<AbilityLayer>
-	{
-	}
-
 	public class AbilityData
 	{
 		public long EntityUniqueID { get; set; }

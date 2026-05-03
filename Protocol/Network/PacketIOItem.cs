@@ -99,61 +99,23 @@ namespace Protocol.Network
 			return group;
 		}
 
-		public void Write(NetworkItemStackDescriptors itemStacks)
+		public void Write(NetworkItemStackDescriptor[] itemStacks)
 		{
-			if (itemStacks == null)
-			{
-				WriteUnsignedVarInt(0);
-				return;
-			}
-
-			WriteUnsignedVarInt((uint)itemStacks.Count);
-			for (int i = 0; i < itemStacks.Count; i++)
-			{
-				Write(itemStacks[i]);
-			}
+			WriteSlice(itemStacks ?? [], Write);
 		}
 
-		public NetworkItemStackDescriptors ReadNetworkItemStackDescriptors()
+		public NetworkItemStackDescriptor[] ReadNetworkItemStackDescriptors()
 		{
-			var metadata = new NetworkItemStackDescriptors();
-
-			var count = ReadUnsignedVarInt();
-			for (int i = 0; i < count; i++)
-			{
-				NetworkItemStackDescriptor item = ReadNetworkItemStackDescriptor();
-				metadata.Add(item);
-			}
-
-			return metadata;
+			return ReadSlice(ReadNetworkItemStackDescriptor);
 		}
-		public void Write(NetworkItemInstanceDescriptors itemStacks)
+		public void Write(NetworkItemInstanceDescriptor[] itemStacks)
 		{
-			if (itemStacks == null)
-			{
-				WriteUnsignedVarInt(0);
-				return;
-			}
-
-			WriteUnsignedVarInt((uint)itemStacks.Count);
-			for (int i = 0; i < itemStacks.Count; i++)
-			{
-				Write(itemStacks[i]);
-			}
+			WriteSlice(itemStacks ?? [], Write);
 		}
 
-		public NetworkItemInstanceDescriptors ReadNetworkItemInstanceDescriptors()
+		public NetworkItemInstanceDescriptor[] ReadNetworkItemInstanceDescriptors()
 		{
-			var items = new NetworkItemInstanceDescriptors();
-
-			var count = ReadUnsignedVarInt();
-
-			for (int i = 0; i < count; i++)
-			{
-				items.Add(ReadNetworkItemInstanceDescriptor());
-			}
-
-			return items;
+			return ReadSlice(ReadNetworkItemInstanceDescriptor);
 		}
 
 		private const int ShieldId = 355;
@@ -202,7 +164,7 @@ namespace Protocol.Network
 
 		public NetworkItemStackDescriptor ReadNetworkItemStackDescriptor()
 		{
-			int id = ReadSignedVarInt();
+			int id = ReadShort();
 			var stack = new NetworkItemStackDescriptor { Id = id };
 			if (id == 0)
 			{
@@ -213,9 +175,9 @@ namespace Protocol.Network
 			var hasNetId = ReadBool();
 			if (hasNetId)
 			{
-				stack.NetId = new Optional<int>(ReadSignedVarInt());
+				stack.NetId = new Optional<int>((int)ReadUnsignedVarInt());
 			}
-			stack.BlockRuntimeId = ReadSignedVarInt();
+			stack.BlockRuntimeId = (int)ReadUnsignedVarInt();
 
 			stack.UserData = ReadString();
 			return stack;
@@ -223,6 +185,7 @@ namespace Protocol.Network
 
 		public NetworkItemInstanceDescriptor ReadNetworkItemInstanceDescriptor()
 		{
+		
 			int id = ReadSignedVarInt();
 			var stack = new NetworkItemInstanceDescriptor { Id = id };
 			if (id == 0)
@@ -233,7 +196,9 @@ namespace Protocol.Network
 			stack.StackSize = ReadUshort();
 			stack.Aux = ReadUnsignedVarInt();
 			stack.BlockRuntimeId = ReadSignedVarInt();
-			stack.UserData = ReadString();
+
+			uint len = ReadUnsignedVarInt();
+			ReadBytes((int)len);
 			return stack;
 		}
 
@@ -324,16 +289,9 @@ namespace Protocol.Network
 			return ingredient;
 		}
 
-		public void Write(Itemstates itemstates)
+		public void Write(Itemstate[] itemstates)
 		{
-			if (itemstates == null)
-			{
-				WriteUnsignedVarInt(0);
-				return;
-			}
-
-			WriteUnsignedVarInt((uint)itemstates.Count);
-			foreach (var itemstate in itemstates)
+			WriteSlice(itemstates ?? [], itemstate =>
 			{
 				Write(itemstate.Name);
 				Write(itemstate.Id);
@@ -363,14 +321,12 @@ namespace Protocol.Network
 				}
 
 				Write(nbt);
-			}
+			});
 		}
 
-		public Itemstates ReadItemstates()
+		public Itemstate[] ReadItemstates()
 		{
-			var result = new Itemstates();
-			uint count = ReadUnsignedVarInt();
-			for (int runtimeId = 0; runtimeId < count; runtimeId++)
+			return ReadSlice(() =>
 			{
 				var name = ReadString();
 				var legacyId = ReadShort();
@@ -390,17 +346,15 @@ namespace Protocol.Network
 					}
 				}
 
-				result.Add(new Itemstate
+				return new Itemstate
 				{
 					Id = legacyId,
 					Name = name,
 					ComponentBased = component,
 					Version = version,
 					Components = componentValue
-				});
-			}
-
-			return result;
+				};
+			});
 		}
 	}
 }

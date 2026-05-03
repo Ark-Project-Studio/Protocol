@@ -53,7 +53,7 @@ public class LevelSettings
     public bool emoteChatMuted;
     public bool enableCommands;
     public bool experimentalGameplayOverride;
-    public Experiments experiments;
+    public Experiments.Experiment[] experiments;
     public bool exportedFromEditorMode;
     public int gamemode;
     public List<GameRule> gamerules;

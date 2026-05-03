@@ -9,7 +9,7 @@ public class McbeSetScoreboardIdentity : Packet
         Remove = 1
     }
 
-    public ScoreboardIdentityEntries entries;
+    public ScoreboardIdentityEntry[] entries;
     public McbeSetScoreboardIdentity()
     {
         Id = 0x70;

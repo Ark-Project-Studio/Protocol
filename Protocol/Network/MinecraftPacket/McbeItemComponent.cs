@@ -3,7 +3,7 @@
 namespace Protocol.Network.MinecraftPacket;
 public class McbeItemComponent : Packet
 {
-    public Itemstates entries;
+    public Itemstate[] entries;
     public McbeItemComponent()
     {
         Id = 0xa2;

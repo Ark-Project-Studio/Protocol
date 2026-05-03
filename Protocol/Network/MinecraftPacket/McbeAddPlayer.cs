@@ -11,8 +11,8 @@ public class McbeAddPlayer : Packet
     public uint gameType;
     public float headYaw;
     public NetworkItemStackDescriptor item;
-    public AbilityLayers layers;
-    public EntityLinks links;
+    public AbilityLayer[] layers;
+    public EntityLink[] links;
     public MetadataDictionary metadata;
     public float pitch;
     public string platformChatId;

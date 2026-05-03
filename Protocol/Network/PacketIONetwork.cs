@@ -136,34 +136,14 @@ namespace Protocol.Network
 			return (NbtCompound)file.RootTag;
 		}
 
-		public void Write(ResourcePackIds ids)
+		public void Write(string[] ids)
 		{
-			if (ids == null)
-			{
-				Write((short)0);
-				return;
-			}
-
-			Write((short)ids.Count);
-
-			foreach (var id in ids)
-			{
-				Write(id);
-			}
+			WriteSliceUint16Length(ids ?? [], Write);
 		}
 
-		public ResourcePackIds ReadResourcePackIds()
+		public string[] ReadResourcePackIds()
 		{
-			int count = ReadShort();
-
-			var ids = new ResourcePackIds();
-			for (int i = 0; i < count; i++)
-			{
-				var id = ReadString();
-				ids.Add(id);
-			}
-
-			return ids;
+			return ReadSliceUint16Length(ReadString);
 		}
 
 		public void Write(EducationUriResource resource)

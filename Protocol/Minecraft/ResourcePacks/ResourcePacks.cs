@@ -1,4 +1,4 @@
-using Protocol.Utils;
+﻿using Protocol.Utils;
 
 namespace Protocol.Minecraft;
 
@@ -55,7 +55,7 @@ public struct ResourcePackStack
 	public bool TexturePackRequired { get; set; }
 	public System.Collections.Generic.List<StackResourcePack> TexturePacks { get; set; }
 	public string BaseGameVersion { get; set; }
-	public Experiments Experiments { get; set; }
+	public Experiments.Experiment[] Experiments { get; set; }
 	public bool ExperimentsPreviouslyToggled { get; set; }
 	public bool IncludeEditorPacks { get; set; }
 }
@@ -65,10 +65,6 @@ public class PackIdVersion
 	public string Id { get; set; }
 	public string Version { get; set; }
 	public string SubPackName { get; set; }
-}
-
-public class ResourcePackIds : List<string>
-{
 }
 
 public enum ResourcePackType : byte

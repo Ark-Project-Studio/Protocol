@@ -1,6 +1,6 @@
 namespace Protocol.Minecraft
 {
-	public class Experiments : List<Experiments.Experiment>
+	public class Experiments
 	{
 		public class Experiment
 		{

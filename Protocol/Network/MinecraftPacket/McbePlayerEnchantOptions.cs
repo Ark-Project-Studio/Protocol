@@ -3,7 +3,7 @@
 namespace Protocol.Network.MinecraftPacket;
 public class McbePlayerEnchantOptions : Packet
 {
-    public EnchantOptions enchantOptions;
+    public EnchantOption[] enchantOptions;
     public McbePlayerEnchantOptions()
     {
         Id = 0x92;

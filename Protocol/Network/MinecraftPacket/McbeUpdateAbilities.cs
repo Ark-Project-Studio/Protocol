@@ -5,7 +5,7 @@ public class McbeUpdateAbilities : Packet
 {
     public byte commandPermissions;
     public long entityUniqueId;
-    public AbilityLayers layers;
+    public AbilityLayer[] layers;
     public byte playerPermissions;
     public McbeUpdateAbilities()
     {

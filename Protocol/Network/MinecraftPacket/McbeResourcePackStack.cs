@@ -7,7 +7,7 @@ public class McbeResourcePackStack : Packet
 	public bool TexturePackRequired { get; set; }
 	public StackResourcePack[] TexturePacks { get; set; }
 	public string BaseGameVersion { get; set; }
-	public Experiments Experiments { get; set; }
+	public Experiments.Experiment[] Experiments { get; set; }
 	public bool ExperimentsPreviouslyToggled { get; set; }
 	public bool IncludeEditorPacks { get; set; }
 

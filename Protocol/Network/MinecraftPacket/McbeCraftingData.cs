@@ -3,7 +3,7 @@
 namespace Protocol.Network.MinecraftPacket;
 public class McbeCraftingData : Packet
 {
-    public CraftingDataEntries craftingDataEntries = new();
+    public CraftingDataEntry[] craftingDataEntries = [];
     public List<PotionMixDataEntry> potionMixDataEntries = new();
     public List<ContainerMixDataEntry> containerMixDataEntries = new();
     public List<MaterialReducerDataEntry> materialReducerDataEntries = new();

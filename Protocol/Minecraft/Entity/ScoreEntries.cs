@@ -1,9 +1,5 @@
 namespace Protocol.Minecraft;
 
-public class ScoreEntries : List<ScoreEntry>
-{
-}
-
 public abstract class ScoreEntry
 {
 	public long Id { get; set; }
@@ -32,10 +28,6 @@ public class ScoreEntryChangeEntity : ScoreEntryChange
 public class ScoreEntryChangeFakePlayer : ScoreEntryChange
 {
 	public string CustomName { get; set; }
-}
-
-public class ScoreboardIdentityEntries : List<ScoreboardIdentityEntry>
-{
 }
 
 public abstract class ScoreboardIdentityEntry

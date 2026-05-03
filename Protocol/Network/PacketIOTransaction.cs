@@ -260,18 +260,16 @@ namespace Protocol.Network
 			WriteSignedVarInt(slotInfo.StackNetworkId);
 		}
 
-		public void Write(ItemStackRequests requests)
+		public void Write(ItemStackActionList[] requests)
 		{
-			WriteUnsignedVarInt((uint)requests.Count);
-			foreach (ItemStackActionList request in requests)
+			WriteSlice(requests ?? [], request =>
 			{
 				WriteSignedVarInt(request.RequestId);
-				WriteUnsignedVarInt((uint)request.Count);
-				foreach (ItemStackAction action in request)
+				WriteSlice(request.Actions, action =>
 				{
 					Write((byte)action.ActionType);
 					Write(action);
-				}
+				});
 
 				WriteUnsignedVarInt((uint)request.StringsToFilter.Count);
 				foreach (var value in request.StringsToFilter)
@@ -280,7 +278,7 @@ namespace Protocol.Network
 				}
 
 				Write(request.StringsToFilterOrigin);
-			}
+			});
 		}
 
 		private void Write(ItemStackAction action)
@@ -357,10 +355,8 @@ namespace Protocol.Network
 			}
 		}
 
-		public ItemStackRequests ReadItemStackRequests(bool single = false)
+		public ItemStackActionList[] ReadItemStackRequests(bool single = false)
 		{
-			var requests = new ItemStackRequests();
-
 			uint c = 1;
 
 			if (!single)
@@ -369,6 +365,7 @@ namespace Protocol.Network
 			}
 
 
+			var requests = new ItemStackActionList[c];
 			for (int i = 0; i < c; i++)
 			{
 				var actions = new ItemStackActionList();
@@ -376,6 +373,7 @@ namespace Protocol.Network
 
 
 				uint count = ReadUnsignedVarInt();
+				actions.Actions = new ItemStackAction[count];
 
 				for (int j = 0; j < count; j++)
 				{
@@ -478,10 +476,10 @@ namespace Protocol.Network
 							break;
 					}
 
-					actions.Add(action);
+					actions.Actions[j] = action;
 				}
 
-				requests.Add(actions);
+				requests[i] = actions;
 
 				var filterStringCount = ReadUnsignedVarInt();
 
@@ -496,48 +494,45 @@ namespace Protocol.Network
 			return requests;
 		}
 
-		public void Write(ItemStackResponses responses)
+		public void Write(ItemStackResponse[] responses)
 		{
-			WriteUnsignedVarInt((uint)responses.Count);
-			foreach (ItemStackResponse stackResponse in responses)
+			WriteSlice(responses ?? [], stackResponse =>
 			{
 				Write((byte)stackResponse.Result);
 				WriteSignedVarInt(stackResponse.RequestId);
-				if (stackResponse.Result != StackResponseStatus.Ok)
-					continue;
-				WriteUnsignedVarInt((uint)stackResponse.ResponseContainerInfos.Count);
-				foreach (StackResponseContainerInfo containerInfo in stackResponse.ResponseContainerInfos)
+				if (stackResponse.Result == StackResponseStatus.Ok)
 				{
-					Write(containerInfo.ContainerName);
-					WriteUnsignedVarInt((uint)containerInfo.Slots.Count);
-					foreach (StackResponseSlotInfo slot in containerInfo.Slots)
+					WriteUnsignedVarInt((uint)stackResponse.ResponseContainerInfos.Count);
+					foreach (StackResponseContainerInfo containerInfo in stackResponse.ResponseContainerInfos)
 					{
-						Write(slot.RequestedSlot);
-						Write(slot.Slot);
-						Write(slot.Count);
-						WriteSignedVarInt(slot.StackNetworkId);
-						Write(slot.CustomName);
-						Write(slot.FilteredCustomName);
-						WriteSignedVarInt(slot.DurationCorrection);
+						Write(containerInfo.ContainerName);
+						WriteUnsignedVarInt((uint)containerInfo.Slots.Count);
+						foreach (StackResponseSlotInfo slot in containerInfo.Slots)
+						{
+							Write(slot.RequestedSlot);
+							Write(slot.Slot);
+							Write(slot.Count);
+							WriteSignedVarInt(slot.StackNetworkId);
+							Write(slot.CustomName);
+							Write(slot.FilteredCustomName);
+							WriteSignedVarInt(slot.DurationCorrection);
+						}
 					}
 				}
-			}
+			});
 		}
 
 
-		public ItemStackResponses ReadItemStackResponses()
+		public ItemStackResponse[] ReadItemStackResponses()
 		{
-			var responses = new ItemStackResponses();
-			var count = ReadUnsignedVarInt();
-
-			for (var i = 0; i < count; i++)
+			return ReadSlice(() =>
 			{
 				var response = new ItemStackResponse();
 				response.Result = (StackResponseStatus)ReadByte();
 				response.RequestId = ReadSignedVarInt();
 
 				if (response.Result != StackResponseStatus.Ok)
-					continue;
+					return response;
 
 				response.ResponseContainerInfos = new List<StackResponseContainerInfo>();
 				var subCount = ReadUnsignedVarInt();
@@ -565,10 +560,8 @@ namespace Protocol.Network
 					response.ResponseContainerInfos.Add(containerInfo);
 				}
 
-				responses.Add(response);
-			}
-
-			return responses;
+				return response;
+			});
 		}
 	}
 }

@@ -1,48 +1,15 @@
 namespace Protocol.Minecraft
 {
-	public class Records : List<BlockCoordinates>
+	public abstract class PlayerRecords
 	{
-		public Records()
-		{
-		}
-
-		public Records(IEnumerable<BlockCoordinates> coordinates) : base(coordinates)
-		{
-		}
-	}
-
-	public abstract class PlayerRecords : List<Player>
-	{
-		public PlayerRecords()
-		{
-		}
-
-		public PlayerRecords(IEnumerable<Player> players) : base(players)
-		{
-		}
+		public Player[] Players { get; set; } = [];
 	}
 
 	public class PlayerAddRecords : PlayerRecords
 	{
-		public PlayerAddRecords()
-		{
-		}
-
-
-		public PlayerAddRecords(IEnumerable<Player> players) : base(players)
-		{
-		}
 	}
 
 	public class PlayerRemoveRecords : PlayerRecords
 	{
-		public PlayerRemoveRecords()
-		{
-		}
-
-
-		public PlayerRemoveRecords(IEnumerable<Player> players) : base(players)
-		{
-		}
 	}
 }

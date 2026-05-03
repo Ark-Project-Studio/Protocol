@@ -23,14 +23,6 @@ public class NetworkItemInstanceDescriptor
 	public static NetworkItemInstanceDescriptor Empty { get; } = new();
 }
 
-public class NetworkItemStackDescriptors : List<NetworkItemStackDescriptor>
-{
-}
-
-public class NetworkItemInstanceDescriptors : List<NetworkItemInstanceDescriptor>
-{
-}
-
 public enum RecipeIngredientDescriptorType : byte
 {
 	Invalid = 0,

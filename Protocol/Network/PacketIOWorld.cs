@@ -372,27 +372,14 @@ namespace Protocol.Network
 			return mapData;
 		}
 
-		public void Write(CraftingDataEntries entries)
+		public void Write(CraftingDataEntry[] entries)
 		{
-			WriteUnsignedVarInt((uint)(entries?.Count ?? 0));
-			if (entries == null) return;
-
-			foreach (var entry in entries)
-			{
-				Write(entry);
-			}
+			WriteSlice(entries ?? [], Write);
 		}
 
-		public CraftingDataEntries ReadCraftingDataEntries()
+		public CraftingDataEntry[] ReadCraftingDataEntries()
 		{
-			var entries = new CraftingDataEntries();
-			var count = ReadUnsignedVarInt();
-			for (int i = 0; i < count; i++)
-			{
-				entries.Add(ReadCraftingDataEntry());
-			}
-
-			return entries;
+			return ReadSlice(ReadCraftingDataEntry);
 		}
 
 		public void Write(CraftingDataEntry entry)

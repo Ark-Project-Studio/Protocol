@@ -1,9 +1,5 @@
 namespace Protocol.Minecraft
 {
-	public class EnchantOptions : List<EnchantOption>
-	{
-	}
-
 	public class EnchantOption
 	{
 		public uint Cost { get; set; }

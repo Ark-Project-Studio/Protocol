@@ -137,32 +137,19 @@ namespace Protocol.Network
 			return rule;
 		}
 
-		public void Write(Records records)
+		public void Write(BlockCoordinates[] records)
 		{
-			WriteUnsignedVarInt((uint)records.Count);
-			foreach (BlockCoordinates coord in records)
-			{
-				Write(coord);
-			}
+			WriteSlice(records ?? [], Write);
 		}
 
-		public Records ReadRecords()
+		public BlockCoordinates[] ReadRecords()
 		{
-			var records = new Records();
-			uint count = ReadUnsignedVarInt();
-			for (int i = 0; i < count; i++)
-			{
-				var coord = ReadBlockCoordinates();
-				records.Add(coord);
-			}
-
-			return records;
+			return ReadSlice(ReadBlockCoordinates);
 		}
 
-		public void Write(EnchantOptions options)
+		public void Write(EnchantOption[] options)
 		{
-			WriteUnsignedVarInt((uint)options.Count);
-			foreach (EnchantOption option in options)
+			WriteSlice(options ?? [], option =>
 			{
 				WriteUnsignedVarInt(option.Cost);
 				Write(option.Flags);
@@ -171,7 +158,7 @@ namespace Protocol.Network
 				WriteEnchants(option.SelfActivatedEnchantments);
 				Write(option.Name);
 				WriteVarInt(option.OptionId);
-			}
+			});
 		}
 
 		private void WriteEnchants(List<Enchant> enchants)
@@ -198,12 +185,9 @@ namespace Protocol.Network
 			return enchants;
 		}
 
-		public EnchantOptions ReadEnchantOptions()
+		public EnchantOption[] ReadEnchantOptions()
 		{
-			var options = new EnchantOptions();
-			var count = ReadUnsignedVarInt();
-
-			for (int i = 0; i < count; i++)
+			return ReadSlice(() =>
 			{
 				EnchantOption option = new EnchantOption();
 				option.Cost = ReadUnsignedVarInt();
@@ -214,87 +198,67 @@ namespace Protocol.Network
 				option.Name = ReadString();
 				option.OptionId = ReadVarInt();
 
-				options.Add(option);
-			}
-
-			return options;
+				return option;
+			});
 		}
 
-		public void Write(Experiments experiments)
+		public void Write(Experiments.Experiment[] experiments)
 		{
-			if (experiments == null)
-			{
-				Write(0);
-				return;
-			}
-
-			Write(experiments.Count);
-
-			foreach (var experiment in experiments)
+			WriteSliceUint32Length(experiments ?? [], experiment =>
 			{
 				Write(experiment.Name);
 				Write(experiment.Enabled);
-			}
+			});
 		}
 
-		public Experiments ReadExperiments()
+		public Experiments.Experiment[] ReadExperiments()
 		{
-			Experiments experiments = new Experiments();
-			var count = ReadInt();
-
-			for (int i = 0; i < count; i++)
+			return ReadSliceUint32Length(() =>
 			{
 				var experimentName = ReadString();
 				var enabled = ReadBool();
-				experiments.Add(new Experiments.Experiment(experimentName, enabled));
-			}
-
-			return experiments;
+				return new Experiments.Experiment(experimentName, enabled);
+			});
 		}
 
-		public void Write(ScoreEntries list)
+		public void Write(ScoreEntry[] list)
 		{
-			if (list == null) list = new ScoreEntries();
+			list ??= [];
 
 			Write((byte)(list.FirstOrDefault() is ScoreEntryRemove
 				? McbeSetScore.PacketType.Remove
 				: McbeSetScore.PacketType.Change));
-			WriteUnsignedVarInt((uint)list.Count);
-			foreach (var entry in list)
+			WriteSlice(list, entry =>
 			{
 				WriteSignedVarLong(entry.Id);
 				Write(entry.ObjectiveName);
 				Write(entry.Score);
 
-				if (entry is ScoreEntryRemove)
+				if (entry is not ScoreEntryRemove)
 				{
-					continue;
+					if (entry is ScoreEntryChangePlayer player)
+					{
+						Write((byte)McbeSetScore.IdentityType.Player);
+						WriteSignedVarLong(player.EntityId);
+					}
+					else if (entry is ScoreEntryChangeEntity entity)
+					{
+						Write((byte)McbeSetScore.IdentityType.Entity);
+						WriteSignedVarLong(entity.EntityId);
+					}
+					else if (entry is ScoreEntryChangeFakePlayer fakePlayer)
+					{
+						Write((byte)McbeSetScore.IdentityType.FakePlayer);
+						Write(fakePlayer.CustomName);
+					}
 				}
-
-				if (entry is ScoreEntryChangePlayer player)
-				{
-					Write((byte)McbeSetScore.IdentityType.Player);
-					WriteSignedVarLong(player.EntityId);
-				}
-				else if (entry is ScoreEntryChangeEntity entity)
-				{
-					Write((byte)McbeSetScore.IdentityType.Entity);
-					WriteSignedVarLong(entity.EntityId);
-				}
-				else if (entry is ScoreEntryChangeFakePlayer fakePlayer)
-				{
-					Write((byte)McbeSetScore.IdentityType.FakePlayer);
-					Write(fakePlayer.CustomName);
-				}
-			}
+			});
 		}
 
-		public ScoreEntries ReadScoreEntries()
+		public ScoreEntry[] ReadScoreEntries()
 		{
-			var list = new ScoreEntries();
 			byte type = ReadByte();
-			var length = ReadUnsignedVarInt();
-			for (var i = 0; i < length; ++i)
+			return ReadSlice<ScoreEntry>(() =>
 			{
 				var entryId = ReadSignedVarLong();
 				var entryObjectiveName = ReadString();
@@ -323,62 +287,51 @@ namespace Protocol.Network
 					}
 				}
 
-				if (entry == null) continue;
+				if (entry == null) return null;
 
 				entry.Id = entryId;
 				entry.ObjectiveName = entryObjectiveName;
 				entry.Score = entryScore;
 
-				list.Add(entry);
-			}
-
-			return list;
+				return entry;
+			}).Where(entry => entry != null).ToArray();
 		}
 
-		public void Write(ScoreboardIdentityEntries list)
+		public void Write(ScoreboardIdentityEntry[] list)
 		{
-			if (list == null) list = new ScoreboardIdentityEntries();
+			list ??= [];
 
 			Write((byte)(list.FirstOrDefault() is ScoreboardClearIdentityEntry
 				? McbeSetScoreboardIdentity.Type.Remove
 				: McbeSetScoreboardIdentity.Type.Update));
-			WriteUnsignedVarInt((uint)list.Count);
-			foreach (var entry in list)
+			WriteSlice(list, entry =>
 			{
 				WriteSignedVarLong(entry.Id);
 				if (entry is ScoreboardRegisterIdentityEntry reg)
 				{
 					WriteSignedVarLong(reg.EntityId);
 				}
-			}
+			});
 		}
 
-		public ScoreboardIdentityEntries ReadScoreboardIdentityEntries()
+		public ScoreboardIdentityEntry[] ReadScoreboardIdentityEntries()
 		{
-			ScoreboardIdentityEntries list = new ScoreboardIdentityEntries();
-
 			McbeSetScoreboardIdentity.Type type = (McbeSetScoreboardIdentity.Type)ReadByte();
-			var length = ReadUnsignedVarInt();
-			for (var i = 0; i < length; ++i)
+			return ReadSlice<ScoreboardIdentityEntry>(() =>
 			{
 				var scoreboardId = ReadSignedVarLong();
 
-				switch (type)
+				return type switch
 				{
-					case McbeSetScoreboardIdentity.Type.Update:
-						list.Add(new ScoreboardRegisterIdentityEntry()
+					McbeSetScoreboardIdentity.Type.Update => new ScoreboardRegisterIdentityEntry()
 						{
 							Id = scoreboardId,
 							EntityId = ReadSignedVarLong()
-						});
-						break;
-					case McbeSetScoreboardIdentity.Type.Remove:
-						list.Add(new ScoreboardClearIdentityEntry() { Id = scoreboardId });
-						break;
-				}
-			}
-
-			return list;
+						},
+					McbeSetScoreboardIdentity.Type.Remove => new ScoreboardClearIdentityEntry() { Id = scoreboardId },
+					_ => null
+				};
+			}).Where(entry => entry != null).ToArray();
 		}
 
 		public void Write(ParameterKeyframeValue value)

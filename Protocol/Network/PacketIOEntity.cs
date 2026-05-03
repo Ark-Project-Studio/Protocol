@@ -101,32 +101,14 @@ namespace Protocol.Network
 			return new EntityLink(from, to, type, immediate, causedByRider, vehicleAngularVelocity);
 		}
 
-		public void Write(EntityLinks links)
+		public void Write(EntityLink[] links)
 		{
-			if (links == null)
-			{
-				WriteUnsignedVarInt(0);
-				return;
-			}
-
-			WriteUnsignedVarInt((uint)links.Count);
-			foreach (var link in links)
-			{
-				Write(link);
-			}
+			WriteSlice(links ?? [], Write);
 		}
 
-		public EntityLinks ReadEntityLinks()
+		public EntityLink[] ReadEntityLinks()
 		{
-			var count = ReadUnsignedVarInt();
-
-			var links = new EntityLinks();
-			for (int i = 0; i < count; i++)
-			{
-				links.Add(ReadEntityLink());
-			}
-
-			return links;
+			return ReadSlice(ReadEntityLink);
 		}
 
 		public void Write(PropertySyncData syncData)

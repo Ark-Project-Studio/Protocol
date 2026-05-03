@@ -18,7 +18,7 @@ public class McbeSetScore : Packet
         Remove = 1
     }
 
-    public ScoreEntries entries;
+    public ScoreEntry[] entries;
     public McbeSetScore()
     {
         Id = 0x6c;

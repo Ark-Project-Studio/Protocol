@@ -42,15 +42,6 @@ public class EntityLink
 	public float VehicleAngularVelocity { get; set; }
 }
 
-public class EntityLinks : List<EntityLink>
-{
-}
-
-
-public class Itemstates : List<Itemstate>
-{
-}
-
 public class Itemstate
 {
 	[JsonPropertyName("runtime_id")] public short Id { get; set; }

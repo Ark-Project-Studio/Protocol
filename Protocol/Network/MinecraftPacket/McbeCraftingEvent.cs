@@ -18,10 +18,10 @@ public class McbeCraftingEvent : Packet
         SmithingTrim = 9
     }
 
-    public NetworkItemStackDescriptors input;
+    public NetworkItemStackDescriptor[] input;
     public UUID recipeId;
     public int recipeType;
-    public NetworkItemStackDescriptors result;
+    public NetworkItemStackDescriptor[] result;
     public byte windowId;
     public McbeCraftingEvent()
     {

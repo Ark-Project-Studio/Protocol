@@ -55,5 +55,5 @@ public class ItemStackAction
 	public uint FilteredStringIndex { get; set; }
 	public int RepairCost { get; set; }
 	public string PatternNameId { get; set; } = string.Empty;
-	public NetworkItemInstanceDescriptors CraftResults { get; set; } = new();
+	public NetworkItemInstanceDescriptor[] CraftResults { get; set; } = [];
 }

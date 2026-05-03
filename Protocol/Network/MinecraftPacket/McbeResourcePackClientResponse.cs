@@ -11,7 +11,7 @@ public class McbeResourcePackClientResponse : Packet
         Completed = 4
     }
 
-    public ResourcePackIds resourcepackids;
+    public string[] resourcepackids;
     public ResponseStatus responseStatus;
     public McbeResourcePackClientResponse()
     {
@@ -23,24 +23,13 @@ public class McbeResourcePackClientResponse : Packet
     {
         base.EncodePacket();
         Write((byte)responseStatus);
-        Write((ushort)(resourcepackids?.Count ?? 0));
-        if (resourcepackids == null) return;
-
-        foreach (var id in resourcepackids)
-        {
-            Write(id);
-        }
+        WriteSliceUint16Length(resourcepackids ?? [], Write);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
         responseStatus = (ResponseStatus)ReadByte();
-        var count = ReadUshort();
-        resourcepackids = new ResourcePackIds();
-        for (int i = 0; i < count; i++)
-        {
-            resourcepackids.Add(ReadString());
-        }
+        resourcepackids = ReadSliceUint16Length(ReadString);
     }
 }

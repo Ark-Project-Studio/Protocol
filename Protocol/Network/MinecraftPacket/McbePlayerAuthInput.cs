@@ -190,7 +190,7 @@ public class McbePlayerAuthInput : Packet
     public float HeadYaw;
     public Bitset InputData;
     public UseItemTransactionData ItemInteractionData;
-    public ItemStackRequests ItemStack = new();
+    public ItemStackActionList[] ItemStack = [];
     public Vector2 MoveVector;
     public float Pitch, Yaw;
     public PlayerBlockAction[] PlayerBlockAction_;
@@ -274,7 +274,7 @@ public class McbePlayerAuthInput : Packet
         if (InputData.Load((int)PlayerAuthInputData.PerformItemStackRequest))
             ItemStack = ReadItemStackRequests(true);
         else
-            ItemStack = new ItemStackRequests();
+            ItemStack = [];
         if (InputData.Load((int)PlayerAuthInputData.PerformBlockActions))
         {
             var blockActionsCount = ReadSignedVarInt();

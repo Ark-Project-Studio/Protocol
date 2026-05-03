@@ -27,7 +27,7 @@ public class McbeItemStackRequest : Packet
         CraftResults = 19
     }
 
-    public ItemStackRequests requests;
+    public ItemStackActionList[] requests;
     public McbeItemStackRequest()
     {
         Id = 0x93;

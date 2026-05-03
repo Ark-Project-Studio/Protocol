@@ -13,8 +13,7 @@ namespace Protocol.Network
 			if (records is PlayerAddRecords)
 			{
 				Write((byte)0);
-				WriteUnsignedVarInt((uint)records.Count);
-				foreach (var record in records)
+				WriteSlice(records.Players, record =>
 				{
 					Write(record.ClientUuid);
 					WriteSignedVarLong(record.EntityId);
@@ -27,21 +26,20 @@ namespace Protocol.Network
 					Write(false);
 					Write(false);
 					Write(0);
-				}
+				});
 			}
 			else if (records is PlayerRemoveRecords)
 			{
 				Write((byte)1);
-				WriteUnsignedVarInt((uint)records.Count);
-				foreach (var record in records)
+				WriteSlice(records.Players, record =>
 				{
 					Write(record.ClientUuid);
-				}
+				});
 			}
 
 			if (records is PlayerAddRecords)
 			{
-				foreach (var record in records)
+				foreach (var record in records.Players)
 				{
 					Write(record.Skin.IsVerified);
 				}
@@ -57,6 +55,7 @@ namespace Protocol.Network
 			{
 				case 0:
 					records = new PlayerAddRecords();
+					records.Players = new Player[count];
 					for (int i = 0; i < count; i++)
 					{
 						var player = new Player(null, null);
@@ -84,17 +83,18 @@ namespace Protocol.Network
 								}
 							}
 						};
-						records.Add(player);
+						records.Players[i] = player;
 					}
 
 					break;
 				case 1:
 					records = new PlayerRemoveRecords();
+					records.Players = new Player[count];
 					for (int i = 0; i < count; i++)
 					{
 						var player = new Player(null, null);
 						player.ClientUuid = ReadUUID();
-						records.Add(player);
+						records.Players[i] = player;
 					}
 
 					break;
@@ -102,7 +102,7 @@ namespace Protocol.Network
 
 			if (records is PlayerAddRecords)
 			{
-				foreach (Player player in records)
+				foreach (Player player in records.Players)
 				{
 					bool isVerified = ReadBool();
 
@@ -317,27 +317,14 @@ namespace Protocol.Network
 			return layer;
 		}
 
-		public void Write(AbilityLayers layers)
+		public void Write(AbilityLayer[] layers)
 		{
-			Write((byte)layers.Count);
-
-			foreach (var layer in layers)
-			{
-				Write(layer);
-			}
+			WriteSliceUint8Length(layers ?? [], Write);
 		}
 
-		public AbilityLayers ReadAbilityLayers()
+		public AbilityLayer[] ReadAbilityLayers()
 		{
-			AbilityLayers layers = new AbilityLayers();
-			var count = ReadByte();
-
-			for (int i = 0; i < count; i++)
-			{
-				layers.Add(ReadAbilityLayer());
-			}
-
-			return layers;
+			return ReadSliceUint8Length(ReadAbilityLayer);
 		}
 
 		public void Write(AnimationKey[] keys)
