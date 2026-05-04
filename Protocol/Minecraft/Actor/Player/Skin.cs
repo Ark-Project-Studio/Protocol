@@ -1,5 +1,3 @@
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Xml;
@@ -102,54 +100,9 @@ public class Skin : ICloneable
 		return clonedSkin;
 	}
 
-	public static byte[] GetTextureFromFile(string filename)
-	{
-		var bitmap = Image.Load<Rgba32>(filename);
 
-		var size = bitmap.Height * bitmap.Width * 4;
 
-		if (size != 0x2000 && size != 0x4000 && size != 0x10000)
-			return null;
-
-		var bytes = new byte[size];
-
-		var i = 0;
-		for (var y = 0; y < bitmap.Height; y++)
-		for (var x = 0; x < bitmap.Width; x++)
-		{
-			var color = bitmap[x, y];
-			bytes[i++] = color.R;
-			bytes[i++] = color.G;
-			bytes[i++] = color.B;
-			bytes[i++] = color.A;
-		}
-
-		return bytes;
-	}
-
-	public static void SaveTextureToFile(string filename, byte[] bytes)
-	{
-		var size = bytes.Length;
-
-		var width = size == 0x10000 ? 128 : 64;
-		var height = size == 0x2000 ? 32 : size == 0x4000 ? 64 : 128;
-
-		var bitmap = new Image<Rgba32>(width, height);
-
-		var i = 0;
-		for (var y = 0; y < bitmap.Height; y++)
-		for (var x = 0; x < bitmap.Width; x++)
-		{
-			var r = bytes[i++];
-			var g = bytes[i++];
-			var b = bytes[i++];
-			var a = bytes[i++];
-
-			bitmap[x, y] = new Rgba32(r, g, b, a);
-		}
-
-		bitmap.Save(filename);
-	}
+	
 
 
 	public static string ToJson(SkinResourcePatch model)
