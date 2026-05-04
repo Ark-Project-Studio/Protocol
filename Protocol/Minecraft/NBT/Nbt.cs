@@ -1,6 +1,6 @@
 using fNbt;
 
-namespace Protocol.Minecraft
+namespace Protocol.Minecraft.NBT
 {
 	public class Nbt
 	{

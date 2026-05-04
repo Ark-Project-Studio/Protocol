@@ -7,6 +7,12 @@
     <NoWarn>8765;8625;8618;8600;8601;8603;0168;8602</NoWarn>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Level\**" />
+    <EmbeddedResource Remove="Level\**" />
+    <None Remove="Level\**" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="BouncyCastle.Cryptography" Version="2.7.0-beta.98" />
     <PackageReference Include="jose-jwt" Version="5.2.0" />

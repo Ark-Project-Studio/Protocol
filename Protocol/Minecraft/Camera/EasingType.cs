@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Protocol.Minecraft.Camera
 {
-	public enum EasingTypeEnum : int
+	public enum EasingTypeEnum : byte
 	{
 		 Linear = 0,
 		 Spring = 1,
@@ -29,16 +29,15 @@ namespace Protocol.Minecraft.Camera
 		 InCirc = 20,
 		 OutCirc = 21,
 		 InOutCirc = 22,
-		 InBack = 23,
-		 OutBack = 24,
-		 InOutBack = 25,
-		 InElastic = 26,
-		 OutElastic = 27,
-		 InOutElastic = 28,
-		 InBounce = 29,
-		 OutBounce = 30,
-		 InOutBounce = 31,
-		 InverseLerp = 32,
+		 InBounce = 23,
+		 OutBounce = 24,
+		 InOutBounce = 25,
+		 InBack = 26,
+		 OutBack = 27,
+		 InOutBack = 28,
+		 InElastic = 29,
+		 OutElastic = 30,
+		 InOutElastic = 31,
 	}
 	public class EasingType
 	{
@@ -93,6 +92,12 @@ namespace Protocol.Minecraft.Camera
 					return "out_circ";
 				case EasingTypeEnum.InOutCirc:
 					return "in_out_circ";
+				case EasingTypeEnum.InBounce:
+					return "in_bounce";
+				case EasingTypeEnum.OutBounce:
+					return "out_bounce";
+				case EasingTypeEnum.InOutBounce:
+					return "in_out_bounce";
 				case EasingTypeEnum.InBack:
 					return "in_back";
 				case EasingTypeEnum.OutBack:
@@ -105,14 +110,6 @@ namespace Protocol.Minecraft.Camera
 					return "out_elastic";
 				case EasingTypeEnum.InOutElastic:
 					return "in_out_elastic";
-				case EasingTypeEnum.InBounce:
-					return "in_bounce";
-				case EasingTypeEnum.OutBounce:
-					return "out_bounce";
-				case EasingTypeEnum.InOutBounce:
-					return "in_out_bounce";
-				case EasingTypeEnum.InverseLerp:
-					return "inverse_lerp";
 				default:
 					throw new ArgumentException($"Unknown easing type: {easingType}");
 			}
@@ -168,6 +165,12 @@ namespace Protocol.Minecraft.Camera
 					return EasingTypeEnum.OutCirc;
 				case "in_out_circ":
 					return EasingTypeEnum.InOutCirc;
+				case "in_bounce":
+					return EasingTypeEnum.InBounce;
+				case "out_bounce":
+					return EasingTypeEnum.OutBounce;
+				case "in_out_bounce":
+					return EasingTypeEnum.InOutBounce;
 				case "in_back":
 					return EasingTypeEnum.InBack;
 				case "out_back":
@@ -180,14 +183,6 @@ namespace Protocol.Minecraft.Camera
 					return EasingTypeEnum.OutElastic;
 				case "in_out_elastic":
 					return EasingTypeEnum.InOutElastic;
-				case "in_bounce":
-					return EasingTypeEnum.InBounce;
-				case "out_bounce":
-					return EasingTypeEnum.OutBounce;
-				case "in_out_bounce":
-					return EasingTypeEnum.InOutBounce;
-				case "inverse_lerp":
-					return EasingTypeEnum.InverseLerp;
 				default:
 					throw new FormatException($"Unknown easing type string: {easingType}");
 			}

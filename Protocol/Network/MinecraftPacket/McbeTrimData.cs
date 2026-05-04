@@ -1,4 +1,5 @@
 ﻿using Protocol.Minecraft;
+using Protocol.Minecraft.Inventory;
 
 namespace Protocol.Network.MinecraftPacket;
 public class McbeTrimData : Packet

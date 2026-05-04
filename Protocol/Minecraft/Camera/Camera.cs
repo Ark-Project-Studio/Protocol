@@ -1,16 +1,17 @@
+using System.Collections.Generic;
 using System.Drawing;
 using System.Numerics;
 
 namespace Protocol.Minecraft;
 
 using System;
-using System.Numerics;
 // Enums
 public enum AimAssistTargetMode
 {
 	Angle = 0,
 	Distance = 1
 }
+
 
 public enum AudioListener
 {
@@ -27,8 +28,21 @@ public static class SplineType
 // Structures
 public struct CameraEase
 {
-	public byte Type { get; set; }
+	public Camera.EasingTypeEnum Type { get; set; }
 	public float Duration { get; set; }
+}
+
+public struct CameraInstruction
+{
+	public Optional<CameraInstructionSet> Set { get; set; }
+	public Optional<bool> Clear { get; set; }
+	public Optional<CameraInstructionFade> Fade { get; set; }
+	public Optional<CameraInstructionTarget> Target { get; set; }
+	public Optional<bool> RemoveTarget { get; set; }
+	public Optional<CameraInstructionFieldOfView> FieldOfView { get; set; }
+	public Optional<CameraSplineInstruction> Spline { get; set; }
+	public Optional<CameraAttachToEntityInstruction> Attach { get; set; }
+	public Optional<bool> DetachFromEntity { get; set; }
 }
 
 public struct CameraInstructionSet
@@ -41,7 +55,8 @@ public struct CameraInstructionSet
 	public Optional<System.Numerics.Vector2> ViewOffset { get; set; }
 	public Optional<System.Numerics.Vector3> EntityOffset { get; set; }
 	public Optional<bool> Default { get; set; }
-	public bool IgnoreStartingValuesComponent { get; set; }
+	public bool RemoveIgnoreStartingValuesComponent { get; set; }
+	public bool IgnoreStartingValuesComponent { get => RemoveIgnoreStartingValuesComponent; set => RemoveIgnoreStartingValuesComponent = value; }
 }
 
 public struct CameraFadeTimeData
@@ -67,8 +82,13 @@ public struct CameraInstructionFieldOfView
 {
 	public float FieldOfView { get; set; }
 	public float EaseTime { get; set; }
-	public int EaseType { get; set; }
+	public Camera.EasingTypeEnum EaseType { get; set; }
 	public bool Clear { get; set; }
+}
+
+public struct CameraAttachToEntityInstruction
+{
+	public long ActorUniqueId { get; set; }
 }
 
 public struct CameraPreset
@@ -85,13 +105,13 @@ public struct CameraPreset
 	public Optional<System.Numerics.Vector2> HorizontalRotationLimit { get; set; }
 	public Optional<System.Numerics.Vector2> VerticalRotationLimit { get; set; }
 	public Optional<bool> ContinueTargeting { get; set; }
-	public Optional<float> TrackingRadius { get; set; }
+	public Optional<float> BlockListingRadius { get; set; }
 	public Optional<System.Numerics.Vector2> ViewOffset { get; set; }
 	public Optional<System.Numerics.Vector3> EntityOffset { get; set; }
 	public Optional<float> Radius { get; set; }
 	public Optional<float> MinYawLimit { get; set; }
 	public Optional<float> MaxYawLimit { get; set; }
-	public Optional<byte> AudioListener { get; set; }
+	public Optional<AudioListener> AudioListener { get; set; }
 	public Optional<bool> PlayerEffects { get; set; }
 	public Optional<CameraPresetAimAssist> AimAssist { get; set; }
 	public Optional<byte> ControlScheme { get; set; }
@@ -100,9 +120,15 @@ public struct CameraPreset
 public struct CameraPresetAimAssist
 {
 	public Optional<string> Preset { get; set; }
-	public Optional<int> TargetMode { get; set; }
+	public Optional<AimAssistTargetMode> TargetMode { get; set; }
 	public Optional<System.Numerics.Vector2> Angle { get; set; }
 	public Optional<float> Distance { get; set; }
+}
+
+public struct CameraAimAssistCategoryDefinition
+{
+	public string Name { get; set; }
+	public CameraAimAssistPriorities Priorities { get; set; }
 }
 
 public struct CameraAimAssistCategory
@@ -111,12 +137,19 @@ public struct CameraAimAssistCategory
 	public CameraAimAssistPriorities Priorities { get; set; }
 }
 
+public struct CameraAimAssistCategoriesDefinition
+{
+	public string Identifier { get; set; }
+	public List<CameraAimAssistCategoryDefinition> Category { get; set; }
+	public List<CameraAimAssistCategoryDefinition> Categories { get => Category; set => Category = value; }
+}
+
 public struct CameraAimAssistPriorities
 {
-	public System.Collections.Generic.List<CameraAimAssistPriority> Entities { get; set; }
-	public System.Collections.Generic.List<CameraAimAssistPriority> Blocks { get; set; }
-	public System.Collections.Generic.List<CameraAimAssistPriority> BlockTags { get; set; }
-	public System.Collections.Generic.List<CameraAimAssistPriority> EntityTypeFamilies { get; set; }
+	public List<CameraAimAssistPriority> Entities { get; set; }
+	public List<CameraAimAssistPriority> Blocks { get; set; }
+	public List<CameraAimAssistPriority> BlockTags { get; set; }
+	public List<CameraAimAssistPriority> EntityTypeFamilies { get; set; }
 	public Optional<int> EntityDefault { get; set; }
 	public Optional<int> BlockDefault { get; set; }
 }
@@ -130,12 +163,13 @@ public struct CameraAimAssistPriority
 public struct CameraAimAssistPreset
 {
 	public string Identifier { get; set; }
-	public System.Collections.Generic.List<string> BlockExclusions { get; set; }
-	public System.Collections.Generic.List<string> EntityExclusions { get; set; }
-	public System.Collections.Generic.List<string> BlockTagExclusions { get; set; }
-	public System.Collections.Generic.List<string> EntityTypeFamilyExclusions { get; set; }
-	public System.Collections.Generic.List<string> LiquidTargets { get; set; }
-	public System.Collections.Generic.List<CameraAimAssistItemSettings> ItemSettings { get; set; }
+	public string Categories { get; set; }
+	public List<string> BlockExclusions { get; set; }
+	public List<string> EntityExclusions { get; set; }
+	public List<string> BlockTagExclusions { get; set; }
+	public List<string> EntityTypeFamilyExclusions { get; set; }
+	public List<string> LiquidTargets { get; set; }
+	public List<CameraAimAssistItemSettings> ItemSettings { get; set; }
 	public Optional<string> DefaultItemSettings { get; set; }
 	public Optional<string> HandSettings { get; set; }
 }
@@ -150,20 +184,20 @@ public struct CameraRotationOption
 {
 	public System.Numerics.Vector3 Value { get; set; }
 	public float Time { get; set; }
-	public int EaseType { get; set; }
+	public Camera.EasingTypeEnum EaseType { get; set; }
 }
 
 public struct CameraProgressOption
 {
 	public float Value { get; set; }
 	public float Time { get; set; }
-	public int EaseType { get; set; }
+	public Camera.EasingTypeEnum EaseType { get; set; }
 }
 
 public struct CameraSplineInstruction
 {
 	public float TotalTime { get; set; }
-	public Optional<byte> SplineType { get; set; }
+	public byte SplineType { get; set; }
 	public System.Collections.Generic.List<System.Numerics.Vector3> Curve { get; set; }
 	public System.Collections.Generic.List<CameraProgressOption> ProgressKeyFrames { get; set; }
 	public System.Collections.Generic.List<CameraRotationOption> RotationOptions { get; set; }
@@ -175,7 +209,7 @@ public struct CameraSplineDefinition
 {
 	public string Name { get; set; }
 	public float TotalTime { get; set; }
-	public Optional<string> SplineType { get; set; }
+	public string SplineType { get; set; }
 	public System.Collections.Generic.List<System.Numerics.Vector3> ControlPoints { get; set; }
 	public System.Collections.Generic.List<CameraProgressOption> ProgressKeyFrames { get; set; }
 	public System.Collections.Generic.List<CameraRotationOption> RotationKeyFrames { get; set; }

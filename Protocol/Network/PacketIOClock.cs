@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Protocol.Minecraft;
+using Protocol.Minecraft.Level;
 
 namespace Protocol.Network
 {

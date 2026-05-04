@@ -1,6 +1,8 @@
-﻿using System;
+using System;
 using System.IO;
 using Protocol.Minecraft;
+using Protocol.Minecraft.Actor;
+using Protocol.Minecraft.Actor.Player;
 
 namespace Protocol.Network
 {

@@ -1,4 +1,4 @@
-﻿using Protocol.Minecraft;
+﻿using Protocol.Minecraft.Level.Biome;
 
 namespace Protocol.Network.MinecraftPacket;
 public class McbeBiomeDefinitionList : Packet

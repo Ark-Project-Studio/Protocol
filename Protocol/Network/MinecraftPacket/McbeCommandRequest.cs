@@ -1,4 +1,5 @@
 ﻿using Protocol.Minecraft;
+using Protocol.Minecraft.Command;
 using Protocol.Utils;
 
 namespace Protocol.Network.MinecraftPacket;

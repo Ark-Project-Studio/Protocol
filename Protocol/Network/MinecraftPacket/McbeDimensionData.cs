@@ -1,4 +1,5 @@
 ﻿using Protocol.Minecraft;
+using Protocol.Minecraft.Level;
 
 namespace Protocol.Network.MinecraftPacket;
 public class McbeDimensionData : Packet

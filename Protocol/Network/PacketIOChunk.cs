@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Protocol.Minecraft.World.Chunk;
+using Protocol.Minecraft.Level.Chunk;
 
 namespace Protocol.Network
 {
@@ -53,13 +53,13 @@ namespace Protocol.Network
 			}
 
 			Write(value.HeightMapType);
-			if (value.HeightMapType == (byte)HeightMapData.HasData)
+			if (value.HeightMapType == (byte)SubChunkPacketHeightMapType.HasData)
 			{
 				WriteSliceOfLen(value.HeightMapData, 256, Write);
 			}
 
 			Write(value.RenderHeightMapType);
-			if (value.RenderHeightMapType == (byte)HeightMapData.HasData)
+			if (value.RenderHeightMapType == (byte)SubChunkPacketHeightMapType.HasData)
 			{
 				WriteSliceOfLen(value.RenderHeightMapData, 256, Write);
 			}
@@ -92,13 +92,13 @@ namespace Protocol.Network
 			}
 
 			entry.HeightMapType = ReadByte();
-			if (entry.HeightMapType == (byte)HeightMapData.HasData)
+			if (entry.HeightMapType == (byte)SubChunkPacketHeightMapType.HasData)
 			{
 				entry.HeightMapData = ReadSliceOfLen(256, ReadSByte);
 			}
 
 			entry.RenderHeightMapType = ReadByte();
-			if (entry.RenderHeightMapType == (byte)HeightMapData.HasData)
+			if (entry.RenderHeightMapType == (byte)SubChunkPacketHeightMapType.HasData)
 			{
 				entry.RenderHeightMapData = ReadSliceOfLen(256, ReadSByte);
 			}
@@ -115,12 +115,12 @@ namespace Protocol.Network
 			Write(value.Result);
 			WriteByteArray(value.RawPayload);
 			Write(value.HeightMapType);
-			if (value.HeightMapType == (byte)HeightMapData.HasData)
+			if (value.HeightMapType == (byte)SubChunkPacketHeightMapType.HasData)
 			{
 				WriteSliceOfLen(value.HeightMapData, 256, Write);
 			}
 			Write(value.RenderHeightMapType);
-			if (value.RenderHeightMapType == (byte)HeightMapData.HasData)
+			if (value.RenderHeightMapType == (byte)SubChunkPacketHeightMapType.HasData)
 			{
 				WriteSliceOfLen(value.RenderHeightMapData, 256, Write);
 			}
@@ -136,13 +136,13 @@ namespace Protocol.Network
 				HeightMapType = ReadByte()
 			};
 
-			if (entry.HeightMapType == (byte)HeightMapData.HasData)
+			if (entry.HeightMapType == (byte)SubChunkPacketHeightMapType.HasData)
 			{
 				entry.HeightMapData = ReadSliceOfLen(256, ReadSByte);
 			}
 
 			entry.RenderHeightMapType = ReadByte();
-			if (entry.RenderHeightMapType == (byte)HeightMapData.HasData)
+			if (entry.RenderHeightMapType == (byte)SubChunkPacketHeightMapType.HasData)
 			{
 				entry.RenderHeightMapData = ReadSliceOfLen(256, ReadSByte);
 			}

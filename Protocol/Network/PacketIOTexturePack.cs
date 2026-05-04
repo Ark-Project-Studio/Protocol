@@ -1,4 +1,4 @@
-﻿using Protocol.Minecraft;
+﻿using Protocol.Minecraft.Level.ResourcePacks;
 
 namespace Protocol.Network
 {

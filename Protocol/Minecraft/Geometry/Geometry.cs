@@ -1,7 +1,7 @@
 using System.Numerics;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
-using Protocol.Minecraft;
+using Protocol.Minecraft.Level.Block;
 using Protocol.Utils;
 
 namespace Protocol.Minecraft.Geometry;

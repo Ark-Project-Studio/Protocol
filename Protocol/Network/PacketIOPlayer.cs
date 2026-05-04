@@ -1,118 +1,77 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Protocol.Minecraft;
-using Protocol.Minecraft.Skins;
-using Protocol.Utils.Crypto;
+using Protocol.Minecraft.Actor;
+using Protocol.Minecraft.Actor.Player;
+using Protocol.Network.MinecraftPacket;
 
 namespace Protocol.Network
 {
 	public partial class Packet
 	{
-		public void Write(PlayerRecords records)
+		public void Write(AbilityData data)
 		{
-			if (records is PlayerAddRecords)
+			if (data == null)
 			{
+				Write(0L);
 				Write((byte)0);
-				WriteSlice(records.Players, record =>
-				{
-					Write(record.ClientUuid);
-					WriteSignedVarLong(record.EntityId);
-					Write(record.DisplayName ?? record.Username);
-					Write(record.PlayerInfo.CertificateData?.ExtraData?.Xuid ?? String.Empty);
-					Write(record.PlayerInfo.PlatformChatId);
-					Write(record.PlayerInfo.DeviceOS);
-					Write(record.Skin);
-					Write(false);
-					Write(false);
-					Write(false);
-					Write(0);
-				});
-			}
-			else if (records is PlayerRemoveRecords)
-			{
-				Write((byte)1);
-				WriteSlice(records.Players, record =>
-				{
-					Write(record.ClientUuid);
-				});
+				Write((byte)0);
+				WriteUnsignedVarInt(0);
+				return;
 			}
 
-			if (records is PlayerAddRecords)
-			{
-				foreach (var record in records.Players)
-				{
-					Write(record.Skin.IsVerified);
-				}
-			}
+			Write(data.EntityUniqueID);
+			Write(data.PlayerPermissions);
+			Write(data.CommandPermissions);
+			WriteUnsignedVarInt((uint)(data.Layers?.Length ?? 0));
+			if (data.Layers != null)
+				foreach (var layer in data.Layers)
+					Write(layer);
 		}
 
-		public PlayerRecords ReadPlayerRecords()
+		public AbilityData ReadAbilityData()
 		{
-			byte recordType = ReadByte();
-			uint count = ReadUnsignedVarInt();
-			PlayerRecords records = null;
-			switch (recordType)
+			var entityUniqueID = ReadLong();
+			var playerPermissions = ReadByte();
+			var commandPermissions = ReadByte();
+			var layersCount = ReadUnsignedVarInt();
+			var layers = new AbilityLayer[layersCount];
+			for (var i = 0; i < layersCount; i++)
+				layers[i] = ReadAbilityLayer();
+			return new AbilityData(entityUniqueID, playerPermissions, commandPermissions, layers);
+		}
+		public void Write(PlayerListEntry entry)
+		{
+			Write(entry.uuid);
+			WriteSignedVarLong(entry.actorUniqueId);
+			Write(entry.playerName ?? string.Empty);
+			Write(entry.xuid ?? string.Empty);
+			Write(entry.platformChatId ?? string.Empty);
+			Write(entry.buildPlatform);
+			Write(entry.serializedSkin ?? new Skin());
+			Write(entry.isTeacher);
+			Write(entry.isHost);
+			Write(entry.isSubClient);
+			Write(entry.color);
+		}
+		
+
+		public PlayerListEntry ReadPlayerListEntry()
+		{
+			return new PlayerListEntry
 			{
-				case 0:
-					records = new PlayerAddRecords();
-					records.Players = new Player[count];
-					for (int i = 0; i < count; i++)
-					{
-						var player = new Player(null, null);
-						player.ClientUuid = ReadUUID();
-						player.EntityId = ReadSignedVarLong();
-						player.DisplayName = ReadString();
-						var xuid = ReadString();
-						var platformChatId = ReadString();
-						var deviceOS = ReadInt();
-						player.Skin = ReadSkin();
-						ReadBool();
-						ReadBool();
-						ReadBool();
-						ReadInt();
-
-						player.PlayerInfo = new PlayerInfo()
-						{
-							PlatformChatId = platformChatId,
-							DeviceOS = deviceOS,
-							CertificateData = new CertificateData()
-							{
-								ExtraData = new ExtraData()
-								{
-									Xuid = xuid
-								}
-							}
-						};
-						records.Players[i] = player;
-					}
-
-					break;
-				case 1:
-					records = new PlayerRemoveRecords();
-					records.Players = new Player[count];
-					for (int i = 0; i < count; i++)
-					{
-						var player = new Player(null, null);
-						player.ClientUuid = ReadUUID();
-						records.Players[i] = player;
-					}
-
-					break;
-			}
-
-			if (records is PlayerAddRecords)
-			{
-				foreach (Player player in records.Players)
-				{
-					bool isVerified = ReadBool();
-
-					if (player.Skin != null)
-						player.Skin.IsVerified = isVerified;
-				}
-			}
-
-
-			return records;
+				uuid = ReadUUID(),
+				actorUniqueId = ReadSignedVarLong(),
+				playerName = ReadString(),
+				xuid = ReadString(),
+				platformChatId = ReadString(),
+				buildPlatform = ReadInt(),
+				serializedSkin = ReadSkin(),
+				isTeacher = ReadBool(),
+				isHost = ReadBool(),
+				isSubClient = ReadBool(),
+				color = ReadInt(),
+			};
 		}
 
 		public void Write(Skin skin)

@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.IO;
 using fNbt;
 using Protocol.Minecraft;
+using Protocol.Minecraft.NBT;
 using Protocol.Utils;
 using Protocol.Network.MinecraftPacket;
 

@@ -1,8 +1,7 @@
 using fNbt;
 using Protocol.Network;
 
-namespace Protocol.Minecraft
-
+namespace Protocol.Minecraft.Metadata
 {
 	public class MetadataNbt : MetadataEntry
 	{

@@ -1,4 +1,4 @@
-﻿using Protocol.Minecraft;
+using Protocol.Minecraft.Actor.Player;
 
 namespace Protocol.Network.MinecraftPacket;
 public class McbeItemComponent : Packet

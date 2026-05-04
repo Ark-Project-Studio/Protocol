@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Protocol.Minecraft;
-using Protocol.Minecraft.Transaction;
+using Protocol.Minecraft.Inventory.Transaction;
 using Protocol.Network.MinecraftPacket;
 
 namespace Protocol.Network

@@ -1,6 +1,6 @@
 using Protocol.Utils.IO;
 
-namespace Protocol.Minecraft
+namespace Protocol.Minecraft.Metadata
 {
 	public class MetadataInt : MetadataEntry
 	{

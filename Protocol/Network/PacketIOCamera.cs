@@ -103,9 +103,26 @@ namespace Protocol.Network
 		{
 			return new CameraEase
 			{
-				Type = ReadByte(),
+				Type = (EasingTypeEnum)ReadByte(),
 				Duration = ReadFloat()
 			};
+		}
+
+		public CameraInstruction ReadCameraInstruction()
+		{
+			var value = new CameraInstruction();
+
+			if (ReadBool()) value.Set = new Optional<CameraInstructionSet>(ReadCameraInstructionSet());
+			if (ReadBool()) value.Clear = new Optional<bool>(ReadBool());
+			if (ReadBool()) value.Fade = new Optional<CameraInstructionFade>(ReadCameraInstructionFade());
+			if (ReadBool()) value.Target = new Optional<CameraInstructionTarget>(ReadCameraInstructionTarget());
+			if (ReadBool()) value.RemoveTarget = new Optional<bool>(ReadBool());
+			if (ReadBool()) value.FieldOfView = new Optional<CameraInstructionFieldOfView>(ReadCameraInstructionFieldOfView());
+			if (ReadBool()) value.Spline = new Optional<CameraSplineInstruction>(ReadCameraSplineInstruction());
+			if (ReadBool()) value.Attach = new Optional<CameraAttachToEntityInstruction>(ReadCameraAttachToEntityInstruction());
+			if (ReadBool()) value.DetachFromEntity = new Optional<bool>(ReadBool());
+
+			return value;
 		}
 
 		public CameraInstructionSet ReadCameraInstructionSet()
@@ -150,7 +167,7 @@ namespace Protocol.Network
 				value.Default = new Optional<bool>(ReadBool());
 			}
 
-			value.IgnoreStartingValuesComponent = ReadBool();
+			value.RemoveIgnoreStartingValuesComponent = ReadBool();
 
 			return value;
 		}
@@ -205,10 +222,18 @@ namespace Protocol.Network
 			};
 
 			string easingType = ReadString();
-			value.EaseType = (int)EasingType.EasingTypeFromString(easingType);
+			value.EaseType = EasingType.EasingTypeFromString(easingType);
 			value.Clear = ReadBool();
 
 			return value;
+		}
+
+		public CameraAttachToEntityInstruction ReadCameraAttachToEntityInstruction()
+		{
+			return new CameraAttachToEntityInstruction
+			{
+				ActorUniqueId = ReadLong()
+			};
 		}
 
 		public CameraPreset ReadCameraPreset()
@@ -229,13 +254,13 @@ namespace Protocol.Network
 			if (ReadBool()) value.HorizontalRotationLimit = new Optional<System.Numerics.Vector2>(ReadVector2());
 			if (ReadBool()) value.VerticalRotationLimit = new Optional<System.Numerics.Vector2>(ReadVector2());
 			if (ReadBool()) value.ContinueTargeting = new Optional<bool>(ReadBool());
-			if (ReadBool()) value.TrackingRadius = new Optional<float>(ReadFloat());
+			if (ReadBool()) value.BlockListingRadius = new Optional<float>(ReadFloat());
 			if (ReadBool()) value.ViewOffset = new Optional<System.Numerics.Vector2>(ReadVector2());
 			if (ReadBool()) value.EntityOffset = new Optional<System.Numerics.Vector3>(ReadVector3());
 			if (ReadBool()) value.Radius = new Optional<float>(ReadFloat());
 			if (ReadBool()) value.MinYawLimit = new Optional<float>(ReadFloat());
 			if (ReadBool()) value.MaxYawLimit = new Optional<float>(ReadFloat());
-			if (ReadBool()) value.AudioListener = new Optional<byte>(ReadByte());
+			if (ReadBool()) value.AudioListener = new Optional<AudioListener>((AudioListener)ReadByte());
 			if (ReadBool()) value.PlayerEffects = new Optional<bool>(ReadBool());
 			if (ReadBool()) value.AimAssist = new Optional<CameraPresetAimAssist>(ReadCameraPresetAimAssist());
 			if (ReadBool()) value.ControlScheme = new Optional<byte>(ReadByte());
@@ -243,12 +268,30 @@ namespace Protocol.Network
 			return value;
 		}
 
+		public CameraAimAssistCategoryDefinition ReadCameraAimAssistCategoryDefinition()
+		{
+			return new CameraAimAssistCategoryDefinition
+			{
+				Name = ReadString(),
+				Priorities = ReadCameraAimAssistPriorities()
+			};
+		}
+
+		public CameraAimAssistCategoriesDefinition ReadCameraAimAssistCategoriesDefinition()
+		{
+			return new CameraAimAssistCategoriesDefinition
+			{
+				Identifier = ReadString(),
+				Category = new System.Collections.Generic.List<CameraAimAssistCategoryDefinition>(ReadSlice(ReadCameraAimAssistCategoryDefinition))
+			};
+		}
+
 		public CameraPresetAimAssist ReadCameraPresetAimAssist()
 		{
 			var value = new CameraPresetAimAssist();
 
 			if (ReadBool()) value.Preset = new Optional<string>(ReadString());
-			if (ReadBool()) value.TargetMode = new Optional<int>(ReadInt());
+			if (ReadBool()) value.TargetMode = new Optional<AimAssistTargetMode>((AimAssistTargetMode)ReadByte());
 			if (ReadBool()) value.Angle = new Optional<System.Numerics.Vector2>(ReadVector2());
 			if (ReadBool()) value.Distance = new Optional<float>(ReadFloat());
 
@@ -396,7 +439,7 @@ namespace Protocol.Network
 			};
 
 			string easingType = ReadString();
-			value.EaseType = (int)EasingType.EasingTypeFromString(easingType);
+			value.EaseType = EasingType.EasingTypeFromString(easingType);
 
 			return value;
 		}
@@ -410,7 +453,7 @@ namespace Protocol.Network
 			};
 
 			string easingType = ReadString();
-			value.EaseType = (int)EasingType.EasingTypeFromString(easingType);
+			value.EaseType = EasingType.EasingTypeFromString(easingType);
 
 			return value;
 		}
@@ -422,7 +465,7 @@ namespace Protocol.Network
 				TotalTime = ReadFloat()
 			};
 
-			if (ReadBool()) value.SplineType = new Optional<byte>(ReadByte());
+			value.SplineType = ReadByte();
 
 			value.Curve = new System.Collections.Generic.List<System.Numerics.Vector3>(ReadSlice(ReadVector3));
 			value.ProgressKeyFrames = new System.Collections.Generic.List<CameraProgressOption>(ReadSlice(ReadCameraProgressOption));
@@ -442,7 +485,7 @@ namespace Protocol.Network
 				TotalTime = ReadFloat()
 			};
 
-			if (ReadBool()) value.SplineType = new Optional<string>(ReadString());
+			value.SplineType = ReadString();
 
 			value.ControlPoints = new System.Collections.Generic.List<System.Numerics.Vector3>(ReadSlice(ReadVector3));
 			value.ProgressKeyFrames = new System.Collections.Generic.List<CameraProgressOption>(ReadSlice(ReadCameraProgressOption));
@@ -463,8 +506,38 @@ namespace Protocol.Network
 		}
 		public void Write(CameraEase value)
 		{
-			Write(value.Type);
+			Write((byte)value.Type);
 			Write(value.Duration);
+		}
+
+		public void Write(CameraInstruction value)
+		{
+			Write(value.Set.HasValue);
+			if (value.Set.HasValue) Write(value.Set.Value);
+
+			Write(value.Clear.HasValue);
+			if (value.Clear.HasValue) Write(value.Clear.Value);
+
+			Write(value.Fade.HasValue);
+			if (value.Fade.HasValue) Write(value.Fade.Value);
+
+			Write(value.Target.HasValue);
+			if (value.Target.HasValue) Write(value.Target.Value);
+
+			Write(value.RemoveTarget.HasValue);
+			if (value.RemoveTarget.HasValue) Write(value.RemoveTarget.Value);
+
+			Write(value.FieldOfView.HasValue);
+			if (value.FieldOfView.HasValue) Write(value.FieldOfView.Value);
+
+			Write(value.Spline.HasValue);
+			if (value.Spline.HasValue) Write(value.Spline.Value);
+
+			Write(value.Attach.HasValue);
+			if (value.Attach.HasValue) Write(value.Attach.Value);
+
+			Write(value.DetachFromEntity.HasValue);
+			if (value.DetachFromEntity.HasValue) Write(value.DetachFromEntity.Value);
 		}
 
 		public void Write(CameraInstructionSet value)
@@ -513,7 +586,7 @@ namespace Protocol.Network
 				Write(value.Default.Value);
 			}
 
-			Write(value.IgnoreStartingValuesComponent);
+			Write(value.RemoveIgnoreStartingValuesComponent);
 		}
 
 		public void Write(CameraFadeTimeData value)
@@ -551,11 +624,16 @@ namespace Protocol.Network
 
 		public void Write(CameraInstructionFieldOfView value)
 		{
-			string easingType = EasingType.EasingTypeToString(value.EaseType);
+			string easingType = EasingType.EasingTypeToString((int)value.EaseType);
 			Write(value.FieldOfView);
 			Write(value.EaseTime);
 			Write(easingType);
 			Write(value.Clear);
+		}
+
+		public void Write(CameraAttachToEntityInstruction value)
+		{
+			Write(value.ActorUniqueId);
 		}
 
 		public void Write(CameraPreset value)
@@ -593,8 +671,8 @@ namespace Protocol.Network
 			Write(value.ContinueTargeting.HasValue);
 			if (value.ContinueTargeting.HasValue) Write(value.ContinueTargeting.Value);
 
-			Write(value.TrackingRadius.HasValue);
-			if (value.TrackingRadius.HasValue) Write(value.TrackingRadius.Value);
+			Write(value.BlockListingRadius.HasValue);
+			if (value.BlockListingRadius.HasValue) Write(value.BlockListingRadius.Value);
 
 			Write(value.ViewOffset.HasValue);
 			if (value.ViewOffset.HasValue) Write(value.ViewOffset.Value);
@@ -612,10 +690,13 @@ namespace Protocol.Network
 			if (value.MaxYawLimit.HasValue) Write(value.MaxYawLimit.Value);
 
 			Write(value.AudioListener.HasValue);
-			if (value.AudioListener.HasValue) Write(value.AudioListener.Value);
+			if (value.AudioListener.HasValue) Write((byte)value.AudioListener.Value);
 
 			Write(value.PlayerEffects.HasValue);
 			if (value.PlayerEffects.HasValue) Write(value.PlayerEffects.Value);
+
+			//Write(value.AlignTargetAndCameraForward.HasValue);
+			//if (value.AlignTargetAndCameraForward.HasValue) Write(value.AlignTargetAndCameraForward.Value);
 
 			Write(value.AimAssist.HasValue);
 			if (value.AimAssist.HasValue) Write(value.AimAssist.Value);
@@ -630,7 +711,7 @@ namespace Protocol.Network
 			if (value.Preset.HasValue) Write(value.Preset.Value);
 
 			Write(value.TargetMode.HasValue);
-			if (value.TargetMode.HasValue) Write(value.TargetMode.Value);
+			if (value.TargetMode.HasValue) Write((byte)value.TargetMode.Value);
 
 			Write(value.Angle.HasValue);
 			if (value.Angle.HasValue) Write(value.Angle.Value);
@@ -643,6 +724,25 @@ namespace Protocol.Network
 		{
 			Write(value.Name);
 			Write(value.Priorities);
+		}
+
+		public void Write(CameraAimAssistCategoryDefinition value)
+		{
+			Write(value.Name);
+			Write(value.Priorities);
+		}
+
+		public void Write(CameraAimAssistCategoriesDefinition value)
+		{
+			Write(value.Identifier ?? string.Empty);
+			if (value.Category != null)
+			{
+				WriteSlice(value.Category.ToArray(), Write);
+			}
+			else
+			{
+				WriteUnsignedVarInt(0);
+			}
 		}
 
 		public void Write(CameraAimAssistPriorities value)
@@ -704,7 +804,7 @@ namespace Protocol.Network
 
 		public void Write(CameraRotationOption value)
 		{
-			string easingType = EasingType.EasingTypeToString(value.EaseType);
+			string easingType = EasingType.EasingTypeToString((int)value.EaseType);
 			Write(value.Value);
 			Write(value.Time);
 			Write(easingType);
@@ -712,7 +812,7 @@ namespace Protocol.Network
 
 		public void Write(CameraProgressOption value)
 		{
-			string easingType = EasingType.EasingTypeToString(value.EaseType);
+			string easingType = EasingType.EasingTypeToString((int)value.EaseType);
 			Write(value.Value);
 			Write(value.Time);
 			Write(easingType);
@@ -722,11 +822,7 @@ namespace Protocol.Network
 		{
 			Write(value.TotalTime);
 
-			Write(value.SplineType.HasValue);
-			if (value.SplineType.HasValue)
-			{
-				Write(value.SplineType.Value);
-			}
+			Write(value.SplineType);
 
 			if (value.Curve != null)
 			{
@@ -773,11 +869,7 @@ namespace Protocol.Network
 			Write(value.Name);
 			Write(value.TotalTime);
 
-			Write(value.SplineType.HasValue);
-			if (value.SplineType.HasValue)
-			{
-				Write(value.SplineType.Value);
-			}
+			Write(value.SplineType ?? string.Empty);
 
 			if (value.ControlPoints != null)
 			{

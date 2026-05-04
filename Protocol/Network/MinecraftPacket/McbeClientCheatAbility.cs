@@ -1,4 +1,5 @@
 ﻿using Protocol.Minecraft;
+using Protocol.Minecraft.Actor;
 
 namespace Protocol.Network.MinecraftPacket;
 public class McbeClientCheatAbility : Packet
@@ -14,7 +15,7 @@ public class McbeClientCheatAbility : Packet
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        WriteAbilityData(AbilityData);
+        Write(AbilityData);
     }
 
     protected override void DecodePacket()
@@ -23,37 +24,6 @@ public class McbeClientCheatAbility : Packet
         AbilityData = ReadAbilityData();
     }
 
-#region 琛ュ叏鐨勬柟娉?(鍥犱负 methods.txt 涓病鏈?AbilityData 鍜?AbilityLayer 鐨勭洿鎺ヨ鍐?
-    private void WriteAbilityData(AbilityData data)
-    {
-        if (data == null)
-        {
-            Write(0L);
-            Write((byte)0);
-            Write((byte)0);
-            WriteUnsignedVarInt(0);
-            return;
-        }
 
-        Write(data.EntityUniqueID);
-        Write(data.PlayerPermissions);
-        Write(data.CommandPermissions);
-        WriteUnsignedVarInt((uint)(data.Layers?.Length ?? 0));
-        if (data.Layers != null)
-            foreach (var layer in data.Layers)
-                Write(layer);
-    }
-
-    private AbilityData ReadAbilityData()
-    {
-        var entityUniqueID = ReadLong();
-        var playerPermissions = ReadByte();
-        var commandPermissions = ReadByte();
-        var layersCount = ReadUnsignedVarInt();
-        var layers = new AbilityLayer[layersCount];
-        for (var i = 0; i < layersCount; i++)
-            layers[i] = ReadAbilityLayer();
-        return new AbilityData(entityUniqueID, playerPermissions, commandPermissions, layers);
-    }
-#endregion
+   
 }

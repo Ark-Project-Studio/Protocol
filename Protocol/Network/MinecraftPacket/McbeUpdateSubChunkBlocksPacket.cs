@@ -1,4 +1,6 @@
 ﻿using Protocol.Minecraft;
+using Protocol.Minecraft.Level.Block;
+using Protocol.Minecraft.Level.Chunk;
 
 namespace Protocol.Network.MinecraftPacket;
 public class McbeUpdateSubChunkBlocksPacket : Packet

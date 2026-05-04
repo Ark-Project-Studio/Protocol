@@ -1,5 +1,5 @@
 ﻿using Protocol.Minecraft;
-using Protocol.Minecraft.World.Chunk;
+using Protocol.Minecraft.Level.Chunk;
 
 namespace Protocol.Network.MinecraftPacket;
 public class McbeSubChunkRequestPacket : Packet

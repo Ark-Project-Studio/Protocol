@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Protocol.Minecraft;
+using Protocol.Minecraft.Level.ResourcePacks;
 using Protocol.Utils;
 
 namespace Protocol.Network.MinecraftPacket

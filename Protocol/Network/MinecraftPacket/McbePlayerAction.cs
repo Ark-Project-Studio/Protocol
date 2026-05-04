@@ -1,4 +1,5 @@
-﻿using Protocol.Minecraft;
+using Protocol.Minecraft.Actor.Player;
+using Protocol.Minecraft.Level.Block;
 
 namespace Protocol.Network.MinecraftPacket;
 public class McbePlayerAction : Packet

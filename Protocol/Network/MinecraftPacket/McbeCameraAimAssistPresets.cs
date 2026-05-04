@@ -15,7 +15,7 @@ public class McbeCameraAimAssistPresets : Packet
         IsMcbe = true;
     }
 
-    public CameraAimAssistCategory[] Categories { get; set; } = new CameraAimAssistCategory[0];
+    public CameraAimAssistCategoryDefinition[] Categories { get; set; } = new CameraAimAssistCategoryDefinition[0];
     public CameraAimAssistPreset[] Presets { get; set; } = new CameraAimAssistPreset[0];
     public CameraAimAssistPresetOperation Operation { get; set; }
 
@@ -37,9 +37,9 @@ public class McbeCameraAimAssistPresets : Packet
     {
         base.DecodePacket();
         var categoriesCount = ReadUnsignedVarInt();
-        Categories = new CameraAimAssistCategory[categoriesCount];
+        Categories = new CameraAimAssistCategoryDefinition[categoriesCount];
         for (var i = 0; i < categoriesCount; i++)
-            Categories[i] = ReadCameraAimAssistCategory();
+            Categories[i] = ReadCameraAimAssistCategoryDefinition();
         var presetsCount = ReadUnsignedVarInt();
         Presets = new CameraAimAssistPreset[presetsCount];
         for (var i = 0; i < presetsCount; i++)

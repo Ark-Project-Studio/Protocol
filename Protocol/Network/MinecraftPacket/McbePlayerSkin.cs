@@ -1,4 +1,4 @@
-﻿using Protocol.Minecraft.Skins;
+using Protocol.Minecraft.Actor.Player;
 using Protocol.Utils;
 
 namespace Protocol.Network.MinecraftPacket;

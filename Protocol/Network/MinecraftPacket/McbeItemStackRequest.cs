@@ -1,4 +1,4 @@
-﻿using Protocol.Minecraft.Transaction;
+﻿using Protocol.Minecraft.Inventory.Transaction;
 
 namespace Protocol.Network.MinecraftPacket;
 public class McbeItemStackRequest : Packet

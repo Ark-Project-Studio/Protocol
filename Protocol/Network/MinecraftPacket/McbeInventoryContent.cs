@@ -1,5 +1,5 @@
-﻿using Protocol.Minecraft;
-using Protocol.Minecraft.Transaction;
+﻿using Protocol.Minecraft.Inventory.Item;
+using Protocol.Minecraft.Inventory.Transaction;
 
 namespace Protocol.Network.MinecraftPacket;
 public class McbeInventoryContent : Packet

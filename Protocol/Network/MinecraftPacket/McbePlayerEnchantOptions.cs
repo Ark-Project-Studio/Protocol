@@ -1,4 +1,5 @@
 ﻿using Protocol.Minecraft;
+using Protocol.Minecraft.Inventory.Enchant;
 
 namespace Protocol.Network.MinecraftPacket;
 public class McbePlayerEnchantOptions : Packet

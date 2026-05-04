@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Numerics;
-using Protocol.Minecraft;
+using Protocol.Minecraft.Actor.Player;
+using Protocol.Minecraft.Level.Block;
 
 namespace Protocol.Network
 {

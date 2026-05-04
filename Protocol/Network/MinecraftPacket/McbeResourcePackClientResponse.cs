@@ -12,7 +12,7 @@ public class McbeResourcePackClientResponse : Packet
     }
 
     public string[] resourcepackids;
-    public ResponseStatus responseStatus;
+    public byte responseStatus;
     public McbeResourcePackClientResponse()
     {
         Id = 0x08;
@@ -22,14 +22,25 @@ public class McbeResourcePackClientResponse : Packet
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        Write((byte)responseStatus);
-        WriteSliceUint16Length(resourcepackids ?? [], Write);
+        Write(responseStatus);
+        Write((ushort)(resourcepackids?.Length ?? 0));
+        if (resourcepackids == null) return;
+
+        foreach (var id in resourcepackids)
+        {
+            Write(id);
+        }
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        responseStatus = (ResponseStatus)ReadByte();
-        resourcepackids = ReadSliceUint16Length(ReadString);
+        responseStatus = ReadByte();
+        var count = ReadUshort();
+        resourcepackids = new string[count];
+        for (int i = 0; i < count; i++)
+        {
+            resourcepackids[i] = (ReadString());
+        }
     }
 }

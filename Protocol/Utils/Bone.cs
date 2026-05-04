@@ -1,5 +1,5 @@
 using System.Text.Json.Serialization;
-using Protocol.Minecraft;
+using Protocol.Minecraft.Level.Block;
 
 namespace Protocol.Utils;
 

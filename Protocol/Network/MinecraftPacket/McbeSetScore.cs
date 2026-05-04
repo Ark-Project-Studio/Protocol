@@ -1,5 +1,5 @@
 ﻿#define Needed
-using Protocol.Minecraft;
+using Protocol.Minecraft.Level.Scoreboard;
 
 namespace Protocol.Network.MinecraftPacket;
 public class McbeSetScore : Packet

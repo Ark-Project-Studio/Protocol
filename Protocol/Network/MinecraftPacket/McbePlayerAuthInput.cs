@@ -1,6 +1,7 @@
 using System.Numerics;
-using Protocol.Minecraft;
-using Protocol.Minecraft.Transaction;
+using Protocol.Minecraft.Inventory.Item;
+using Protocol.Minecraft.Inventory.Transaction;
+using Protocol.Minecraft.Level.Block;
 using Protocol.Utils;
 
 namespace Protocol.Network.MinecraftPacket;
@@ -231,7 +232,7 @@ public class McbePlayerAuthInput : Packet
         WriteUnsignedVarLong(Tick);
         Write(Delta);
         if (InputData.Load((int)PlayerAuthInputData.PerformItemInteraction))
-            WriteUseItemTransactionData(ItemInteractionData);
+            Write(ItemInteractionData);
         if (InputData.Load((int)PlayerAuthInputData.PerformItemStackRequest))
             Write(ItemStack);
         if (InputData.Load((int)PlayerAuthInputData.PerformBlockActions))
@@ -239,7 +240,7 @@ public class McbePlayerAuthInput : Packet
             WriteSignedVarInt(PlayerBlockAction_?.Length ?? 0);
             if (PlayerBlockAction_ != null)
                 foreach (var action in PlayerBlockAction_)
-                    WritePlayerBlockAction(action);
+                    Write(action);
         }
 
         if (InputData.Load((int)PlayerAuthInputData.IsInClientPredictedVehicle))
@@ -303,107 +304,5 @@ public class McbePlayerAuthInput : Packet
         RawMoveVector = ReadVector2();
     }
 
-    private void WriteUseItemTransactionData(UseItemTransactionData data)
-    {
-        WriteSignedVarInt(data.LegacyRequestID);
-        WriteSignedVarInt(data.LegacySetItemSlots?.Length ?? 0);
-        if (data.LegacySetItemSlots != null)
-            foreach (var slot in data.LegacySetItemSlots)
-                WriteLegacySetItemSlot(slot);
-        WriteSignedVarInt(data.Actions?.Length ?? 0);
-        if (data.Actions != null)
-            foreach (var action in data.Actions)
-                WriteInventoryAction(action);
-        WriteUnsignedVarInt(data.ActionType);
-        WriteUnsignedVarInt(data.TriggerType);
-        Write(data.BlockPosition);
-        WriteSignedVarInt(data.BlockFace);
-        WriteSignedVarInt(data.HotBarSlot);
-        Write(data.HeldItem);
-        Write(data.Position);
-        Write(data.ClickedPosition);
-        WriteUnsignedVarInt(data.BlockRuntimeID);
-        WriteUnsignedVarInt(data.ClientPrediction);
-        Write(data.ClientCooldownState);
-    }
 
-    private UseItemTransactionData ReadUseItemTransactionData()
-    {
-        var legacyRequestID = ReadSignedVarInt();
-        var legacySlotsCount = ReadSignedVarInt();
-        var legacySlots = new LegacySetItemSlot[legacySlotsCount];
-        for (var i = 0; i < legacySlotsCount; i++)
-            legacySlots[i] = ReadLegacySetItemSlot();
-        var actionsCount = ReadSignedVarInt();
-        var actions = new InventoryAction[actionsCount];
-        for (var i = 0; i < actionsCount; i++)
-            actions[i] = ReadInventoryAction();
-        var actionType = ReadUnsignedVarInt();
-        var triggerType = ReadUnsignedVarInt();
-        var blockPosition = ReadBlockCoordinates();
-        var blockFace = ReadSignedVarInt();
-        var hotBarSlot = ReadSignedVarInt();
-        var heldItem = ReadNetworkItemStackDescriptor();
-        var position = ReadVector3();
-        var clickedPosition = ReadVector3();
-        var blockRuntimeID = ReadUnsignedVarInt();
-        var clientPrediction = ReadUnsignedVarInt();
-        var clientcooldownstate = ReadByte();
-        return new UseItemTransactionData(legacyRequestID, legacySlots, actions, actionType, triggerType, blockPosition, blockFace, hotBarSlot, heldItem, position, clickedPosition, blockRuntimeID, clientPrediction,clientcooldownstate);
-    }
-
-    private void WriteLegacySetItemSlot(LegacySetItemSlot slot)
-    {
-        Write(slot.ContainerID);
-        WriteUnsignedVarInt((uint)(slot.Slots?.Length ?? 0));
-        if (slot.Slots != null)
-            foreach (var s in slot.Slots)
-                Write(s);
-    }
-
-    private LegacySetItemSlot ReadLegacySetItemSlot()
-    {
-        var containerID = ReadByte();
-        var slotsCount = ReadUnsignedVarInt();
-        var slots = new byte[slotsCount];
-        for (var i = 0; i < slotsCount; i++)
-            slots[i] = ReadByte();
-        return new LegacySetItemSlot(containerID, slots);
-    }
-
-    private void WriteInventoryAction(InventoryAction action)
-    {
-        WriteUnsignedVarInt(action.SourceType);
-        WriteSignedVarInt(action.WindowID);
-        WriteUnsignedVarInt(action.SourceFlags);
-        WriteUnsignedVarInt(action.InventorySlot);
-        Write(action.OldItem);
-        Write(action.NewItem);
-    }
-
-    private InventoryAction ReadInventoryAction()
-    {
-        var sourceType = ReadUnsignedVarInt();
-        var windowID = ReadSignedVarInt();
-        var sourceFlags = ReadUnsignedVarInt();
-        var inventorySlot = ReadUnsignedVarInt();
-        var oldItem = ReadNetworkItemStackDescriptor();
-        var newItem = ReadNetworkItemStackDescriptor();
-        return new InventoryAction(sourceType, windowID, sourceFlags, inventorySlot, oldItem, newItem);
-    }
-
-    private void WritePlayerBlockAction(PlayerBlockAction action)
-    {
-        WriteSignedVarInt(action.Action);
-        Write(action.BlockPos);
-        WriteSignedVarInt(action.Face);
-    }
-
-    private PlayerBlockAction ReadPlayerBlockAction()
-    {
-        var action = ReadSignedVarInt();
-        var blockPos = ReadBlockCoordinates();
-        var face = ReadSignedVarInt();
-        return new PlayerBlockAction(action, blockPos, face);
-    }
 }

@@ -1,8 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Protocol.Minecraft;
+using Protocol.Minecraft.Actor.Player;
 using Protocol.Minecraft.Graphic;
+using Protocol.Minecraft.Inventory.Enchant;
+using Protocol.Minecraft.Level;
+using Protocol.Minecraft.Level.Block;
+using Protocol.Minecraft.Level.Scoreboard;
 using Protocol.Network.MinecraftPacket;
 
 namespace Protocol.Network

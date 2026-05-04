@@ -1,4 +1,4 @@
-﻿using Protocol.Minecraft;
+﻿using Protocol.Minecraft.Level.Block;
 
 namespace Protocol.Network.MinecraftPacket;
 public class McbeCommandBlockUpdate : Packet

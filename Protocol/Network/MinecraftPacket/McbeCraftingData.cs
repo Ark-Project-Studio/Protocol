@@ -1,4 +1,4 @@
-﻿using Protocol.Minecraft;
+﻿using Protocol.Minecraft.Inventory.Recipe;
 
 namespace Protocol.Network.MinecraftPacket;
 public class McbeCraftingData : Packet

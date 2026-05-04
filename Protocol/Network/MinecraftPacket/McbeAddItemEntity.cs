@@ -1,4 +1,6 @@
 ﻿using Protocol.Minecraft;
+using Protocol.Minecraft.Inventory.Item;
+using Protocol.Minecraft.Metadata;
 
 namespace Protocol.Network.MinecraftPacket;
 public class McbeAddItemEntity : Packet

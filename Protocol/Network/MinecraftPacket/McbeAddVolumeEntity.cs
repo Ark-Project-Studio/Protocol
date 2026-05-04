@@ -1,4 +1,6 @@
 ﻿using Protocol.Minecraft;
+using Protocol.Minecraft.Level.Block;
+using Protocol.Minecraft.NBT;
 
 namespace Protocol.Network.MinecraftPacket;
 public class McbeAddVolumeEntity : Packet

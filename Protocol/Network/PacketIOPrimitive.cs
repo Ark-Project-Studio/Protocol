@@ -4,6 +4,7 @@ using System.IO;
 using System.Numerics;
 using System.Text;
 using Protocol.Minecraft;
+using Protocol.Minecraft.Level.ResourcePacks;
 using Protocol.Utils;
 using Protocol.Utils.IO;
 

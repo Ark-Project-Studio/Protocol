@@ -1,4 +1,4 @@
-﻿using Protocol.Minecraft;
+﻿using Protocol.Minecraft.Inventory.Item;
 
 namespace Protocol.Network.MinecraftPacket;
 public class McbeMobArmorEquipment : Packet

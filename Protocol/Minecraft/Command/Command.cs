@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Protocol.Utils;
 
-namespace Protocol.Minecraft
+namespace Protocol.Minecraft.Command
 {
 	// Enums
 	public enum CommandPermissionLevel : byte

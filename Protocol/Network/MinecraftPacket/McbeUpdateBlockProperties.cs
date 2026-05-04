@@ -1,4 +1,5 @@
 ﻿using Protocol.Minecraft;
+using Protocol.Minecraft.NBT;
 
 namespace Protocol.Network.MinecraftPacket;
 public class McbeUpdateBlockProperties : Packet

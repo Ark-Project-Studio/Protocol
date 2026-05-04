@@ -1,4 +1,7 @@
-﻿using Protocol.Minecraft;
+using Protocol.Minecraft;
+using Protocol.Minecraft.Actor;
+using Protocol.Minecraft.Actor.Player;
+using Protocol.Minecraft.Metadata;
 
 namespace Protocol.Network.MinecraftPacket;
 public class McbeAddEntity : Packet

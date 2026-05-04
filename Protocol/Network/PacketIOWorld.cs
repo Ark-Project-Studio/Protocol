@@ -4,9 +4,15 @@ using System.IO;
 using System.Linq;
 using fNbt;
 using Protocol.Minecraft;
-using Protocol.Minecraft.World.Map;
+using Protocol.Minecraft.Inventory.Item;
+using Protocol.Minecraft.Inventory.Recipe;
+using Protocol.Minecraft.Level;
+using Protocol.Minecraft.Level.Block;
+using Protocol.Minecraft.Level.Chunk;
+using Protocol.Minecraft.Level.Map;
 using Protocol.Network.MinecraftPacket;
 using Protocol.Utils;
+using static Protocol.Network.MinecraftPacket.McbeStructureBlockUpdate;
 using Console = System.Console;
 
 namespace Protocol.Network
@@ -754,6 +760,71 @@ namespace Protocol.Network
 			}
 
 			return entries;
+		}
+		public void Write(StructureEditorData value)
+		{
+			Write(value.StructureName);
+			Write(value.FilteredStructureName);
+			Write(value.DataField);
+			Write(value.IncludePlayer);
+			Write(value.ShowBoundingBox);
+			WriteSignedVarInt(value.StructureBlockType);
+			Write(value.StructureSettings);
+			WriteSignedVarInt(value.RedstoneSaveMode);
+		}
+
+		public StructureEditorData ReadStructureEditorData()
+		{
+			return new StructureEditorData
+			{
+				StructureName = ReadString(),
+				FilteredStructureName = ReadString(),
+				DataField = ReadString(),
+				IncludePlayer = ReadBool(),
+				ShowBoundingBox = ReadBool(),
+				StructureBlockType = ReadSignedVarInt(),
+				StructureSettings = ReadStructureSettings(),
+				RedstoneSaveMode = ReadSignedVarInt()
+			};
+		}
+
+		public void Write(StructureSettings value)
+		{
+			Write(value.PaletteName);
+			Write(value.IgnoreEntities);
+			Write(value.IgnoreBlocks);
+			Write(value.AllowNonTickingPlayerAndTickingAreaChunks);
+			Write(value.Size);
+			Write(value.Offset);
+			WriteSignedVarLong(value.LastEditPlayer);
+			Write(value.Rotation);
+			Write(value.Mirror);
+			Write(value.AnimationMode);
+			Write(value.AnimationSeconds);
+			Write(value.IntegrityValue);
+			Write(value.IntegritySeed);
+			Write(value.RotationPivot);
+		}
+
+		public StructureSettings ReadStructureSettings()
+		{
+			return new StructureSettings
+			{
+				PaletteName = ReadString(),
+				IgnoreEntities = ReadBool(),
+				IgnoreBlocks = ReadBool(),
+				AllowNonTickingPlayerAndTickingAreaChunks = ReadBool(),
+				Size = ReadBlockCoordinates(),
+				Offset = ReadBlockCoordinates(),
+				LastEditPlayer = ReadSignedVarLong(),
+				Rotation = ReadByte(),
+				Mirror = ReadByte(),
+				AnimationMode = ReadByte(),
+				AnimationSeconds = ReadFloat(),
+				IntegrityValue = ReadFloat(),
+				IntegritySeed = ReadUint(),
+				RotationPivot = ReadVector3()
+			};
 		}
 	}
 }

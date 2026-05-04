@@ -1,5 +1,5 @@
-﻿using Protocol.Minecraft;
-using Protocol.Minecraft.World.Map;
+﻿using Protocol.Minecraft.Level.Block;
+using Protocol.Minecraft.Level.Map;
 
 namespace Protocol.Network.MinecraftPacket;
 

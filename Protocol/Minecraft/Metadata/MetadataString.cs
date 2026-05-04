@@ -2,7 +2,7 @@ using Protocol.Utils.IO;
 using System.Text;
 
 
-namespace Protocol.Minecraft
+namespace Protocol.Minecraft.Metadata
 {
 	public class MetadataString : MetadataEntry
 	{

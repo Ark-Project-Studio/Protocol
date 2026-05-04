@@ -1,4 +1,4 @@
-namespace Protocol.Minecraft
+namespace Protocol.Minecraft.Metadata
 {
 	public class MetadataByte : MetadataEntry
 	{

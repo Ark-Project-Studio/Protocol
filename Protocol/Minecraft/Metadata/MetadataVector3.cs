@@ -4,7 +4,7 @@
 
 using System.Numerics;
 
-namespace Protocol.Minecraft
+namespace Protocol.Minecraft.Metadata
 {
 	public class MetadataVector3 : MetadataEntry
 	{

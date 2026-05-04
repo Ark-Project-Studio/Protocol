@@ -1,4 +1,8 @@
-﻿using Protocol.Minecraft;
+using Protocol.Minecraft;
+using Protocol.Minecraft.Actor;
+using Protocol.Minecraft.Actor.Player;
+using Protocol.Minecraft.Inventory.Item;
+using Protocol.Minecraft.Metadata;
 using Protocol.Utils;
 
 namespace Protocol.Network.MinecraftPacket;
