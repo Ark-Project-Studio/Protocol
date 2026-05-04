@@ -4,7 +4,7 @@ using Protocol.Minecraft.Level;
 namespace Protocol.Network.MinecraftPacket;
 public class McbeDimensionData : Packet
 {
-    public DimensionDefinitions definitions;
+    public DimensionData[] definitions;
     public McbeDimensionData()
     {
         Id = 0xb4;

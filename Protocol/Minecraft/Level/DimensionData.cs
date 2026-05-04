@@ -8,8 +8,4 @@ namespace Protocol.Minecraft.Level
 		public int Generator { get; set; }
 		public int Dimension { get; set; }
 	}
-
-	public class DimensionDefinitions : Dictionary<string, DimensionData>
-	{
-	}
 }

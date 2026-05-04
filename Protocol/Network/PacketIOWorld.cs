@@ -170,29 +170,28 @@ namespace Protocol.Network
 			return data;
 		}
 
-		public void Write(DimensionDefinitions definitions)
+		public void Write(DimensionData[] definitions)
 		{
-			WriteUnsignedVarInt((uint)definitions.Count);
+			WriteUnsignedVarInt((uint)definitions.Length);
 
 			foreach (var def in definitions)
 			{
-				Write(def.Value);
+				Write(def);
 			}
 		}
 
-		public DimensionDefinitions ReadDimensionDefinitions()
+		public DimensionData[] ReadDimensionDefinitions()
 		{
-			DimensionDefinitions definitions = new DimensionDefinitions();
-
 			var count = ReadUnsignedVarInt();
+			var dims = new DimensionData[count];
 			for (int i = 0; i < count; i++)
 			{
 				var data = ReadDimensionData();
 
-				definitions.TryAdd(data.Identifier, data);
+				dims[i] = data;
 			}
 
-			return definitions;
+			return dims;
 		}
 
 		public void Write(UpdateSubChunkBlocksPacketEntry entry)
