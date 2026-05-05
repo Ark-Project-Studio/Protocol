@@ -21,8 +21,8 @@ public class McbeInventorySlot : Packet
         Write(inventoryId);
         WriteUnsignedVarInt(slot);
         Write(ContainerName);
-        Write(storageItem);
-        Write(item);
+        WriteItemStack(storageItem);
+        WriteItemStack(item);
     }
 
     protected override void DecodePacket()
@@ -31,7 +31,56 @@ public class McbeInventorySlot : Packet
         inventoryId = ReadByte();
         slot = ReadUnsignedVarInt();
         ContainerName = readFullContainerName();
-        storageItem = ReadNetworkItemStackDescriptor();
-        item = ReadNetworkItemStackDescriptor();
+        storageItem = ReadItemStack();
+        item = ReadItemStack();
     }
+	private NetworkItemStackDescriptor ReadItemStack()
+	{
+		int id = ReadShort();
+		var stack = new NetworkItemStackDescriptor { Id = id };
+		if (id == 0)
+		{
+			return stack;
+		}
+
+		stack.StackSize = ReadUshort();
+		stack.Aux = ReadUnsignedVarInt();
+		var hasNetId = ReadBool();
+		if (hasNetId)
+		{
+			stack.NetId = new Optional<int>((int)ReadUnsignedVarInt());
+		}
+
+		stack.BlockRuntimeId = (int)ReadUnsignedVarInt();
+
+		stack.UserData = ReadString();
+		return stack;
+	}
+
+	private void WriteItemStack(NetworkItemStackDescriptor stack)
+	{
+		if (stack == null || stack.Id == 0)
+		{
+			Write((short)0);
+			return;
+		}
+
+		Write((short)stack.Id);
+
+		Write(stack.StackSize);
+		WriteUnsignedVarInt(stack.Aux);
+		if (stack.NetId.HasValue)
+		{
+			Write(true);
+			WriteSignedVarInt(stack.NetId.Value);
+		}
+		else
+		{
+			Write(false);
+		}
+
+		WriteSignedVarInt(stack.BlockRuntimeId);
+
+		Write(stack.UserData ?? string.Empty);
+	}
 }
