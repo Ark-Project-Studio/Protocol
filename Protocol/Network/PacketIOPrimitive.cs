@@ -3,7 +3,9 @@ using System.Buffers.Binary;
 using System.IO;
 using System.Numerics;
 using System.Text;
+using fNbt;
 using Protocol.Minecraft;
+using Protocol.Minecraft.NBT;
 using Protocol.Minecraft.Level.ResourcePacks;
 using Protocol.Utils;
 using Protocol.Utils.IO;
@@ -253,6 +255,175 @@ namespace Protocol.Network
 			var len = ReadLength();
 			var bytes = ReadBytes(len, slurp);
 			return bytes;
+		}
+
+		public void Write(CompoundTag compoundTag)
+		{
+			WriteCompoundTagPayload(compoundTag?.Value ?? new NbtCompound(string.Empty));
+		}
+
+		public CompoundTag ReadCompoundTag()
+		{
+			return new CompoundTag(ReadCompoundTagPayload());
+		}
+
+		private void WriteCompoundTagPayload(NbtCompound compound)
+		{
+			foreach (NbtTag tag in compound)
+			{
+				if (tag.TagType == NbtTagType.End) continue;
+
+				Write((byte)tag.TagType);
+				Write(tag.Name ?? string.Empty);
+				WriteTagPayload(tag);
+			}
+
+			Write((byte)NbtTagType.End);
+		}
+
+		private NbtCompound ReadCompoundTagPayload()
+		{
+			NbtCompound compound = new NbtCompound(string.Empty);
+
+			while (true)
+			{
+				NbtTagType tagType = (NbtTagType)ReadByte();
+				if (tagType == NbtTagType.End) break;
+
+				string name = ReadString();
+				compound.Add(ReadTagPayload(tagType, name));
+			}
+
+			return compound;
+		}
+
+		private void WriteTagPayload(NbtTag tag)
+		{
+			switch (tag.TagType)
+			{
+				case NbtTagType.Byte:
+					Write(((NbtByte)tag).ByteValue);
+					break;
+				case NbtTagType.Short:
+					Write((short)((NbtShort)tag).ShortValue, true);
+					break;
+				case NbtTagType.Int:
+					WriteSignedVarInt(((NbtInt)tag).IntValue);
+					break;
+				case NbtTagType.Long:
+					WriteSignedVarLong(((NbtLong)tag).LongValue);
+					break;
+				case NbtTagType.Float:
+					Write(((NbtFloat)tag).FloatValue);
+					break;
+				case NbtTagType.Double:
+					Write(((NbtDouble)tag).DoubleValue);
+					break;
+				case NbtTagType.ByteArray:
+					WriteNbtByteArray((NbtByteArray)tag);
+					break;
+				case NbtTagType.String:
+					Write(((NbtString)tag).StringValue ?? string.Empty);
+					break;
+				case NbtTagType.List:
+					WriteNbtList((NbtList)tag);
+					break;
+				case NbtTagType.Compound:
+					WriteCompoundTagPayload((NbtCompound)tag);
+					break;
+				case NbtTagType.IntArray:
+					WriteNbtIntArray((NbtIntArray)tag);
+					break;
+				default:
+					throw new NotSupportedException($"Unsupported NBT tag type: {tag.TagType}");
+			}
+		}
+
+		private NbtTag ReadTagPayload(NbtTagType tagType, string name)
+		{
+			return tagType switch
+			{
+				NbtTagType.Byte => new NbtByte(name, ReadByte()),
+				NbtTagType.Short => new NbtShort(name, ReadShort(true)),
+				NbtTagType.Int => new NbtInt(name, ReadSignedVarInt()),
+				NbtTagType.Long => new NbtLong(name, ReadSignedVarLong()),
+				NbtTagType.Float => new NbtFloat(name, ReadFloat()),
+				NbtTagType.Double => new NbtDouble(name, ReadDouble()),
+				NbtTagType.ByteArray => ReadNbtByteArray(name),
+				NbtTagType.String => new NbtString(name, ReadString()),
+				NbtTagType.List => ReadNbtList(name),
+				NbtTagType.Compound => ReadNbtCompoundPayload(name),
+				NbtTagType.IntArray => ReadNbtIntArray(name),
+				_ => throw new NotSupportedException($"Unsupported NBT tag type: {tagType}")
+			};
+		}
+
+		private void WriteNbtByteArray(NbtByteArray tag)
+		{
+			byte[] value = tag.ByteArrayValue ?? [];
+			WriteSignedVarInt(value.Length);
+			Write(value);
+		}
+
+		private NbtByteArray ReadNbtByteArray(string name)
+		{
+			int length = ReadSignedVarInt();
+			return new NbtByteArray(name, ReadBytes(length));
+		}
+
+		private void WriteNbtIntArray(NbtIntArray tag)
+		{
+			int[] value = tag.IntArrayValue ?? [];
+			WriteSignedVarInt(value.Length);
+			foreach (int item in value)
+			{
+				WriteSignedVarInt(item);
+			}
+		}
+
+		private NbtIntArray ReadNbtIntArray(string name)
+		{
+			int length = ReadSignedVarInt();
+			int[] value = new int[length];
+			for (int i = 0; i < length; i++)
+			{
+				value[i] = ReadSignedVarInt();
+			}
+
+			return new NbtIntArray(name, value);
+		}
+
+		private void WriteNbtList(NbtList tag)
+		{
+			NbtTagType listType = tag.Count > 0 ? tag[0].TagType : NbtTagType.End;
+			Write((byte)listType);
+			WriteSignedVarInt(tag.Count);
+
+			foreach (NbtTag item in tag)
+			{
+				WriteTagPayload(item);
+			}
+		}
+
+		private NbtList ReadNbtList(string name)
+		{
+			NbtTagType listType = (NbtTagType)ReadByte();
+			int count = ReadSignedVarInt();
+			NbtList list = new NbtList(name, listType);
+
+			for (int i = 0; i < count; i++)
+			{
+				list.Add(ReadTagPayload(listType, string.Empty));
+			}
+
+			return list;
+		}
+
+		private NbtCompound ReadNbtCompoundPayload(string name)
+		{
+			NbtCompound compound = ReadCompoundTagPayload();
+			compound.Name = name;
+			return compound;
 		}
 
 		public void Write(ulong[] value)

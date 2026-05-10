@@ -6,7 +6,7 @@ public class NetworkItemStackDescriptor
 	public ushort StackSize { get; set; }
 	public uint Aux { get; set; }
 	public Optional<int> NetId { get; set; } = new();
-	public int BlockRuntimeId { get; set; }
+	public uint BlockRuntimeId { get; set; }
 	public string UserData { get; set; } = string.Empty;
 
 	public static NetworkItemStackDescriptor Empty { get; } = new();

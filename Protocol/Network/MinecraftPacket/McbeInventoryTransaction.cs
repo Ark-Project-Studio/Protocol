@@ -100,7 +100,7 @@ public class McbeInventoryTransaction : Packet
     protected override void DecodePacket()
     {
         base.DecodePacket();
-       // ReadInventoryTransactionPacket(this);
+        ReadInventoryTransactionPacket(this);
     }
 }
 

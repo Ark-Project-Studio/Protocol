@@ -1,14 +1,16 @@
 ﻿using Protocol.Minecraft;
+using Protocol.Minecraft.NBT;
 
 namespace Protocol.Network.MinecraftPacket;
 public class McbeLevelEventGeneric : Packet
 {
 	public int EventID { get; set; }
-	public byte[] SerialisedEventData { get; set; }
+	public CompoundTag SerialisedEventData { get; set; }
 	public McbeLevelEventGeneric()
     {
         Id = 0x7c;
         IsMcbe = true;
+        SerialisedEventData = new CompoundTag();
     }
 
     protected override void EncodePacket()
@@ -22,6 +24,6 @@ public class McbeLevelEventGeneric : Packet
     {
         base.DecodePacket();
         EventID = ReadSignedVarInt();
-        SerialisedEventData = ReadByteArray();
+		SerialisedEventData = ReadCompoundTag();
     }
 }

@@ -37,7 +37,10 @@ public class McbeClientMovementPredictionSync : Packet
         Write(JumpStrength);
         Write(Health);
         Write(Hunger);
-        WriteSignedVarLong(EntityUniqueID);
+        Write(0.0f);
+        Write(0x0f);
+        Write(0x0f);
+        WriteUnsignedVarInt((uint)EntityUniqueID);
         Write(Flying);
     }
 
@@ -54,7 +57,10 @@ public class McbeClientMovementPredictionSync : Packet
         JumpStrength = ReadFloat();
         Health = ReadFloat();
         Hunger = ReadFloat();
-        EntityUniqueID = ReadSignedVarLong();
+        var f1 = ReadFloat();
+        var f2 = ReadFloat();
+        var f3 = ReadFloat();
+        EntityUniqueID = ReadUnsignedVarInt();
         Flying = ReadBool();
     }
 }

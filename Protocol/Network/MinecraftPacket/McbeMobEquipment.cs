@@ -61,33 +61,30 @@ public class McbeMobEquipment : Packet
 	{
 		int id = ReadShort();
 		var stack = new NetworkItemStackDescriptor { Id = id };
-		if (id == 0)
-		{
-			return stack;
-		}
 
 		stack.StackSize = ReadUshort();
 		stack.Aux = ReadUnsignedVarInt();
 		var hasNetId = ReadBool();
 		if (hasNetId)
 		{
-			stack.NetId = new Optional<int>((int)ReadUnsignedVarInt());
+			var u = ReadUnsignedVarInt();
+			switch (u)
+			{
+				case 0:
+				case 1:
+				case 2:
+					stack.NetId = new Optional<int>(ReadSignedVarInt());
+					break;
+			}
 		}
 
-		stack.BlockRuntimeId = (int)ReadUnsignedVarInt();
-
+		stack.BlockRuntimeId = ReadUnsignedVarInt();
 		stack.UserData = ReadString();
 		return stack;
 	}
 
 	private void WriteItemStack(NetworkItemStackDescriptor stack)
 	{
-		if (stack == null || stack.Id == 0)
-		{
-			Write((short)0);
-			return;
-		}
-
 		Write((short)stack.Id);
 
 		Write(stack.StackSize);
@@ -95,6 +92,8 @@ public class McbeMobEquipment : Packet
 		if (stack.NetId.HasValue)
 		{
 			Write(true);
+
+			WriteUnsignedVarInt(0);
 			WriteSignedVarInt(stack.NetId.Value);
 		}
 		else
@@ -102,7 +101,7 @@ public class McbeMobEquipment : Packet
 			Write(false);
 		}
 
-		WriteSignedVarInt(stack.BlockRuntimeId);
+		WriteUnsignedVarInt(stack.BlockRuntimeId);
 
 		Write(stack.UserData ?? string.Empty);
 	}

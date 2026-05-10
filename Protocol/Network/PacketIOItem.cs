@@ -134,19 +134,19 @@ namespace Protocol.Network
 
 			WriteSignedVarInt(stack.Id);
 
-			Write(stack.StackSize,true);
+			Write(stack.StackSize);
 			WriteUnsignedVarInt(stack.Aux);
 			if (stack.NetId.HasValue)
 			{
 				Write(true);
-				WriteSignedVarInt(stack.NetId.Value);
+				WriteUnsignedVarInt((uint)stack.NetId.Value);
 			}
 			else
 			{
 				Write(false);
 			}
 
-			WriteSignedVarInt(stack.BlockRuntimeId);
+			WriteUnsignedVarInt((uint)stack.BlockRuntimeId);
 
 			Write(stack.UserData ?? string.Empty);
 		}
@@ -159,10 +159,10 @@ namespace Protocol.Network
 				return;
 			}
 
-			WriteSignedVarInt(stack.Id);
+			WriteUnsignedVarInt((uint)stack.Id);
 			Write(stack.StackSize);
 			WriteUnsignedVarInt(stack.Aux);
-			WriteSignedVarInt(stack.BlockRuntimeId);
+			WriteUnsignedVarInt((uint)stack.BlockRuntimeId);
 			Write(stack.UserData ?? string.Empty);
 		}
 
@@ -181,7 +181,7 @@ namespace Protocol.Network
 		{
 			stack.NetId = new Optional<int>((int)ReadUnsignedVarInt());
 		}
-		stack.BlockRuntimeId = (int)ReadUnsignedVarInt();
+		stack.BlockRuntimeId =ReadUnsignedVarInt();
 
 		stack.UserData = ReadString();
 			return stack;

@@ -36,37 +36,11 @@ namespace Protocol.Network
 		public Packet()
 		{
 		}
-		
-		public Packet SetBytes(ReadOnlyMemory<byte> bytes)
-		{
-			Bytes = bytes;
-			return this;
-		}
+	
 
 		public bool CanRead()
 		{
 			return _reader.Position < _reader.Length;
-		}
-
-		public void SetEncodedMessage(byte[] encodedMessage)
-		{
-			_encodedMessage = encodedMessage;
-		}
-
-		public virtual void Reset()
-		{
-			_encodedMessage = null;
-			Bytes = null;
-			_writer?.Close();
-			_reader?.Close();
-			_buffer?.Close();
-			_writer = null;
-			_reader = null;
-			_buffer = null;
-		}
-
-		protected virtual void ResetPacket()
-		{
 		}
 
 		private object _encodeSync = new object();
@@ -130,10 +104,13 @@ namespace Protocol.Network
 
 			DecodePacket();
 
-
+			Debug.Assert(_reader.Position == _reader.Length);
 			_reader.Dispose();
 			_reader = null;
-
+			
+				
+			
+			
 			return this;
 		}
 

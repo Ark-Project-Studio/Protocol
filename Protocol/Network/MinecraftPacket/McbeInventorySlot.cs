@@ -4,11 +4,11 @@ using Protocol.Minecraft.Inventory.Transaction;
 namespace Protocol.Network.MinecraftPacket;
 public class McbeInventorySlot : Packet
 {
-    public FullContainerName ContainerName = new();
-    public byte inventoryId;
+    public Optional<FullContainerName> ContainerName = new();
+    public uint inventoryId;
     public NetworkItemStackDescriptor item;
     public uint slot;
-    public NetworkItemStackDescriptor storageItem;
+    public Optional<NetworkItemStackDescriptor> storageItem = new Optional<NetworkItemStackDescriptor>();
     public McbeInventorySlot()
     {
         Id = 0x32;
@@ -18,53 +18,74 @@ public class McbeInventorySlot : Packet
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        Write(inventoryId);
+        WriteUnsignedVarInt(inventoryId);
         WriteUnsignedVarInt(slot);
-        Write(ContainerName);
-        WriteItemStack(storageItem);
+        if (ContainerName.HasValue)
+        {
+	        Write(ContainerName.HasValue);
+	        Write(ContainerName.Value);
+        }
+        else
+        {
+	        Write(false);
+        }
+		if (storageItem.HasValue)
+		{
+			Write(storageItem.HasValue);
+			WriteItemStack(storageItem.Value);
+		}
+		else
+		{
+			Write(false);
+		}
         WriteItemStack(item);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        inventoryId = ReadByte();
+        inventoryId = ReadUnsignedVarInt();
         slot = ReadUnsignedVarInt();
-        ContainerName = readFullContainerName();
-        storageItem = ReadItemStack();
+       
+        if (ReadBool())
+        {
+	        ContainerName = new Optional<FullContainerName>(readFullContainerName());
+        }
+
+        if (ReadBool())
+        {
+	        storageItem = new Optional<NetworkItemStackDescriptor>(ReadItemStack());
+        }
         item = ReadItemStack();
     }
 	private NetworkItemStackDescriptor ReadItemStack()
 	{
 		int id = ReadShort();
 		var stack = new NetworkItemStackDescriptor { Id = id };
-		if (id == 0)
-		{
-			return stack;
-		}
-
+	
 		stack.StackSize = ReadUshort();
 		stack.Aux = ReadUnsignedVarInt();
 		var hasNetId = ReadBool();
 		if (hasNetId)
 		{
-			stack.NetId = new Optional<int>((int)ReadUnsignedVarInt());
+			var u = ReadUnsignedVarInt();
+			switch (u)
+			{
+				case 0 :
+					case 1:
+					case 2:
+						stack.NetId = new Optional<int>(ReadSignedVarInt());
+					break;
+			}
 		}
 
-		stack.BlockRuntimeId = (int)ReadUnsignedVarInt();
-
+		stack.BlockRuntimeId = ReadUnsignedVarInt();
 		stack.UserData = ReadString();
 		return stack;
 	}
 
 	private void WriteItemStack(NetworkItemStackDescriptor stack)
 	{
-		if (stack == null || stack.Id == 0)
-		{
-			Write((short)0);
-			return;
-		}
-
 		Write((short)stack.Id);
 
 		Write(stack.StackSize);
@@ -72,6 +93,8 @@ public class McbeInventorySlot : Packet
 		if (stack.NetId.HasValue)
 		{
 			Write(true);
+			
+			WriteUnsignedVarInt(0);
 			WriteSignedVarInt(stack.NetId.Value);
 		}
 		else
@@ -79,7 +102,7 @@ public class McbeInventorySlot : Packet
 			Write(false);
 		}
 
-		WriteSignedVarInt(stack.BlockRuntimeId);
+		WriteUnsignedVarInt(stack.BlockRuntimeId);
 
 		Write(stack.UserData ?? string.Empty);
 	}
