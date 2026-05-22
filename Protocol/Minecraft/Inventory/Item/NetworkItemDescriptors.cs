@@ -1,5 +1,19 @@
 namespace Protocol.Minecraft.Inventory.Item;
 
+public struct ItemStackNetId
+{
+	public int mId;
+}
+
+public struct ItemStackRequestId
+{
+	public int mId;
+}
+
+public struct ItemStackLegacyRequestId
+{
+	public int mId;
+}
 public class NetworkItemStackDescriptor
 {
 	public int Id { get; set; }

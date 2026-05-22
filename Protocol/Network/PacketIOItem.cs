@@ -150,6 +150,28 @@ namespace Protocol.Network
 
 			Write(stack.UserData ?? string.Empty);
 		}
+		public void WriteCereal(NetworkItemStackDescriptor stack)
+		{
+			Write((short)stack.Id);
+
+			Write(stack.StackSize);
+			WriteUnsignedVarInt(stack.Aux);
+			if (stack.NetId.HasValue)
+			{
+				Write(true);
+
+				WriteUnsignedVarInt(0);
+				WriteSignedVarInt(stack.NetId.Value);
+			}
+			else
+			{
+				Write(false);
+			}
+
+			WriteUnsignedVarInt(stack.BlockRuntimeId);
+
+			Write(stack.UserData ?? string.Empty);
+		}
 
 		public void Write(NetworkItemInstanceDescriptor stack)
 		{
@@ -184,6 +206,31 @@ namespace Protocol.Network
 		stack.BlockRuntimeId =ReadUnsignedVarInt();
 
 		stack.UserData = ReadString();
+			return stack;
+		}
+		public NetworkItemStackDescriptor ReadCerealNetworkItemStackDescriptor()
+		{
+			int id = ReadShort();
+			var stack = new NetworkItemStackDescriptor { Id = id };
+
+			stack.StackSize = ReadUshort();
+			stack.Aux = ReadUnsignedVarInt();
+			var hasNetId = ReadBool();
+			if (hasNetId)
+			{
+				var u = ReadUnsignedVarInt();
+				switch (u)
+				{
+					case 0:
+					case 1:
+					case 2:
+						stack.NetId = new Optional<int>(ReadSignedVarInt());
+						break;
+				}
+			}
+
+			stack.BlockRuntimeId = ReadUnsignedVarInt();
+			stack.UserData = ReadString();
 			return stack;
 		}
 

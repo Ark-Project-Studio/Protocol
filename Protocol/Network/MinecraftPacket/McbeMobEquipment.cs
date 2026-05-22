@@ -41,7 +41,7 @@ public class McbeMobEquipment : Packet
 	{
 		base.EncodePacket();
 		WriteUnsignedVarLong(runtimeEntityId);
-		WriteItemStack(item);
+		WriteCereal(item);
 		Write(slot);
 		Write(selectedSlot);
 		Write(containerId);
@@ -51,58 +51,11 @@ public class McbeMobEquipment : Packet
 	{
 		base.DecodePacket();
 		runtimeEntityId = ReadUnsignedVarLong();
-		item = ReadItemStack();
+		item = ReadCerealNetworkItemStackDescriptor();
 		slot = ReadByte();
 		selectedSlot = ReadByte();
 		containerId = ReadByte();
 	}
 
-	private NetworkItemStackDescriptor ReadItemStack()
-	{
-		int id = ReadShort();
-		var stack = new NetworkItemStackDescriptor { Id = id };
 
-		stack.StackSize = ReadUshort();
-		stack.Aux = ReadUnsignedVarInt();
-		var hasNetId = ReadBool();
-		if (hasNetId)
-		{
-			var u = ReadUnsignedVarInt();
-			switch (u)
-			{
-				case 0:
-				case 1:
-				case 2:
-					stack.NetId = new Optional<int>(ReadSignedVarInt());
-					break;
-			}
-		}
-
-		stack.BlockRuntimeId = ReadUnsignedVarInt();
-		stack.UserData = ReadString();
-		return stack;
-	}
-
-	private void WriteItemStack(NetworkItemStackDescriptor stack)
-	{
-		Write((short)stack.Id);
-
-		Write(stack.StackSize);
-		WriteUnsignedVarInt(stack.Aux);
-		if (stack.NetId.HasValue)
-		{
-			Write(true);
-
-			WriteUnsignedVarInt(0);
-			WriteSignedVarInt(stack.NetId.Value);
-		}
-		else
-		{
-			Write(false);
-		}
-
-		WriteUnsignedVarInt(stack.BlockRuntimeId);
-
-		Write(stack.UserData ?? string.Empty);
-	}
 }
