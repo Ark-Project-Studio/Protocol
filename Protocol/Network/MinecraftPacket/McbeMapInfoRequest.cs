@@ -20,7 +20,7 @@ public class McbeMapInfoRequest : Packet
         foreach (var pixel in pixels)
         {
             Write(pixel.pixel);
-            Write((ushort)pixel.index);
+            Write(pixel.index);
         }
     }
 

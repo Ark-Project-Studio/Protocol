@@ -7,6 +7,6 @@ public class pixelList
 
 public class pixelsData
 {
-	public short index;
+	public ushort index;
 	public uint pixel;
 }

@@ -368,10 +368,10 @@ namespace Protocol.Network
 		{
 			pixelList mapData = new pixelList();
 
-			var listSize = ReadInt();
+			var listSize = ReadUint();
 			for (int i = 0; i < listSize; i++)
 			{
-				mapData.mapData.Add(new pixelsData { pixel = ReadUnsignedVarInt(), index = ReadShort() });
+				mapData.mapData.Add(new pixelsData { pixel = ReadUint(), index = ReadUshort() });
 			}
 
 			return mapData;
