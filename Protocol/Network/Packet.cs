@@ -31,19 +31,16 @@ namespace Protocol.Network
 		protected private Stream _buffer;
 		private BinaryWriter _writer;
 
-		[JsonIgnore] public System.ReadOnlyMemory<byte> Bytes { get; private set; }
+		[JsonIgnore] public ReadOnlyMemory<byte> Bytes { get; private set; }
 
 		public Packet()
 		{
 		}
-	
 
 		public bool CanRead()
 		{
 			return _reader.Position < _reader.Length;
 		}
-
-		private object _encodeSync = new object();
 
 		private static RecyclableMemoryStreamManager _streamManager = new RecyclableMemoryStreamManager();
 		private static ConcurrentDictionary<int, bool> _isLob = new ConcurrentDictionary<int, bool>();
@@ -53,8 +50,7 @@ namespace Protocol.Network
 			byte[] cache = _encodedMessage;
 			if (cache != null) return cache;
 
-			lock (_encodeSync)
-			{
+		
 				if (_encodedMessage != null) return _encodedMessage;
 
 
@@ -81,7 +77,7 @@ namespace Protocol.Network
 				_buffer = null;
 				Bytes = _encodedMessage;
 				return _encodedMessage;
-			}
+			
 		}
 
 		protected virtual void EncodePacket()
@@ -89,12 +85,6 @@ namespace Protocol.Network
 			_buffer.Position = 0;
 			if (IsMcbe) WriteVarInt(Id);
 			else Write((byte)Id);
-		}
-
-		[Obsolete("Use decode with ReadOnlyMemory<byte> instead.")]
-		public virtual Packet Decode(byte[] buffer)
-		{
-			return Decode(new ReadOnlyMemory<byte>(buffer));
 		}
 
 		public virtual Packet Decode(ReadOnlyMemory<byte> buffer)
@@ -107,9 +97,6 @@ namespace Protocol.Network
 			Debug.Assert(_reader.Position == _reader.Length);
 			_reader.Dispose();
 			_reader = null;
-			
-				
-			
 			
 			return this;
 		}
@@ -139,7 +126,6 @@ namespace Protocol.Network
 					.ToArray()));
 				sb.AppendLine();
 			}
-
 			return sb.ToString();
 		}
 	}

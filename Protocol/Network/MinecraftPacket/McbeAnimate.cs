@@ -17,9 +17,10 @@ public class McbeAnimate : Packet
         Write(actionId);
         WriteUnsignedVarLong(runtimeEntityId);
         Write(Data);
-        Write(swingSource.HasValue);
-        if (swingSource.HasValue)
-            Write(swingSource.Value);
+        //Write(swingSource.HasValue);
+        //if (swingSource.HasValue)
+        //    Write(swingSource.Value);
+        WriteOptional(swingSource,(s => Write(s)));
     }
 
     protected override void DecodePacket()
@@ -28,7 +29,8 @@ public class McbeAnimate : Packet
         actionId = ReadByte();
         runtimeEntityId = ReadUnsignedVarLong();
         Data = ReadFloat();
-        if (ReadBool())
-            swingSource = new Optional<string>(ReadString());
+        swingSource = ReadOptional((() => ReadString()));
+        //if (ReadBool())
+        //    swingSource = new Optional<string>(ReadString());
     }
 }

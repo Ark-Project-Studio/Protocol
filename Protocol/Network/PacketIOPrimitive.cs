@@ -762,5 +762,32 @@ namespace Protocol.Network
 				PercentOfTotal = ReadByte()
 			};
 		}
+
+		public void WriteOptional<T>(Optional<T> value,Action<T> writeAction)
+		{
+			if (value.HasValue)
+			{
+				Write(true);
+				writeAction(value.Value);
+			}
+			else
+			{
+				Write(false);
+			}
+		}
+
+		public Optional<T> ReadOptional<T>(Func<T> readFunc)
+		{
+			var has_value = ReadBool();
+			if (has_value)
+			{
+				return new Optional<T>(readFunc());
+			}
+			else
+			{
+				return new Optional<T>();
+			}
+		}
+		
 	}
 }
