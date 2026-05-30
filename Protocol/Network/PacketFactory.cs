@@ -503,7 +503,7 @@ namespace Protocol.Network
 					case 327:
 						return new McbeClientBoundControlSchemeSet().Decode(buffer);
 					case 328:
-						return new McbeDebugDrawer().Decode(buffer);
+						return new McbePrimitiveShapes().Decode(buffer);
 					case 329:
 						return new McbeServerBoundPackSettingChange().Decode(buffer);
 					case 330:
