@@ -1,6 +1,6 @@
 using System.Reflection;
+using Protocol.Codec.Packets;
 using Protocol.Network;
-using Protocol.Network.MinecraftPacket;
 
 namespace ProtocolDocGen;
 

@@ -18,6 +18,6 @@
     <PackageReference Include="MiNET.fnbt" Version="1.0.22" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Network\RaknetPacket\" />
+    <Folder Include="Utility\UUID\" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,31 @@
+﻿using Protocol.Minecraft.Level.Scoreboard;
+using Protocol.Network;
+
+namespace Protocol.Codec.Packets;
+public class McbeSetScoreboardIdentity : Packet
+{
+    public enum Type : byte
+    {
+        Update = 0,
+        Remove = 1
+    }
+
+    public ScoreboardIdentityEntry[] entries;
+    public McbeSetScoreboardIdentity()
+    {
+        Id = 0x70;
+        IsMcbe = true;
+    }
+
+    protected override void EncodePacket()
+    {
+        base.EncodePacket();
+        Write(entries);
+    }
+
+    protected override void DecodePacket()
+    {
+        base.DecodePacket();
+        entries = ReadScoreboardIdentityEntries();
+    }
+}

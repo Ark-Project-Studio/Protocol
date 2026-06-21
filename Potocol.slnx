@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="Protocol/Protocol.csproj" />
+  <Project Path="Protocol.Tests/Protocol.Tests.csproj" />
   <Project Path="ProtocolDocGen/ProtocolDocGen.csproj" />
 </Solution>
