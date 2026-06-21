@@ -1,7 +1,7 @@
 ﻿using Protocol.Network;
 
 namespace Protocol.Codec.Packets;
-public enum PacketType : uint
+public enum UnlockedRecipesPacketType : byte
 {
     Empty = 0,
     InitiallyUnlockedRecipes = 1,
@@ -18,13 +18,13 @@ public class McbeUnlockedRecipes : Packet
         IsMcbe = true;
     }
 
-    public PacketType UnlockType { get; set; }
+    public UnlockedRecipesPacketType UnlockType { get; set; }
     public string[] Recipes { get; set; } = new string[0];
 
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        Write((uint)UnlockType);
+        Write((byte)UnlockType);
         WriteUnsignedVarInt((uint)(Recipes?.Length ?? 0));
         if (Recipes != null)
             foreach (var recipe in Recipes)
@@ -34,7 +34,7 @@ public class McbeUnlockedRecipes : Packet
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        UnlockType = (PacketType)ReadUint();
+        UnlockType = (UnlockedRecipesPacketType)ReadByte();
         var count = ReadUnsignedVarInt();
         Recipes = new string[count];
         for (var i = 0; i < count; i++)

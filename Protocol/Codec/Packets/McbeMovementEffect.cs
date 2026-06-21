@@ -6,7 +6,8 @@ public enum MovementEffectType
     Invalid = -1,
     GlideBoost = 0,
     DolphinBoost = 1,
-    Count = 2
+    GeyserBoost = 2,
+    Count = 3
 }
 
 public class McbeMovementEffect : Packet

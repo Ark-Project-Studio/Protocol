@@ -563,9 +563,15 @@ namespace Protocol.Codec.IO
 						return new McbeClientBoundAttributeLayerSync().Decode(buffer);
 					case 346:
 						return new McbeServerStoreInfo().Decode(buffer);
-					case 347:
-						return new McbeServerPresenceInfo().Decode(buffer);
-					default:
+						case 347:
+							return new McbeServerPresenceInfo().Decode(buffer);
+						case 348:
+							return new McbeClientboundUpdateSoundData().Decode(buffer);
+						case 349:
+							return new McbeSendPartyDestinationCookie().Decode(buffer);
+						case 350:
+							return new McbePartyDestinationCookieResponse().Decode(buffer);
+						default:
 						if (McbePacketFactories.Value.TryGetValue(id, out var factory))
 						{
 							return factory().Decode(buffer);

@@ -1,27 +1,22 @@
-using Protocol.Codec.Level;
 using Protocol.Network;
 
 namespace Protocol.Codec.Packets;
 
-public class McbeServerPresenceInfo : Packet
+public class McbeActorFall : Packet
 {
-    public PresenceConfiguration Config { get; set; } = new();
-
-    public McbeServerPresenceInfo()
+    public McbeActorFall()
     {
-        Id = 347;
+        Id = 37;
         IsMcbe = true;
     }
 
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        Config.Write(this);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        Config.Read(this);
     }
 }

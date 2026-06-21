@@ -241,6 +241,7 @@ public class McbeStartGame : Packet
     public string worldId;
     public string worldName;
     public UUID worldTemplateId;
+    public bool IsLoggingChat;
     public Optional<ServerJoinInformation> ServerJoinInformation;
     public string scenarioId;
     public string serverId;
@@ -279,6 +280,7 @@ public class McbeStartGame : Packet
         Write(worldTemplateId); //
         Write(clientSideGenerationEnabled);
         Write(blockNetworkIdsAreHashes);
+        Write(IsLoggingChat);
         if (ServerJoinInformation.HasValue)
         {
             Write(ServerJoinInformation.Value);
@@ -325,6 +327,7 @@ public class McbeStartGame : Packet
         worldTemplateId = ReadUUID();
         clientSideGenerationEnabled = ReadBool();
         blockNetworkIdsAreHashes = ReadBool();
+        IsLoggingChat = ReadBool();
         if (ReadBool())
         {
             ServerJoinInformation = new Optional<ServerJoinInformation>(ReadServerJoinInformation());

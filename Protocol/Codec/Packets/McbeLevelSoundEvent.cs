@@ -11,7 +11,7 @@ public class McbeLevelSoundEvent : Packet
     public bool isBabyMob;
     public bool isGlobal;
     public Vector3 position;
-    public uint soundId;
+    public string SoundEvent;
     public McbeLevelSoundEvent()
     {
         Id = 0x7b;
@@ -21,7 +21,7 @@ public class McbeLevelSoundEvent : Packet
     protected override void EncodePacket()
     {
         base.EncodePacket();
-        WriteUnsignedVarInt(soundId);
+        Write(SoundEvent);
         Write(position);
         WriteSignedVarInt(blockId);
         Write(entityType);
@@ -38,7 +38,7 @@ public class McbeLevelSoundEvent : Packet
     protected override void DecodePacket()
     {
         base.DecodePacket();
-        soundId = ReadUnsignedVarInt();
+        SoundEvent = ReadString();
         position = ReadVector3();
         blockId = ReadSignedVarInt();
         entityType = ReadString();

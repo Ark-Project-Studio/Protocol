@@ -1,10 +1,16 @@
 ﻿using Protocol.Network;
 
 namespace Protocol.Codec.Packets;
+public enum CreditsState : byte
+{
+    Start = 0,
+    Finished = 1,
+}
+
 public class McbeShowCredits : Packet
 {
     public ulong runtimeEntityId;
-    public int status;
+    public CreditsState status;
     public McbeShowCredits()
     {
         Id = 0x4b;
@@ -15,13 +21,13 @@ public class McbeShowCredits : Packet
     {
         base.EncodePacket();
         WriteUnsignedVarLong(runtimeEntityId);
-        WriteSignedVarInt(status);
+        Write((byte)status);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
         runtimeEntityId = ReadUnsignedVarLong();
-        status = ReadSignedVarInt();
+        status = (CreditsState)ReadByte();
     }
 }
