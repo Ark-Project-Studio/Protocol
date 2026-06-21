@@ -1,4 +1,5 @@
 using System.Numerics;
+using Protocol.Codec.Level;
 using Protocol.Minecraft;
 using Protocol.Minecraft.Actor.Player;
 using Protocol.Minecraft.Level;
@@ -8,19 +9,29 @@ using Protocol.Network;
 using Protocol.Utils;
 
 namespace Protocol.Codec.Packets;
-public struct ServerJoinInformation
+public struct ServerConfigurationJoinInfo
 {
-    public Optional<GatheringJoinInfo> GatheringJoinInfo { get; set; }
+    public Optional<GatheringsConfigurationJoinInfo> GatheringsConfiguration { get; set; }
+    public Optional<GatheringsConfigurationClientStoreEntryPointInfo> StoreEntryPointInfo { get; set; }
+    public Optional<PresenceConfiguration> PresenceInfo { get; set; }
 }
 
-public struct GatheringJoinInfo
+public struct GatheringsConfigurationJoinInfo
 {
-    public string ExperienceID { get; set; }
+    public UUID ExperienceId { get; set; }
     public string ExperienceName { get; set; }
-    public string ExperienceWorldID { get; set; }
+    public UUID ExperienceWorldId { get; set; }
     public string ExperienceWorldName { get; set; }
-    public string CreatorID { get; set; }
-    public string StoreID { get; set; }
+    public string CreatorId { get; set; }
+    public UUID TargetId { get; set; }
+    public string ScenarioId { get; set; }
+    public string ServerId { get; set; }
+}
+
+public struct GatheringsConfigurationClientStoreEntryPointInfo
+{
+    public string StoreId { get; set; }
+    public string StoreName { get; set; }
 }
 
 public class SpawnSettings
@@ -52,6 +63,8 @@ public class LevelSettings
     public bool createdInEditorMode;
     public int difficulty;
     public bool editorWorld;
+    public int serverEditorConnectionPolicy;
+    public bool allowAnonymousBlockDropsInEditorWorlds;
     public int eduOffer;
     public string eduProductUuid;
     public EducationUriResource eduSharedUriResource;
@@ -150,6 +163,8 @@ public class LevelSettings
         packet.Write(false);
         packet.Write(chatRestrictionLevel);
         packet.Write(isDisablePlayerInteractions);
+        packet.WriteSignedVarInt(serverEditorConnectionPolicy);
+        packet.Write(allowAnonymousBlockDropsInEditorWorlds);
     }
 
     public void Read(Packet packet)
@@ -212,6 +227,8 @@ public class LevelSettings
             experimentalGameplayOverride = false;
         chatRestrictionLevel = packet.ReadByte();
         isDisablePlayerInteractions = packet.ReadBool();
+        serverEditorConnectionPolicy = packet.ReadSignedVarInt();
+        allowAnonymousBlockDropsInEditorWorlds = packet.ReadBool();
     }
 }
 
@@ -241,8 +258,9 @@ public class McbeStartGame : Packet
     public string worldId;
     public string worldName;
     public UUID worldTemplateId;
-    public bool IsLoggingChat;
-    public Optional<ServerJoinInformation> ServerJoinInformation;
+    public bool serverAuthSound;
+	public bool IsLoggingChat;
+    public Optional<ServerConfigurationJoinInfo> ServerConfigurationJoinInfo;
     public string scenarioId;
     public string serverId;
     public string serverVersion;
@@ -280,10 +298,11 @@ public class McbeStartGame : Packet
         Write(worldTemplateId); //
         Write(clientSideGenerationEnabled);
         Write(blockNetworkIdsAreHashes);
+        Write(serverAuthSound);
         Write(IsLoggingChat);
-        if (ServerJoinInformation.HasValue)
+        if (ServerConfigurationJoinInfo.HasValue)
         {
-            Write(ServerJoinInformation.Value);
+            Write(ServerConfigurationJoinInfo.Value);
         }
 
         Write(serverId);
@@ -327,10 +346,11 @@ public class McbeStartGame : Packet
         worldTemplateId = ReadUUID();
         clientSideGenerationEnabled = ReadBool();
         blockNetworkIdsAreHashes = ReadBool();
+        serverAuthSound = ReadBool();
         IsLoggingChat = ReadBool();
         if (ReadBool())
         {
-            ServerJoinInformation = new Optional<ServerJoinInformation>(ReadServerJoinInformation());
+            ServerConfigurationJoinInfo = new Optional<ServerConfigurationJoinInfo>(ReadServerConfigurationJoinInfo());
         }
 
         serverId = ReadString();

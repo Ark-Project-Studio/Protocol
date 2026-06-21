@@ -237,7 +237,7 @@ namespace Protocol.Network
 			{
 				WriteSignedVarLong(entry.Id);
 				Write(entry.ObjectiveName);
-				Write(entry.Score);
+				Write((int)entry.Score);
 
 				if (entry is not ScoreEntryRemove)
 				{
@@ -267,7 +267,7 @@ namespace Protocol.Network
 			{
 				var entryId = ReadSignedVarLong();
 				var entryObjectiveName = ReadString();
-				var entryScore = ReadUint();
+				var entryScore = (uint)ReadInt();
 
 				ScoreEntry entry = null;
 

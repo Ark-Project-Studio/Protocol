@@ -139,20 +139,20 @@ namespace Protocol.Network
 		{
 			if (value.NonReplaceableBlocks != null)
 			{
-				WriteSliceVarint32Length(value.NonReplaceableBlocks.ToArray(), (block, bigendian) => Write(block),false);
+				WriteSlice(value.NonReplaceableBlocks.ToArray(), block => Write(block));
 			}
 			else
 			{
-				WriteSignedVarInt(0);
+				WriteUnsignedVarInt(0);
 			}
 
 			if (value.GradientBlocks != null)
 			{
-				WriteSliceVarint32Length(value.GradientBlocks.ToArray(), (block, bigendian) => Write(block),false);
+				WriteSlice(value.GradientBlocks.ToArray(), WriteBiomeNoiseGradientSurfaceBlockSpecifier);
 			}
 			else
 			{
-				WriteSignedVarInt(0);
+				WriteUnsignedVarInt(0);
 			}
 
 			Write(value.NoiseSeedString);
@@ -160,12 +160,21 @@ namespace Protocol.Network
 
 			if (value.Amplitudes != null)
 			{
-				WriteSliceVarint32Length(value.Amplitudes.ToArray(), (amplitude, bigendian) => Write(amplitude),false);
+				WriteSlice(value.Amplitudes.ToArray(), amplitude => Write(amplitude));
 			}
 			else
 			{
-				WriteSignedVarInt(0);
+				WriteUnsignedVarInt(0);
 			}
+		}
+
+		public void WriteBiomeNoiseGradientSurfaceBlockSpecifier(BiomeNoiseGradientSurfaceBlockSpecifier value)
+		{
+			Write(value.Noise);
+			Write(value.Threshold);
+			Write(value.Range.Min);
+			Write(value.Range.Max);
+			Write(value.Block);
 		}
 
 		public void Write(BiomeClimate value)
@@ -676,11 +685,22 @@ namespace Protocol.Network
 		{
 			return new BiomeNoiseGradientSurface
 			{
-				NonReplaceableBlocks = new System.Collections.Generic.List<uint>(ReadSlice<uint>(bigendian => ReadUint(),false)),
-				GradientBlocks = new System.Collections.Generic.List<uint>(ReadSlice<uint>(bigendian => ReadUint(),false)),
+				NonReplaceableBlocks = new System.Collections.Generic.List<uint>(ReadSlice(ReadUint)),
+				GradientBlocks = new System.Collections.Generic.List<BiomeNoiseGradientSurfaceBlockSpecifier>(ReadSlice(ReadBiomeNoiseGradientSurfaceBlockSpecifier)),
 				NoiseSeedString = ReadString(),
 				FirstOctave = ReadInt(),
-				Amplitudes = new System.Collections.Generic.List<float>(ReadSlice<float>(bigendian => ReadFloat(),false))
+				Amplitudes = new System.Collections.Generic.List<float>(ReadSlice(ReadFloat))
+			};
+		}
+
+		public BiomeNoiseGradientSurfaceBlockSpecifier ReadBiomeNoiseGradientSurfaceBlockSpecifier()
+		{
+			return new BiomeNoiseGradientSurfaceBlockSpecifier
+			{
+				Noise = ReadString(),
+				Threshold = ReadFloat(),
+				Range = new FloatRange { Min = ReadFloat(), Max = ReadFloat() },
+				Block = ReadUint()
 			};
 		}
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Protocol.Codec.Packets;
 using Protocol.Minecraft;
 using Protocol.Minecraft.Inventory.Transaction;
@@ -26,8 +27,9 @@ namespace Protocol.Network
 				}
 			}
 
+			Write(true);
 			WriteUnsignedVarInt((uint)packet.TransactionType);
-			WriteInventoryTransactionActions(packet.InventoryTransactionActions);
+			Write(true);
 			WriteInventoryTransactionData(packet.TransactionData);
 		}
 
@@ -51,8 +53,9 @@ namespace Protocol.Network
 				}
 			}
 
+			ReadBool();
 			packet.TransactionType = (McbeInventoryTransaction.InventoryTransactionType)ReadUnsignedVarInt();
-			packet.InventoryTransactionActions = ReadInventoryTransactionActions();
+			ReadBool();
 			packet.TransactionData = ReadInventoryTransactionData(packet.TransactionType);
 		}
 
@@ -82,31 +85,38 @@ namespace Protocol.Network
 		{
 			WriteInventoryTransactionSource(action);
 			WriteUnsignedVarInt(action.InventorySlot);
-			Write(action.FromItem);
-			Write(action.ToItem);
+			WriteCereal(action.FromItem);
+			WriteCereal(action.ToItem);
 		}
 
 		public InventoryTransactionAction ReadInventoryTransactionAction()
 		{
 			var action = ReadInventoryTransactionSource();
 			action.InventorySlot = ReadUnsignedVarInt();
-			action.FromItem = ReadNetworkItemStackDescriptor();
-			action.ToItem = ReadNetworkItemStackDescriptor();
+			action.FromItem = ReadCerealNetworkItemStackDescriptor();
+			action.ToItem = ReadCerealNetworkItemStackDescriptor();
 			return action;
 		}
 
 		public void WriteInventoryTransactionSource(InventoryTransactionAction action)
 		{
 			WriteUnsignedVarInt((uint)action.SourceType);
-			switch (action.SourceType)
+
+			bool isContainerType = action.SourceType == McbeInventoryTransaction.InventoryTransactionSourceType.ContainerInventory
+				|| action.SourceType == McbeInventoryTransaction.InventoryTransactionSourceType.NonImplementedFeatureTODO;
+			Write(isContainerType);
+			Write(isContainerType);
+			if (isContainerType)
 			{
-				case McbeInventoryTransaction.InventoryTransactionSourceType.ContainerInventory:
-				case McbeInventoryTransaction.InventoryTransactionSourceType.NonImplementedFeatureTODO:
-					WriteSignedVarInt(action.ContainerId);
-					break;
-				case McbeInventoryTransaction.InventoryTransactionSourceType.WorldInteraction:
-					WriteUnsignedVarInt(action.BitFlags);
-					break;
+				Write(action.ContainerId);
+			}
+
+			bool isWorldType = action.SourceType == McbeInventoryTransaction.InventoryTransactionSourceType.WorldInteraction;
+			Write(isWorldType);
+			Write(isWorldType);
+			if (isWorldType)
+			{
+				WriteUnsignedVarInt(action.BitFlags);
 			}
 		}
 
@@ -117,15 +127,18 @@ namespace Protocol.Network
 				SourceType = (McbeInventoryTransaction.InventoryTransactionSourceType)ReadUnsignedVarInt()
 			};
 
-			switch (action.SourceType)
+			bool hasContainerId = ReadBool();
+			bool shouldWriteContainerId = ReadBool();
+			if (hasContainerId && shouldWriteContainerId)
 			{
-				case McbeInventoryTransaction.InventoryTransactionSourceType.ContainerInventory:
-				case McbeInventoryTransaction.InventoryTransactionSourceType.NonImplementedFeatureTODO:
-					action.ContainerId = ReadSignedVarInt();
-					break;
-				case McbeInventoryTransaction.InventoryTransactionSourceType.WorldInteraction:
-					action.BitFlags = ReadUnsignedVarInt();
-					break;
+				action.ContainerId = ReadByte();
+			}
+
+			bool hasBitFlags = ReadBool();
+			bool shouldWriteBitFlags = ReadBool();
+			if (hasBitFlags && shouldWriteBitFlags)
+			{
+				action.BitFlags = ReadUnsignedVarInt();
 			}
 
 			return action;
@@ -133,15 +146,17 @@ namespace Protocol.Network
 
 		public void WriteInventoryTransactionData(InventoryTransactionData data)
 		{
+			WriteSlice(data.Actions.ToArray(), WriteInventoryTransactionAction);
+
 			switch (data)
 			{
 				case ItemUseInventoryTransactionData itemUse:
-					WriteUnsignedVarInt((uint)itemUse.ActionType);
+					WriteSignedVarInt((int)itemUse.ActionType);
 					WriteUnsignedVarInt((uint)itemUse.TriggerType);
 					Write(itemUse.Position);
-					WriteSignedVarInt(itemUse.Face);
+					WriteUnsignedVarInt(itemUse.Face);
 					WriteSignedVarInt(itemUse.Slot);
-					Write(itemUse.Item);
+					WriteCereal(itemUse.Item);
 					Write(itemUse.FromPosition);
 					Write(itemUse.ClickPosition);
 					WriteUnsignedVarInt(itemUse.TargetBlockRuntimeId);
@@ -152,14 +167,14 @@ namespace Protocol.Network
 					WriteUnsignedVarLong(itemUseOnActor.RuntimeId);
 					WriteUnsignedVarInt((uint)itemUseOnActor.ActionType);
 					WriteSignedVarInt(itemUseOnActor.Slot);
-					Write(itemUseOnActor.Item);
+					WriteCereal(itemUseOnActor.Item);
 					Write(itemUseOnActor.FromPosition);
 					Write(itemUseOnActor.HitPosition);
 					break;
 				case ItemReleaseInventoryTransactionData itemRelease:
-					WriteUnsignedVarInt((uint)itemRelease.ActionType);
+					WriteSignedVarInt((int)itemRelease.ActionType);
 					WriteSignedVarInt(itemRelease.Slot);
-					Write(itemRelease.Item);
+					WriteCereal(itemRelease.Item);
 					Write(itemRelease.FromPosition);
 					break;
 			}
@@ -167,17 +182,20 @@ namespace Protocol.Network
 
 		public InventoryTransactionData ReadInventoryTransactionData(McbeInventoryTransaction.InventoryTransactionType type)
 		{
+			var actions = ReadSlice(ReadInventoryTransactionAction).ToList();
+
 			return type switch
 			{
-				McbeInventoryTransaction.InventoryTransactionType.InventoryMismatch => new InventoryMismatchTransactionData(),
+				McbeInventoryTransaction.InventoryTransactionType.InventoryMismatch => new InventoryMismatchTransactionData { Actions = actions },
 				McbeInventoryTransaction.InventoryTransactionType.ItemUseInventoryTransaction => new ItemUseInventoryTransactionData
 				{
-					ActionType = (McbeInventoryTransaction.ItemUseActionType)ReadUnsignedVarInt(),
+					Actions = actions,
+					ActionType = (McbeInventoryTransaction.ItemUseActionType)ReadSignedVarInt(),
 					TriggerType = (McbeInventoryTransaction.TriggerType)ReadUnsignedVarInt(),
 					Position = ReadBlockCoordinates(),
-					Face = ReadSignedVarInt(),
+					Face = ReadUnsignedVarInt(),
 					Slot = ReadSignedVarInt(),
-					Item = ReadNetworkItemStackDescriptor(),
+					Item = ReadCerealNetworkItemStackDescriptor(),
 					FromPosition = ReadVector3(),
 					ClickPosition = ReadVector3(),
 					TargetBlockRuntimeId = ReadUnsignedVarInt(),
@@ -186,21 +204,23 @@ namespace Protocol.Network
 				},
 				McbeInventoryTransaction.InventoryTransactionType.ItemUseOnActorInventoryTransaction => new ItemUseOnActorInventoryTransactionData
 				{
+					Actions = actions,
 					RuntimeId = ReadUnsignedVarLong(),
 					ActionType = (McbeInventoryTransaction.ItemUseOnActorActionType)ReadUnsignedVarInt(),
 					Slot = ReadSignedVarInt(),
-					Item = ReadNetworkItemStackDescriptor(),
+					Item = ReadCerealNetworkItemStackDescriptor(),
 					FromPosition = ReadVector3(),
 					HitPosition = ReadVector3()
 				},
 				McbeInventoryTransaction.InventoryTransactionType.ItemReleaseInventoryTransaction => new ItemReleaseInventoryTransactionData
 				{
-					ActionType = (McbeInventoryTransaction.ItemReleaseActionType)ReadUnsignedVarInt(),
+					Actions = actions,
+					ActionType = (McbeInventoryTransaction.ItemReleaseActionType)ReadSignedVarInt(),
 					Slot = ReadSignedVarInt(),
-					Item = ReadNetworkItemStackDescriptor(),
+					Item = ReadCerealNetworkItemStackDescriptor(),
 					FromPosition = ReadVector3()
 				},
-				_ => new InventoryNormalTransactionData()
+				_ => new InventoryNormalTransactionData { Actions = actions }
 			};
 		}
 

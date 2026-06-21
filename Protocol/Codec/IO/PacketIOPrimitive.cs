@@ -498,16 +498,6 @@ namespace Protocol.Network
 			return BinaryPrimitives.ReverseEndianness(_reader.ReadInt16());
 		}
 
-		public void Write(Int24 value)
-		{
-			_writer.Write(value.GetBytes());
-		}
-
-		public Int24 ReadLittle()
-		{
-			return new Int24(_reader.Read(3).Span);
-		}
-
 		public void Write(int value, bool bigEndian = false)
 		{
 			if (bigEndian) _writer.Write(BinaryPrimitives.ReverseEndianness(value));

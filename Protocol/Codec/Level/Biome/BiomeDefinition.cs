@@ -272,10 +272,24 @@ namespace Protocol.Minecraft.Level.Biome
 		public Optional<uint> BeachBlock { get; set; }
 	}
 
+	public struct FloatRange
+	{
+		public float Min { get; set; }
+		public float Max { get; set; }
+	}
+
+	public struct BiomeNoiseGradientSurfaceBlockSpecifier
+	{
+		public string Noise { get; set; }
+		public float Threshold { get; set; }
+		public FloatRange Range { get; set; }
+		public uint Block { get; set; }
+	}
+
 	public struct BiomeNoiseGradientSurface
 	{
 		public System.Collections.Generic.List<uint> NonReplaceableBlocks { get; set; }
-		public System.Collections.Generic.List<uint> GradientBlocks { get; set; }
+		public System.Collections.Generic.List<BiomeNoiseGradientSurfaceBlockSpecifier> GradientBlocks { get; set; }
 		public string NoiseSeedString { get; set; }
 		public int FirstOctave { get; set; }
 		public System.Collections.Generic.List<float> Amplitudes { get; set; }

@@ -8,12 +8,9 @@ using System.Text;
 using Protocol.Codec.IO;
 using Protocol.Codec.Packets;
 using Protocol.Network;
-using Protocol.Network.MinecraftPacket;
 
 namespace Protocol.Utils.IO
 {
-	
-
 	public static class ZLibHelper
 	{
 		private static List<Packet> ReadZlibPacket(ReadOnlyMemory<byte> payload)

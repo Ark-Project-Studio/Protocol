@@ -76,6 +76,8 @@ namespace Protocol.Codec.Packets
 		public uint CurrentTransitionTicks { get; set; }
 		public uint TotalTransitionTicks { get; set; }
 		public int EaseType { get; set; }
+		public uint LocalTransitionTicks { get; set; }
+		public bool NoiseTransition { get; set; }
 	}
 
 	public struct AttributeData

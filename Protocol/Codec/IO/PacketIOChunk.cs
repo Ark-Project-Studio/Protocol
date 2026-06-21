@@ -34,6 +34,21 @@ namespace Protocol.Network
 			int z = ReadSignedVarInt();
 			return new SubChunkPos(x, y, z);
 		}
+
+		public void WriteSubChunkPosCereal(SubChunkPos value)
+		{
+			Write(value.X);
+			Write(value.Y);
+			Write(value.Z);
+		}
+
+		public SubChunkPos ReadSubChunkPosCereal()
+		{
+			int x = ReadInt();
+			int y = ReadInt();
+			int z = ReadInt();
+			return new SubChunkPos(x, y, z);
+		}
 		// Write methods
 		public void Write(SubChunkOffset value)
 		{

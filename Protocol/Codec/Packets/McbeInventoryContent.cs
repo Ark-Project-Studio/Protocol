@@ -19,17 +19,17 @@ public class McbeInventoryContent : Packet
     {
         base.EncodePacket();
         WriteUnsignedVarInt(InventoryId);
-        WriteSlice(Contents, Write);
+        WriteSlice(Contents, WriteCereal);
         Write(ContainerName);
-        Write(StorageItem);
+        WriteCereal(StorageItem);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
         InventoryId = ReadUnsignedVarInt();
-        Contents = ReadSlice(ReadNetworkItemStackDescriptor);
+        Contents = ReadSlice(ReadCerealNetworkItemStackDescriptor);
         ContainerName = readFullContainerName();
-        StorageItem = ReadNetworkItemStackDescriptor();
+        StorageItem = ReadCerealNetworkItemStackDescriptor();
     }
 }

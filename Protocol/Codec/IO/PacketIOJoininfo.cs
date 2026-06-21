@@ -1,52 +1,95 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Protocol.Codec.Level;
 using Protocol.Codec.Packets;
 
 namespace Protocol.Network
 {
 	public partial class Packet
 	{
-		public void Write(GatheringJoinInfo value)
+		public void Write(GatheringsConfigurationJoinInfo value)
 		{
-			Write(value.ExperienceID);
+			Write(value.ExperienceId);
 			Write(value.ExperienceName);
-			Write(value.ExperienceWorldID);
+			Write(value.ExperienceWorldId);
 			Write(value.ExperienceWorldName);
-			Write(value.CreatorID);
-			Write(value.StoreID);
+			Write(value.CreatorId);
+			Write(value.TargetId);
+			Write(value.ScenarioId);
+			Write(value.ServerId);
 		}
 
-		public GatheringJoinInfo ReadGatheringJoinInfo()
+		public GatheringsConfigurationJoinInfo ReadGatheringsConfigurationJoinInfo()
 		{
-			return new GatheringJoinInfo
+			return new GatheringsConfigurationJoinInfo
 			{
-				ExperienceID = ReadString(),
+				ExperienceId = ReadUUID(),
 				ExperienceName = ReadString(),
-				ExperienceWorldID = ReadString(),
+				ExperienceWorldId = ReadUUID(),
 				ExperienceWorldName = ReadString(),
-				CreatorID = ReadString(),
-				StoreID = ReadString()
+				CreatorId = ReadString(),
+				TargetId = ReadUUID(),
+				ScenarioId = ReadString(),
+				ServerId = ReadString()
 			};
 		}
 
-		public void Write(ServerJoinInformation value)
+		public void Write(GatheringsConfigurationClientStoreEntryPointInfo value)
 		{
-			Write(value.GatheringJoinInfo.HasValue);
-			if (value.GatheringJoinInfo.HasValue)
+			Write(value.StoreId);
+			Write(value.StoreName);
+		}
+
+		public GatheringsConfigurationClientStoreEntryPointInfo ReadGatheringsConfigurationClientStoreEntryPointInfo()
+		{
+			return new GatheringsConfigurationClientStoreEntryPointInfo
 			{
-				Write(value.GatheringJoinInfo.Value);
+				StoreId = ReadString(),
+				StoreName = ReadString()
+			};
+		}
+
+		public void Write(ServerConfigurationJoinInfo value)
+		{
+			Write(value.GatheringsConfiguration.HasValue);
+			if (value.GatheringsConfiguration.HasValue)
+			{
+				Write(value.GatheringsConfiguration.Value);
+			}
+
+			Write(value.StoreEntryPointInfo.HasValue);
+			if (value.StoreEntryPointInfo.HasValue)
+			{
+				Write(value.StoreEntryPointInfo.Value);
+			}
+
+			Write(value.PresenceInfo.HasValue);
+			if (value.PresenceInfo.HasValue)
+			{
+				value.PresenceInfo.Value.Write(this);
 			}
 		}
 
-		public ServerJoinInformation ReadServerJoinInformation()
+		public ServerConfigurationJoinInfo ReadServerConfigurationJoinInfo()
 		{
-			var result = new ServerJoinInformation();
+			var result = new ServerConfigurationJoinInfo();
 
-			var hasGatheringJoinInfo = ReadBool();
-			if (hasGatheringJoinInfo)
+			if (ReadBool())
 			{
-				result.GatheringJoinInfo = new Optional<GatheringJoinInfo>(ReadGatheringJoinInfo());
+				result.GatheringsConfiguration = new Optional<GatheringsConfigurationJoinInfo>(ReadGatheringsConfigurationJoinInfo());
+			}
+
+			if (ReadBool())
+			{
+				result.StoreEntryPointInfo = new Optional<GatheringsConfigurationClientStoreEntryPointInfo>(ReadGatheringsConfigurationClientStoreEntryPointInfo());
+			}
+
+			if (ReadBool())
+			{
+				var presence = new PresenceConfiguration();
+				presence.Read(this);
+				result.PresenceInfo = new Optional<PresenceConfiguration>(presence);
 			}
 
 			return result;

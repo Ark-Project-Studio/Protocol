@@ -147,9 +147,6 @@ namespace Protocol.Network
 
 		public void Write(EnvironmentAttributeData value)
 		{
-			// EaseType to string conversion
-			string easingType = EasingType.EasingTypeToString(value.EaseType);
-
 			Write(value.AttributeName);
 
 			Write(value.FromAttribute.HasValue);
@@ -168,18 +165,14 @@ namespace Protocol.Network
 
 			Write(value.CurrentTransitionTicks);
 			Write(value.TotalTransitionTicks);
-			Write(easingType);
-
-			// Convert string back to EaseType
-			value.EaseType = (int)EasingType.EasingTypeFromString(easingType);
+			Write(value.EaseType);
+			Write(value.LocalTransitionTicks);
+			Write(value.NoiseTransition);
 		}
 
 		public EnvironmentAttributeData ReadEnvironmentAttributeData()
 		{
 			var data = new EnvironmentAttributeData();
-
-			string easingType = ReadString();
-			data.EaseType =  (int)EasingType.EasingTypeFromString(easingType);
 
 			data.AttributeName = ReadString();
 
@@ -197,6 +190,9 @@ namespace Protocol.Network
 
 			data.CurrentTransitionTicks = ReadUint();
 			data.TotalTransitionTicks = ReadUint();
+			data.EaseType = ReadInt();
+			data.LocalTransitionTicks = ReadUint();
+			data.NoiseTransition = ReadBool();
 
 			return data;
 		}

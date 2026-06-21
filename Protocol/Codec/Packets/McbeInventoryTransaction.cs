@@ -82,7 +82,6 @@ public class McbeInventoryTransaction : Packet
 
     public int LegacyRequestRawId { get; set; }
     public List<InventoryTransactionLegacySetItemSlot> LegacySetItemSlots { get; set; } = new();
-    public List<InventoryTransactionAction> InventoryTransactionActions { get; set; } = new();
     public InventoryTransactionType TransactionType { get; set; } = InventoryTransactionType.NormalTransaction;
     public InventoryTransactionData TransactionData { get; set; } = new InventoryNormalTransactionData();
 
@@ -108,7 +107,7 @@ public class McbeInventoryTransaction : Packet
 public class InventoryTransactionAction
 {
     public McbeInventoryTransaction.InventoryTransactionSourceType SourceType { get; set; }
-    public int ContainerId { get; set; }
+    public byte ContainerId { get; set; }
     public uint BitFlags { get; set; }
     public uint InventorySlot { get; set; }
     public NetworkItemStackDescriptor FromItem { get; set; } = NetworkItemStackDescriptor.Empty;
@@ -123,6 +122,7 @@ public class InventoryTransactionLegacySetItemSlot
 
 public abstract class InventoryTransactionData
 {
+    public List<InventoryTransactionAction> Actions { get; set; } = new();
 }
 
 public sealed class InventoryNormalTransactionData : InventoryTransactionData
@@ -139,7 +139,7 @@ public sealed class ItemUseInventoryTransactionData : InventoryTransactionData
     public McbeInventoryTransaction.TriggerType TriggerType { get; set; }
     public BlockCoordinates Position { get; set; }
     public uint TargetBlockRuntimeId { get; set; }
-    public int Face { get; set; }
+    public uint Face { get; set; }
     public int Slot { get; set; }
     public NetworkItemStackDescriptor Item { get; set; } = NetworkItemStackDescriptor.Empty;
     public System.Numerics.Vector3 FromPosition { get; set; }

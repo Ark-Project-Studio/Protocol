@@ -20,21 +20,21 @@ public class McbeMobArmorEquipment : Packet
     {
         base.EncodePacket();
         WriteUnsignedVarLong(runtimeEntityId);
-        Write(helmet);
-        Write(chestplate);
-        Write(leggings);
-        Write(boots);
-        Write(body);
+        WriteCereal(helmet);
+        WriteCereal(chestplate);
+        WriteCereal(leggings);
+        WriteCereal(boots);
+        WriteCereal(body);
     }
 
     protected override void DecodePacket()
     {
         base.DecodePacket();
         runtimeEntityId = ReadUnsignedVarLong();
-        helmet = ReadNetworkItemStackDescriptor();
-        chestplate = ReadNetworkItemStackDescriptor();
-        leggings = ReadNetworkItemStackDescriptor();
-        boots = ReadNetworkItemStackDescriptor();
-        body = ReadNetworkItemStackDescriptor();
+        helmet = ReadCerealNetworkItemStackDescriptor();
+        chestplate = ReadCerealNetworkItemStackDescriptor();
+        leggings = ReadCerealNetworkItemStackDescriptor();
+        boots = ReadCerealNetworkItemStackDescriptor();
+        body = ReadCerealNetworkItemStackDescriptor();
     }
 }

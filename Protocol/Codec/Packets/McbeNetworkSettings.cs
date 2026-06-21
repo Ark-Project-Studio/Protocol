@@ -3,7 +3,7 @@
 namespace Protocol.Codec.Packets;
 public class McbeNetworkSettings : Packet
 {
-    public enum CompressionAlgorithm : short
+    public enum CompressionAlgorithm : sbyte
     {
         None = -1,
         Zlib = 0,
@@ -25,7 +25,7 @@ public class McbeNetworkSettings : Packet
     {
         base.EncodePacket();
         Write(compressionThreshold);
-        Write((short)compressionAlgorithm);
+        Write((sbyte)compressionAlgorithm);
         Write(clientThrottleEnabled);
         Write(clientThrottleThreshold);
         Write(clientThrottleScalar);
@@ -35,7 +35,7 @@ public class McbeNetworkSettings : Packet
     {
         base.DecodePacket();
         compressionThreshold = ReadShort();
-        compressionAlgorithm = (CompressionAlgorithm)ReadShort();
+        compressionAlgorithm = (CompressionAlgorithm)ReadSByte();
         clientThrottleEnabled = ReadBool();
         clientThrottleThreshold = ReadByte();
         clientThrottleScalar = ReadFloat();

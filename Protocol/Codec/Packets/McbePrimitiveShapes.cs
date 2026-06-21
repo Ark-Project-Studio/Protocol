@@ -7,24 +7,16 @@ namespace Protocol.Codec.Packets
 		byte
 	{
 		Line = 0,
-
-
 		Box = 1,
-
-
 		Sphere = 2,
-
-
 		Circle = 3,
-
-
 		Text = 4,
-
-
 		Arrow = 5,
-
-
-		NumShapeTypes = 6
+		Cylinder = 6,
+		Pyramid = 7,
+		Ellipsoid = 8,
+		Cone = 9,
+		NumShapeTypes = 10
 	}
 
 
@@ -87,8 +79,24 @@ namespace Protocol.Codec.Packets
 		public Optional<float> MaxRenderDistance { get; set; }
 		
 		public Optional<int> DimensionId { get; set; }
-		
-		public Optional<ulong> AttachedToEntityId { get; set; }
+
+		public Optional<long> AttachedToEntityId { get; set; }
+
+		public Optional<Vector2> CylinderRadiusX { get; set; }
+		public Optional<Vector2> CylinderRadiusZ { get; set; }
+		public float CylinderHeight { get; set; }
+		public byte CylinderNumSegments { get; set; }
+
+		public float PyramidWidth { get; set; }
+		public Optional<float> PyramidDepth { get; set; }
+		public float PyramidHeight { get; set; }
+
+		public Optional<Vector3> EllipsoidRadii { get; set; }
+		public byte EllipsoidSegmentsPerAxis { get; set; }
+
+		public Optional<Vector2> ConeRadii { get; set; }
+		public float ConeHeight { get; set; }
+		public byte ConeNumSegments { get; set; }
 	}
 
 
@@ -141,42 +149,63 @@ namespace Protocol.Codec.Packets
 
 				Write(shape.DimensionId.HasValue);
 				if (shape.DimensionId.HasValue) WriteSignedVarInt(shape.DimensionId.Value);
-				Write(shape.AttachedToEntityId.HasValue);
-				if (shape.AttachedToEntityId.HasValue) WriteUnsignedVarLong(shape.AttachedToEntityId.Value);
+			Write(shape.AttachedToEntityId.HasValue);
+			if (shape.AttachedToEntityId.HasValue) WriteSignedVarLong(shape.AttachedToEntityId.Value);
 
-				WriteUnsignedVarInt(GetShapeVariantIndex(shape));
+			WriteUnsignedVarInt(GetShapeVariantIndex(shape));
 
-				switch (GetShapeVariantIndex(shape))
-				{
-					case 1:
-						Write(shape.LineEndLocation.HasValue);
-						if (shape.LineEndLocation.HasValue) Write(shape.LineEndLocation.Value);
-						Write(shape.ArrowHeadLength.HasValue);
-						if (shape.ArrowHeadLength.HasValue) Write(shape.ArrowHeadLength.Value);
-						Write(shape.ArrowHeadRadius.HasValue);
-						if (shape.ArrowHeadRadius.HasValue) Write(shape.ArrowHeadRadius.Value);
-						Write(shape.Segments.HasValue);
-						if (shape.Segments.HasValue) Write(shape.Segments.Value);
-						break;
-					case 2:
-						Write(shape.Text.HasValue ? shape.Text.Value : string.Empty);
-						Write(shape.UseRotation);
-						Write(shape.BackgroundColor.HasValue);
-						if (shape.BackgroundColor.HasValue) Write(shape.BackgroundColor.Value);
-						Write(shape.DepthTest);
-						Write(shape.ShowBackface);
-						Write(shape.ShowTextBackface);
-						break;
-					case 3:
-						Write(shape.BoxBound.HasValue ? shape.BoxBound.Value : Vector3.Zero);
-						break;
-					case 4:
-						Write(shape.LineEndLocation.HasValue ? shape.LineEndLocation.Value : Vector3.Zero);
-						break;
-					case 5:
-						Write(shape.Segments.HasValue ? shape.Segments.Value : (byte)0);
-						break;
-				}
+			switch (GetShapeVariantIndex(shape))
+			{
+				case 1:
+					Write(shape.LineEndLocation.HasValue);
+					if (shape.LineEndLocation.HasValue) Write(shape.LineEndLocation.Value);
+					Write(shape.ArrowHeadLength.HasValue);
+					if (shape.ArrowHeadLength.HasValue) Write(shape.ArrowHeadLength.Value);
+					Write(shape.ArrowHeadRadius.HasValue);
+					if (shape.ArrowHeadRadius.HasValue) Write(shape.ArrowHeadRadius.Value);
+					Write(shape.Segments.HasValue);
+					if (shape.Segments.HasValue) Write(shape.Segments.Value);
+					break;
+				case 2:
+					Write(shape.Text.HasValue ? shape.Text.Value : string.Empty);
+					Write(shape.UseRotation);
+					Write(shape.BackgroundColor.HasValue);
+					if (shape.BackgroundColor.HasValue) Write(shape.BackgroundColor.Value);
+					Write(shape.DepthTest);
+					Write(shape.ShowBackface);
+					Write(shape.ShowTextBackface);
+					break;
+				case 3:
+					Write(shape.BoxBound.HasValue ? shape.BoxBound.Value : Vector3.Zero);
+					break;
+				case 4:
+					Write(shape.LineEndLocation.HasValue ? shape.LineEndLocation.Value : Vector3.Zero);
+					break;
+				case 5:
+					Write(shape.Segments.HasValue ? shape.Segments.Value : (byte)0);
+					break;
+				case 6:
+					Write(shape.CylinderRadiusX.HasValue ? shape.CylinderRadiusX.Value : Vector2.Zero);
+					Write(shape.CylinderRadiusZ.HasValue ? shape.CylinderRadiusZ.Value : Vector2.Zero);
+					Write(shape.CylinderHeight);
+					Write(shape.CylinderNumSegments);
+					break;
+				case 7:
+					Write(shape.PyramidWidth);
+					Write(shape.PyramidDepth.HasValue);
+					if (shape.PyramidDepth.HasValue) Write(shape.PyramidDepth.Value);
+					Write(shape.PyramidHeight);
+					break;
+				case 8:
+					Write(shape.EllipsoidRadii.HasValue ? shape.EllipsoidRadii.Value : Vector3.Zero);
+					Write(shape.EllipsoidSegmentsPerAxis);
+					break;
+				case 9:
+					Write(shape.ConeRadii.HasValue ? shape.ConeRadii.Value : Vector2.Zero);
+					Write(shape.ConeHeight);
+					Write(shape.ConeNumSegments);
+					break;
+			}
 			}
 		}
 
@@ -231,40 +260,60 @@ namespace Protocol.Codec.Packets
 				{
 					shape.DimensionId = new Optional<int>(ReadSignedVarInt());
 				}
-				var hasATEid = ReadBool();
-				if (hasATEid) shape.AttachedToEntityId = new Optional<ulong>(ReadUnsignedVarLong());
+			var hasATEid = ReadBool();
+			if (hasATEid) shape.AttachedToEntityId = new Optional<long>(ReadSignedVarLong());
 
-				switch (ReadUnsignedVarInt())
-				{
-					case 1:
-						var hasArrowEndLocation = ReadBool();
-						if (hasArrowEndLocation) shape.LineEndLocation = new Optional<Vector3>(ReadVector3());
-						var hasArrowHeadLength = ReadBool();
-						if (hasArrowHeadLength) shape.ArrowHeadLength = new Optional<float>(ReadFloat());
-						var hasArrowHeadRadius = ReadBool();
-						if (hasArrowHeadRadius) shape.ArrowHeadRadius = new Optional<float>(ReadFloat());
-						var hasArrowSegments = ReadBool();
-						if (hasArrowSegments) shape.Segments = new Optional<byte>(ReadByte());
-						break;
-					case 2:
-						shape.Text = new Optional<string>(ReadString());
-						shape.UseRotation = ReadBool();
-						var hasBackgroundColor = ReadBool();
-						if (hasBackgroundColor) shape.BackgroundColor = new Optional<int>(ReadInt());
-						shape.DepthTest = ReadBool();
-						shape.ShowBackface = ReadBool();
-						shape.ShowTextBackface = ReadBool();
-						break;
-					case 3:
-						shape.BoxBound = new Optional<Vector3>(ReadVector3());
-						break;
-					case 4:
-						shape.LineEndLocation = new Optional<Vector3>(ReadVector3());
-						break;
-					case 5:
-						shape.Segments = new Optional<byte>(ReadByte());
-						break;
-				}
+			switch (ReadUnsignedVarInt())
+			{
+				case 1:
+					var hasArrowEndLocation = ReadBool();
+					if (hasArrowEndLocation) shape.LineEndLocation = new Optional<Vector3>(ReadVector3());
+					var hasArrowHeadLength = ReadBool();
+					if (hasArrowHeadLength) shape.ArrowHeadLength = new Optional<float>(ReadFloat());
+					var hasArrowHeadRadius = ReadBool();
+					if (hasArrowHeadRadius) shape.ArrowHeadRadius = new Optional<float>(ReadFloat());
+					var hasArrowSegments = ReadBool();
+					if (hasArrowSegments) shape.Segments = new Optional<byte>(ReadByte());
+					break;
+				case 2:
+					shape.Text = new Optional<string>(ReadString());
+					shape.UseRotation = ReadBool();
+					var hasBackgroundColor = ReadBool();
+					if (hasBackgroundColor) shape.BackgroundColor = new Optional<int>(ReadInt());
+					shape.DepthTest = ReadBool();
+					shape.ShowBackface = ReadBool();
+					shape.ShowTextBackface = ReadBool();
+					break;
+				case 3:
+					shape.BoxBound = new Optional<Vector3>(ReadVector3());
+					break;
+				case 4:
+					shape.LineEndLocation = new Optional<Vector3>(ReadVector3());
+					break;
+				case 5:
+					shape.Segments = new Optional<byte>(ReadByte());
+					break;
+				case 6:
+					shape.CylinderRadiusX = new Optional<Vector2>(ReadVector2());
+					shape.CylinderRadiusZ = new Optional<Vector2>(ReadVector2());
+					shape.CylinderHeight = ReadFloat();
+					shape.CylinderNumSegments = ReadByte();
+					break;
+				case 7:
+					shape.PyramidWidth = ReadFloat();
+					if (ReadBool()) shape.PyramidDepth = new Optional<float>(ReadFloat());
+					shape.PyramidHeight = ReadFloat();
+					break;
+				case 8:
+					shape.EllipsoidRadii = new Optional<Vector3>(ReadVector3());
+					shape.EllipsoidSegmentsPerAxis = ReadByte();
+					break;
+				case 9:
+					shape.ConeRadii = new Optional<Vector2>(ReadVector2());
+					shape.ConeHeight = ReadFloat();
+					shape.ConeNumSegments = ReadByte();
+					break;
+			}
 
 				Shapes.Add(shape);
 			}
@@ -277,6 +326,10 @@ namespace Protocol.Codec.Packets
 			if (shape.BoxBound.HasValue) return 3;
 			if (shape.LineEndLocation.HasValue && shape.Type.HasValue && shape.Type.Value == PrimitiveShapesType.Line) return 4;
 			if (shape.Segments.HasValue) return 5;
+			if (shape.CylinderRadiusX.HasValue || shape.CylinderRadiusZ.HasValue) return 6;
+			if (shape.PyramidDepth.HasValue || shape.PyramidWidth != 0f || shape.PyramidHeight != 0f) return 7;
+			if (shape.EllipsoidRadii.HasValue) return 8;
+			if (shape.ConeRadii.HasValue) return 9;
 			return 0;
 		}
 	}

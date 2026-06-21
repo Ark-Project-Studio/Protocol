@@ -18,7 +18,6 @@ public class McbeSubChunkRequestPacket : Packet
     {
         base.EncodePacket();
 		WriteSignedVarInt(Dimension);
-		Write(Position);
 
 		if (Offsets != null)
 		{
@@ -28,6 +27,7 @@ public class McbeSubChunkRequestPacket : Packet
 		{
 			Write((uint)0);
 		}
+		WriteSubChunkPosCereal(Position);
 	}
 
     protected override void DecodePacket()
@@ -35,8 +35,6 @@ public class McbeSubChunkRequestPacket : Packet
         base.DecodePacket();
 
         Dimension = ReadSignedVarInt();
-        Position = ReadSubChunkPos();
-		
 
 		uint count = ReadUint();
 		var offsetsArray = new SubChunkOffset[count];
@@ -45,5 +43,6 @@ public class McbeSubChunkRequestPacket : Packet
 			offsetsArray[i] = ReadSubChunkOffset();
 		}
 		Offsets = new System.Collections.Generic.List<SubChunkOffset>(offsetsArray);
+		Position = ReadSubChunkPosCereal();
 	}
 }
